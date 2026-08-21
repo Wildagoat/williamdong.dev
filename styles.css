@@ -168,6 +168,15 @@ img { max-width: 100%; display: block; }
 .proj .p-tags span::before { content: "#"; opacity: 0.5; }
 .proj .p-arrow { position: absolute; top: 15px; right: 15px; color: var(--muted); opacity: 0; transition: opacity 0.15s ease; }
 .proj:hover .p-arrow { opacity: 1; }
+/* Problem / solution card body (the full write-up now lives in the modal). */
+.proj .p-ps { margin-top: 7px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.proj .ps-line { font-size: 11.5px; line-height: 1.42; color: var(--muted); margin: 0; }
+.proj .ps-line.sol { color: var(--text-2); }
+.proj .ps-k {
+  display: block; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.09em;
+  color: var(--muted-2); margin-bottom: 2px;
+}
+.proj-feature .ps-line { font-size: 12.5px; }
 
 /* Trainer sits standalone on the right (it has an interactive demo); the other work is a grid on the left. */
 .projects-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 10px; align-items: stretch; }
@@ -321,6 +330,16 @@ footer.foot .muted { color: var(--muted-2); font-size: 12px; }
 .pm-status { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted-2); text-transform: lowercase; }
 .pm-status.live { color: var(--good); }
 .pm-title { font-size: clamp(20px, 3.2vw, 26px); margin: 8px 0 14px; }
+.pm-ps {
+  margin: 0 0 16px; display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2);
+}
+.pm-ps:empty { display: none; }
+.pm-ps .ps-line { font-size: 13px; line-height: 1.5; color: var(--text-2); margin: 0; }
+.pm-ps .ps-k {
+  display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 3px;
+}
 .pm-desc { color: var(--text-2); font-size: 14px; line-height: 1.68; }
 .pm-tags { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
 .pm-tags:empty { display: none; }

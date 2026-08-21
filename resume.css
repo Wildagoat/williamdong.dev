@@ -1,0 +1,46 @@
+/* resume.css — standalone résumé page. Reuses design tokens + .xp / .skill
+   classes from styles.css; keeps real casing (not lowercased like the landing). */
+
+.resume-top {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px clamp(18px, 5vw, 40px);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+}
+.resume-top .back { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; }
+.resume-top .back:hover { color: var(--text); }
+
+.resume-wrap { max-width: 760px; margin: 0 auto; padding: clamp(26px, 5vw, 46px) clamp(18px, 5vw, 40px) 90px; }
+
+/* ---- Header ---- */
+.r-head { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.r-name { font-size: clamp(28px, 6vw, 46px); font-weight: 700; letter-spacing: -0.03em; }
+.r-thesis { margin-top: 12px; font-size: clamp(14px, 2.2vw, 16.5px); color: var(--text-2); line-height: 1.5; max-width: 56ch; }
+.r-thesis strong { color: var(--text); font-weight: 600; }
+.r-contact { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 7px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.r-contact a { color: var(--muted); text-decoration: none; transition: color 0.15s ease; }
+.r-contact a:hover { color: var(--text); }
+
+/* ---- Sections (reuse .xp / .edu / .skills from styles.css) ---- */
+.r-section { padding: 24px 0; border-top: 1px solid var(--line); }
+.r-section:first-of-type { border-top: 0; }
+.r-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+
+.r-bullets { margin: 8px 0 0; padding-left: 17px; }
+.r-bullets li { font-size: 12.5px; color: var(--text-2); line-height: 1.55; margin-bottom: 5px; }
+.r-bullets li::marker { color: var(--muted-2); }
+
+.r-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 34px; }
+@media (max-width: 640px) { .r-cols { grid-template-columns: 1fr; gap: 20px; } }
+
+.r-interests { font-size: 12.5px; color: var(--text-2); line-height: 1.7; }
+
+/* ---- Print: clean white sheet, hide the sticky bar ---- */
+@media print {
+  .resume-top, .drift-off { display: none !important; }
+  :root { --bg: #fff; --text: #111; --text-2: #333; --muted: #555; --muted-2: #777; --line: #ddd; --line-2: #ccc; }
+  body { background: #fff; color: #111; }
+  .resume-wrap { max-width: none; padding: 0; }
+  .r-section { break-inside: avoid; }
+}

@@ -24,12 +24,16 @@ if ('IntersectionObserver' in window) {
 const PROJECTS = {
   trainer: {
     status: 'Live demo', live: true, title: 'CV Punch Trainer',
+    problem: 'Power, speed, and accuracy come from consistent punching form — but inspecting every rep is time-consuming.',
+    solution: 'Build an app that does it automatically.',
     desc: 'A real-time, in-browser boxing-form coach. Your webcam feeds a pose model that reads 33 body landmarks per frame; my own biomechanics engine detects each punch and scores balance, guard, kinetic-chain sequencing, and retraction — with plain-language coaching notes. Everything runs locally, so the video never leaves your device. No webcam? A synthetic demo streams a boxer through the same pipeline.',
     tags: ['MediaPipe', 'Realtime CV', 'Biomechanics', 'Canvas'],
     link: './games/punch-trainer.html', linkLabel: 'Open the trainer →',
   },
   scorpion: {
     status: 'Defense · lead ME', title: 'SCORPION',
+    problem: 'Drones can\'t carry heavy payloads for long periods of time.',
+    solution: 'Create an attritable ground vehicle.',
     desc: 'An expendable payload vehicle built at Raptor Defense Company, where I was the lead and sole mechanical engineer — owning the full mechanical design from concept to working prototype. I modeled the complete assembly in Onshape in 6 days, then manufactured and assembled it in 3. It delivered on spec: exceeding 50 mph (a conservative estimate), using under half of the R&D budget, and passing the preliminary test matrix.',
     tags: ['Onshape', 'UGV', 'Defense hardware', 'Rapid prototyping'],
     model: './assets/models/full-v2-rear.glb',
@@ -39,18 +43,24 @@ const PROJECTS = {
   },
   ftad: {
     status: 'Vehicle design', title: 'FTAD Chassis',
+    problem: 'Commercial RC cars aren\'t designed for modular aero components or custom optimization.',
+    solution: 'Build one myself.',
     desc: 'The reference race-car chassis for Formula Theory & Automotive Design — my F1-inspired engineering competition. A full independent-suspension platform (double-wishbone corners, coilover dampers, shaft drive) modeled in Onshape and Fusion 360, then refined with CFD and topology optimization to chase performance within a fixed spec.',
     tags: ['Onshape', 'Fusion 360', 'CFD', 'Topology opt.'],
     imgs: ['./assets/car1.webp', './assets/car2.webp'],
   },
   vex: {
     status: 'World-qualified', title: 'VEX Robotics',
+    problem: 'The Push Back game rewards tall bots with confident collision capabilities.',
+    solution: 'Build for a low center of gravity, durable design, and speed.',
     desc: 'Design lead and CAD specialist on a VEX Robotics Competition team that qualified for the VEX World Championship. I owned the mechanical design — drivetrain, structure, and scoring mechanisms — iterating the full robot in CAD before every build.',
     tags: ['VEX', 'CAD', 'Drivetrain', 'Mechanism design'],
     img: './assets/vex.webp',
   },
   'fight-diagram': {
     status: 'Tool', title: 'Fight Diagram',
+    problem: 'Teaching spatial concepts is hard — younger fighters can\'t process descriptions as fast as speech.',
+    solution: 'Build a simple program that models positioning.',
     desc: 'A single-file SVG diagrammer for boxing positioning and footwork. I built it to explain the intricacies of ring positioning — angles, stances, distance, and exchanges — to the younger fighters I coach, showing what words couldn\'t. It has since grown into a content-creation tool: I record sequences and export clean vector diagrams and videos to break down technique for a wider audience.',
     tags: ['SVG', 'Single-file', 'Vanilla JS'],
     img: './assets/fightdiagram.png',
@@ -61,6 +71,7 @@ const modal = document.getElementById('projModal');
 if (modal) {
   const pmStatus = document.getElementById('pmStatus');
   const pmTitle = document.getElementById('pmTitle');
+  const pmPs = document.getElementById('pmPs');
   const pmDesc = document.getElementById('pmDesc');
   const pmTags = document.getElementById('pmTags');
   const pmActions = document.getElementById('pmActions');
@@ -90,6 +101,22 @@ if (modal) {
     pmStatus.textContent = p.status || '';
     pmStatus.classList.toggle('live', !!p.live);
     pmTitle.textContent = p.title || '';
+
+    // Problem / solution lead-in (rendered above the detailed write-up).
+    pmPs.innerHTML = '';
+    const psRow = (k, v) => {
+      const row = document.createElement('p');
+      row.className = 'ps-line' + (k === 'Solution' ? ' sol' : '');
+      const s = document.createElement('span');
+      s.className = 'ps-k';
+      s.textContent = k;
+      row.appendChild(s);
+      row.appendChild(document.createTextNode(v));
+      return row;
+    };
+    if (p.problem) pmPs.appendChild(psRow('Problem', p.problem));
+    if (p.solution) pmPs.appendChild(psRow('Solution', p.solution));
+
     pmDesc.textContent = p.desc || '';
 
     pmTags.innerHTML = '';
