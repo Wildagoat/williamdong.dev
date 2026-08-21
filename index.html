@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>William Dong</title>
+  <meta name="description" content="William Dong — engineer, builder, and competitive boxer. Robotics-nonprofit founder, defense-hardware intern, incoming Materials Science & Engineering student at Carnegie Mellon." />
+  <meta property="og:title" content="William Dong" />
+  <meta property="og:description" content="I like to see people and machines reach their potential." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="home">
+  <!-- Ambient monochrome CAD backdrop: a PRE-RENDERED spin of the SCORPION as a
+       tiny looping video (no live WebGL on the homepage → no jank). Decorative
+       only (pointer-events off, aria-hidden); faint + blurred so it recedes. -->
+  <div class="cad-backdrop" aria-hidden="true">
+    <video class="cad-video" autoplay loop muted playsinline
+      poster="./assets/models/scorpion-poster.jpg"
+      src="./assets/models/scorpion-spin.mp4"></video>
+  </div>
+
+  <header class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-card">
+        <div class="hero-intro">
+          <h1 class="name">William Dong</h1>
+          <p class="caption">I like to see people and machines reach their potential.</p>
+        </div>
+
+        <aside class="interests" aria-label="Interests">
+          <div class="interests-label">Interests</div>
+          <div class="interest-list">
+            <article class="interest-item">
+              <h2>Boxing</h2>
+              <p>2× state champ. Lifelong student of the game. Changed my life.</p>
+            </article>
+            <article class="interest-item">
+              <h2>Anime</h2>
+              <p>Sports and romance. A good piece of media can change your life.</p>
+            </article>
+            <article class="interest-item">
+              <h2>Motorsports</h2>
+              <p>Drift, F1, and rally. I love racing, but I love designing more. Hit the track: <kbd>G</kbd>.</p>
+            </article>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Projects -->
+    <section class="section" id="projects">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div class="kicker">Selected work</div>
+          <h2>Projects</h2>
+          <p>A mix of browser software, computer vision, and mechanical design.</p>
+        </div>
+
+        <div class="projects-layout">
+          <div class="grid">
+          <a class="proj reveal" href="#projects" data-project="scorpion">
+            <div class="p-top"><span class="p-status">Defense · lead ME</span></div>
+            <h3>SCORPION</h3>
+            <p class="p-desc">An expendable high-speed payload vehicle at Raptor Defense, where I was lead and sole mechanical engineer — full design from concept to working prototype. Modeled in Onshape in 6 days, built and assembled in 3. Delivered on spec: 50+ mph on under half the R&amp;D budget.</p>
+            <div class="p-tags"><span>Onshape</span><span>UGV</span><span>Prototype</span></div>
+            <span class="p-arrow">→</span>
+          </a>
+
+          <a class="proj reveal" href="#projects" data-project="ftad">
+            <div class="p-top"><span class="p-status">Vehicle design</span></div>
+            <h3>FTAD Chassis</h3>
+            <p class="p-desc">The reference race-car chassis for Formula Theory &amp; Automotive Design — my F1-inspired engineering competition. A full independent-suspension platform modeled in Onshape and Fusion 360, then refined with CFD and topology optimization to chase performance within a fixed spec.</p>
+            <div class="p-tags"><span>Onshape</span><span>CFD</span><span>Topology</span></div>
+            <span class="p-arrow">→</span>
+          </a>
+
+          <a class="proj reveal" href="#projects" data-project="vex">
+            <div class="p-top"><span class="p-status">World-qualified</span></div>
+            <h3>VEX Robotics</h3>
+            <p class="p-desc">Design lead and CAD specialist on a VEX Robotics Competition team — full mechanical design of the drivetrain and scoring mechanisms on a robot that qualified for the VEX World Championship.</p>
+            <div class="p-tags"><span>VEX</span><span>CAD</span><span>Drivetrain</span></div>
+            <span class="p-arrow">→</span>
+          </a>
+
+          <a class="proj reveal" href="#projects" data-project="fight-diagram">
+            <div class="p-top"><span class="p-status">Tool</span></div>
+            <h3>Fight Diagram</h3>
+            <p class="p-desc">A single-file SVG tool I built to explain ring positioning to the younger fighters I coach — angles, stances, and exchanges words couldn't. It's since grown into a content-creation tool: record sequences and export clean diagrams and videos.</p>
+            <div class="p-tags"><span>SVG</span><span>SingleFile</span><span>VanillaJS</span></div>
+            <span class="p-arrow">→</span>
+          </a>
+          </div><!-- .grid -->
+
+          <a class="proj proj-feature reveal" href="./games/punch-trainer.html">
+            <div class="p-top"><span class="p-status live">● Live demo · interactive</span></div>
+            <h3>CV Punch Trainer</h3>
+            <p class="p-desc">Real-time, in-browser boxing-form coach. Throw punches at your webcam and a pose model grades balance, guard, kinetic-chain sequencing, and retraction on every rep — with live coaching notes. Runs entirely in your browser; the video never leaves your device.</p>
+            <div class="p-tags"><span>MediaPipe</span><span>RealtimeCV</span><span>Canvas</span></div>
+            <span class="pf-cta">Try it live →</span>
+          </a>
+        </div><!-- .projects-layout -->
+        <!-- NOTE(placeholder): add real repo/demo URLs to the project links when ready. -->
+      </div>
+    </section>
+
+    <!-- Story / timeline -->
+    <section class="section" id="story">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div class="kicker">The arc</div>
+          <h2>My story</h2>
+          <p>From grinding ranked ladders to building performance machines — the throughline is learning that work compounds.</p>
+        </div>
+
+        <div class="timeline-h">
+          <div class="tl-track">
+            <div class="tl-item reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">2022</span><span class="tl-when">8th grade</span></div>
+              <h3 class="tl-title">Ranked ladders over report cards</h3>
+              <p class="tl-note">I was addicted to Valorant and League, and couldn't have cared less about school. My parents forced straight A's, so my grades held up. I never understood working hard — talented hard workers beat normal hard workers anyway.</p>
+            </div>
+
+            <div class="tl-item reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">2023</span><span class="tl-when">Freshman year</span></div>
+              <h3 class="tl-title">Hajime no Ippo rewires me</h3>
+              <p class="tl-note">I watched <em>Hajime no Ippo</em>, an anime about boxing. For the first time I actually believed hard work could yield the results I wanted. I started boxing — and started trying in school.</p>
+            </div>
+
+            <div class="tl-item reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">2024</span><span class="tl-when">Sophomore year</span></div>
+              <h3 class="tl-title">First state title, six hours of sleep</h3>
+              <p class="tl-note">I kept training and loaded up on harder classes. Balancing the workload with daily training left me on under six hours of sleep a night. I won my first state tournament.</p>
+            </div>
+
+            <div class="tl-item reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">2025</span><span class="tl-when">Junior year</span></div>
+              <h3 class="tl-title">Motorsport, and founding FTAD</h3>
+              <p class="tl-note">I got obsessed with motorsports and the intricacies of F1 engineering. I won my second state title and founded Formula Theory and Automotive Design (FTAD), a motorsports-inspired robotics competition. That spring, I tore my ACL playing volleyball.</p>
+            </div>
+
+            <div class="tl-item reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">2026</span><span class="tl-when">Senior year</span></div>
+              <h3 class="tl-title">From competing to building</h3>
+              <p class="tl-note">Off the mat, I became a mentor and assistant coach for my teammates. I went all-in on FTAD and startup culture, hitting networking events where I met notable VCs and founders. My FTAD portfolio landed me an internship at a deftech startup — and I fell in love with the scrappy, inventive world of defense tech.</p>
+            </div>
+
+            <div class="tl-item tl-now reveal">
+              <span class="tl-dot" aria-hidden="true"></span>
+              <div class="tl-meta"><span class="tl-year">Now</span><span class="tl-when">2026 —</span></div>
+              <h3 class="tl-title">Building performance machines</h3>
+              <p class="tl-note">I'm meeting as many people as I can and genuinely trying to gain and apply knowledge toward one thing: building the next generation of performance machines.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section contact" id="contact">
+      <div class="wrap reveal">
+        <div class="kicker" style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:lowercase;margin-bottom:12px;">Get in touch</div>
+        <h2>Let's build something.</h2>
+        <p>Open to internships, research, and collaborations in robotics, unmanned systems, and computer vision.</p>
+        <div class="links">
+          <a class="icon-btn" href="mailto:wd2@andrew.cmu.edu" aria-label="Email William Dong" title="Email">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          </a>
+          <a class="icon-btn" href="https://www.linkedin.com/in/william-dong-8bb0b8313/" target="_blank" rel="noopener" aria-label="William Dong on LinkedIn" title="LinkedIn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a class="icon-btn" href="https://www.instagram.com/bu1lt.bywill" target="_blank" rel="noopener" aria-label="William Dong on Instagram" title="Instagram">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.849.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.849.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+          <a class="icon-btn" href="tel:+19178226656" aria-label="Call 917-822-6656" title="Call">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Project detail modal (populated from main.js) -->
+  <div class="modal" id="projModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+      <button class="modal-x" data-close type="button" aria-label="Close">×</button>
+      <div class="modal-body">
+        <div class="modal-main">
+          <div class="pm-status" id="pmStatus"></div>
+          <h3 class="pm-title" id="pmTitle"></h3>
+          <p class="pm-desc" id="pmDesc"></p>
+          <div class="pm-tags" id="pmTags"></div>
+          <div class="pm-actions" id="pmActions"></div>
+        </div>
+        <div class="modal-media" id="pmMedia">
+          <model-viewer id="pmModel" hidden
+            camera-controls auto-rotate auto-rotate-delay="0" rotation-per-second="16deg"
+            interaction-prompt="none" touch-action="pan-y"
+            environment-image="neutral" shadow-intensity="0.9" exposure="1.05"
+            min-field-of-view="10deg" max-field-of-view="55deg"
+            alt="Interactive 3D CAD model">
+          </model-viewer>
+          <img id="pmImg" alt="" />
+          <div class="pm-thumbs" id="pmThumbs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span class="muted">© <span id="year"></span> William Dong</span>
+      <span class="muted">Built from scratch · deployed on Vercel</span>
+    </div>
+  </footer>
+
+  <!-- model-viewer is NOT loaded here: main.js imports it on demand only when a
+       project with a 3D model is opened, so the homepage ships zero WebGL. -->
+  <script src="./main.js"></script>
+  <!-- Interactive: the cursor becomes a drift AE86 that drives the page (desktop only). -->
+  <script src="./drift.js" defer></script>
+</body>
+</html>

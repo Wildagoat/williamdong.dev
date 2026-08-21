@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CV Punch Trainer · William Dong</title>
+  <meta name="description" content="A browser computer-vision boxing coach: throw punches at your webcam and get your form graded — balance, guard, kinetic chain, retraction — in real time." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="./trainer.css" />
+</head>
+<body class="trainer-body">
+  <header class="trainer-top">
+    <a class="back" href="../index.html">← William Dong</a>
+    <div class="trainer-title">
+      <span class="dot" aria-hidden="true"></span>
+      CV Punch Trainer
+    </div>
+    <div class="trainer-controls">
+      <div class="seg" id="stanceSeg" role="group" aria-label="Stance">
+        <button class="active" data-stance="orthodox">Orthodox</button>
+        <button data-stance="southpaw">Southpaw</button>
+      </div>
+      <button class="btn btn-primary" id="camBtn">Start camera</button>
+      <button class="btn btn-ghost" id="demoBtn">Run demo</button>
+      <label class="dbg-toggle"><input type="checkbox" id="dbgChk" /> Debug</label>
+    </div>
+  </header>
+
+  <main class="trainer-main">
+    <!-- Stage: camera feed + skeleton/CoM overlay -->
+    <section class="stage-wrap">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted hidden></video>
+        <canvas id="overlay"></canvas>
+        <div class="stage-empty" id="stageEmpty">
+          <div class="stage-empty-inner">
+            <h2>Grade your boxing form, live</h2>
+            <p>
+              Stand back so your <strong>whole body</strong> is in frame and throw some
+              straight punches. Facing the camera works — depth is tracked in 3D — and turning
+              slightly side-on gives the fullest read of balance and hooks. A pose model reads 33
+              body landmarks per frame; your own biomechanics engine grades each punch.
+            </p>
+            <div class="stage-empty-actions">
+              <button class="btn btn-primary lg" id="camBtn2">Start camera</button>
+              <button class="btn btn-ghost lg" id="demoBtn2">No camera? Run the demo</button>
+            </div>
+            <p class="fineprint">Video never leaves your device — all processing runs in your browser.</p>
+          </div>
+        </div>
+        <!-- Live per-frame readout, overlaid on the stage -->
+        <div class="live-chips" id="liveChips" hidden>
+          <span class="chip" id="chipBalance">balance —</span>
+          <span class="chip" id="chipGuard">guard —</span>
+          <span class="chip" id="chipFps">— fps</span>
+        </div>
+        <!-- Big score flash after each punch -->
+        <div class="score-flash" id="scoreFlash" hidden>
+          <div class="sf-type" id="sfType">JAB</div>
+          <div class="sf-score" id="sfScore">0</div>
+        </div>
+      </div>
+      <div class="status" id="status">Load the pose model with “Start camera”, or “Run demo” to see it work with no webcam.</div>
+      <div class="dbg" id="dbgReadout" hidden></div>
+    </section>
+
+    <!-- HUD: last-punch breakdown + session stats + feed -->
+    <aside class="hud">
+      <div class="card last-punch">
+        <div class="card-head">
+          <h3>Last punch</h3>
+          <span class="last-type" id="lastType">—</span>
+        </div>
+        <div class="ring-row">
+          <div class="ring" id="ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="52" />
+              <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52" />
+            </svg>
+            <div class="ring-num"><span id="ringScore">—</span></div>
+          </div>
+          <div class="dims" id="dims">
+            <!-- dimension bars injected here -->
+          </div>
+        </div>
+        <div class="notes" id="notes">
+          Your per-punch coaching feedback will appear here.
+        </div>
+      </div>
+
+      <div class="card session">
+        <div class="card-head"><h3>Session</h3><button class="btn btn-tiny" id="resetBtn">Reset</button></div>
+        <div class="tiles" id="tiles">
+          <div class="tile"><div class="tval" id="stPunches">0</div><div class="tlabel">Punches</div></div>
+          <div class="tile"><div class="tval" id="stAvg">—</div><div class="tlabel">Avg score</div></div>
+          <div class="tile"><div class="tval" id="stBest">—</div><div class="tlabel">Best</div></div>
+          <div class="tile"><div class="tval" id="stCombo">0</div><div class="tlabel">Best combo</div></div>
+        </div>
+      </div>
+
+      <div class="card feed-card">
+        <div class="card-head"><h3>Punch feed</h3></div>
+        <div class="feed" id="feed">
+          <div class="feed-empty">No punches yet.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <section class="explainer">
+    <h2>How it works</h2>
+    <div class="explainer-grid">
+      <div class="step">
+        <div class="step-n">1</div>
+        <h4>Pose</h4>
+        <p>MediaPipe BlazePose returns 33 body landmarks per frame, in-browser and on the GPU. Positions are one-euro filtered before any velocity is computed — smoothing before differentiation is the single biggest accuracy lever.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <h4>Features</h4>
+        <p>Every landmark becomes a boxing-meaningful signal, normalized to a shoulder-width unit so it survives a change in camera distance: de&nbsp;Leva center of mass, sagittal base of support, elbow extension, guard height.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <h4>Detection</h4>
+        <p>A punch is a wrist-speed peak coincident with real excursion of the wrist from its guard position. The classifier separates jab / cross / hook / uppercut from wrist-path shape and elbow behavior.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">4</div>
+        <h4>Scoring</h4>
+        <p>Each punch is graded on five dimensions — balance, weight recovery, kinetic-chain sequencing, guard integrity, retraction speed — against reference bands, and turned into plain-language coaching notes.</p>
+      </div>
+    </div>
+    <p class="credit">
+      The analysis engine is vendored from <strong>Kodawari</strong>, my boxing motion-analysis pipeline —
+      the same <code>pose → features → detection → scoring</code> code that ports into the jab-coach
+      pure-TypeScript analyzer. This page adds a thin real-time streaming layer on top.
+    </p>
+    <details class="tips">
+      <summary>Capture tips for a clean read</summary>
+      <ul>
+        <li><strong>Frame the whole body.</strong> Step back so your feet are in view — the center-of-mass and base-of-support metrics need them.</li>
+        <li><strong>Facing the camera is fine.</strong> Forward punches are tracked in 3D via depth; a slight turn toward side-on sharpens balance and hook reads.</li>
+        <li><strong>Good light, plain background.</strong> Motion blur — not frame rate — is what makes pose models hallucinate the wrist on the frames that matter.</li>
+        <li><strong>Shadow-box.</strong> A heavy bag occludes the arm at impact; sparring (multiple people) is out of scope here.</li>
+      </ul>
+    </details>
+  </section>
+
+  <script type="module" src="./punch-trainer.js"></script>
+</body>
+</html>
