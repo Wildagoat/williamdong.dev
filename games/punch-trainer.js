@@ -175,8 +175,8 @@ function onPunch(ev, score) {
   // Session tiles
   const s = trainer.stats;
   dom.stPunches.textContent = s.count;
-  dom.stAvg.textContent = Number.isFinite(s.avg) ? Math.round(s.avg) : '—';
-  dom.stBest.textContent = s.best ? Math.round(s.best) : '—';
+  dom.stAvg.textContent = Number.isFinite(s.avg) ? Math.round(s.avg) : '·';
+  dom.stBest.textContent = s.best ? Math.round(s.best) : '·';
   dom.stCombo.textContent = s.bestCombo;
 }
 
@@ -207,7 +207,7 @@ async function startCamera() {
     });
   } catch (err) {
     console.error(err);
-    setStatus('Camera permission denied or unavailable — “Run demo” still works: ' + err.message);
+    setStatus('Camera permission denied or unavailable. “Run demo” still works: ' + err.message);
     dom.stage.classList.remove('mirror');
     return;
   }
@@ -222,7 +222,7 @@ async function startCamera() {
   trainer = makeTrainer();
   resetHud();
   setCamButtons(true);
-  setStatus('● Live — throw straight punches side-on. Video stays on your device.', true);
+  setStatus('● Live. Throw straight punches side-on. Video stays on your device.', true);
 
   state.running = true;
   const t0 = performance.now();
@@ -265,7 +265,7 @@ function startDemo() {
 
   trainer = makeTrainer();
   resetHud();
-  setStatus('Demo — a scripted side-on boxer (jabs, crosses, hooks, uppercuts) streamed in real time.');
+  setStatus('Demo: a scripted side-on boxer (jabs, crosses, hooks, uppercuts) streamed in real time.');
   setDemoButton(true);
 
   const frames = generateSyntheticTrack();           // 9 s @120 fps
@@ -302,14 +302,14 @@ function stopEverything() {
 }
 
 function resetHud() {
-  dom.ringScore.textContent = '—'; dom.ringScore.style.color = '';
+  dom.ringScore.textContent = '·'; dom.ringScore.style.color = '';
   dom.ringFg.style.strokeDashoffset = String(RING_C); dom.ringFg.style.stroke = 'var(--muted)';
-  dom.lastType.textContent = '—';
+  dom.lastType.textContent = '·';
   dom.dims.innerHTML = '';
   dom.notes.innerHTML = 'Your per-punch coaching feedback will appear here.';
   dom.feed.innerHTML = '<div class="feed-empty">No punches yet.</div>';
-  dom.stPunches.textContent = '0'; dom.stAvg.textContent = '—';
-  dom.stBest.textContent = '—'; dom.stCombo.textContent = '0';
+  dom.stPunches.textContent = '0'; dom.stAvg.textContent = '·';
+  dom.stBest.textContent = '·'; dom.stCombo.textContent = '0';
   dom.scoreFlash.hidden = true;
 }
 

@@ -24,9 +24,9 @@ if ('IntersectionObserver' in window) {
 const PROJECTS = {
   trainer: {
     status: 'Live demo', live: true, title: 'CV Punch Trainer',
-    problem: 'Power, speed, and accuracy come from consistent punching form — but inspecting every rep is time-consuming.',
+    problem: 'Power, speed, and accuracy come from consistent punching form, but inspecting every rep is time-consuming.',
     solution: 'Build an app that does it automatically.',
-    desc: 'A real-time, in-browser boxing-form coach. Your webcam feeds a pose model that reads 33 body landmarks per frame; my own biomechanics engine detects each punch and scores balance, guard, kinetic-chain sequencing, and retraction — with plain-language coaching notes. Everything runs locally, so the video never leaves your device. No webcam? A synthetic demo streams a boxer through the same pipeline.',
+    desc: 'A real-time, in-browser boxing-form coach. Your webcam feeds a pose model that reads 33 body landmarks per frame. My own biomechanics engine detects each punch and scores balance, guard, kinetic-chain sequencing, and retraction, with plain-language coaching notes. Everything runs locally, so the video never leaves your device. No webcam? A synthetic demo streams a boxer through the same pipeline.',
     tags: ['MediaPipe', 'Realtime CV', 'Biomechanics', 'Canvas'],
     link: './games/punch-trainer.html', linkLabel: 'Open the trainer →',
   },
@@ -34,7 +34,7 @@ const PROJECTS = {
     status: 'Defense · lead ME', title: 'SCORPION',
     problem: 'Drones can\'t carry heavy payloads for long periods of time.',
     solution: 'Create an attritable ground vehicle.',
-    desc: 'An expendable payload vehicle built at Raptor Defense Company, where I was the lead and sole mechanical engineer — owning the full mechanical design from concept to working prototype. I modeled the complete assembly in Onshape in 6 days, then manufactured and assembled it in 3. It delivered on spec: exceeding 50 mph (a conservative estimate), using under half of the R&D budget, and passing the preliminary test matrix.',
+    desc: 'An expendable payload vehicle built at Raptor Defense Company, where I was the lead and sole mechanical engineer. I owned the full mechanical design from concept to working prototype, modeled the complete assembly in Onshape in 6 days, then built and assembled it in 3. It came in over 50 mph (a conservative estimate), on under half the R&D budget, and passed the preliminary test matrix.',
     tags: ['Onshape', 'UGV', 'Defense hardware', 'Rapid prototyping'],
     model: './assets/models/full-v2-rear.glb',
     modelOrientation: '0deg -90deg 0deg', // Onshape Z-up → viewer Y-up (sits on its wheels)
@@ -45,7 +45,7 @@ const PROJECTS = {
     status: 'Vehicle design', title: 'FTAD Chassis',
     problem: 'Commercial RC cars aren\'t designed for modular aero components or custom optimization.',
     solution: 'Build one myself.',
-    desc: 'The reference race-car chassis for Formula Theory & Automotive Design — my F1-inspired engineering competition. A full independent-suspension platform (double-wishbone corners, coilover dampers, shaft drive) modeled in Onshape and Fusion 360, then refined with CFD and topology optimization to chase performance within a fixed spec.',
+    desc: 'The reference race-car chassis for Formula Theory & Automotive Design, my F1-inspired engineering competition. A full independent-suspension platform (double-wishbone corners, coilover dampers, shaft drive) modeled in Onshape and Fusion 360, then refined with CFD and topology optimization.',
     tags: ['Onshape', 'Fusion 360', 'CFD', 'Topology opt.'],
     imgs: ['./assets/car1.webp', './assets/car2.webp'],
   },
@@ -53,15 +53,15 @@ const PROJECTS = {
     status: 'World-qualified', title: 'VEX Robotics',
     problem: 'The Push Back game rewards tall bots with confident collision capabilities.',
     solution: 'Build for a low center of gravity, durable design, and speed.',
-    desc: 'Design lead and CAD specialist on a VEX Robotics Competition team that qualified for the VEX World Championship. I owned the mechanical design — drivetrain, structure, and scoring mechanisms — iterating the full robot in CAD before every build.',
+    desc: 'Design lead and CAD specialist on a VEX Robotics Competition team that qualified for the VEX World Championship. I owned the mechanical design (drivetrain, structure, and scoring mechanisms), iterating the full robot in CAD before every build.',
     tags: ['VEX', 'CAD', 'Drivetrain', 'Mechanism design'],
     img: './assets/vex.webp',
   },
   'fight-diagram': {
     status: 'Tool', title: 'Fight Diagram',
-    problem: 'Teaching spatial concepts is hard — younger fighters can\'t process descriptions as fast as speech.',
+    problem: 'Teaching spatial concepts is hard. Younger fighters can\'t process descriptions as fast as speech.',
     solution: 'Build a simple program that models positioning.',
-    desc: 'A single-file SVG diagrammer for boxing positioning and footwork. I built it to explain the intricacies of ring positioning — angles, stances, distance, and exchanges — to the younger fighters I coach, showing what words couldn\'t. It has since grown into a content-creation tool: I record sequences and export clean vector diagrams and videos to break down technique for a wider audience.',
+    desc: 'A single-file SVG diagrammer for boxing positioning and footwork. I built it to explain ring positioning (angles, stances, distance, and exchanges) to the younger fighters I coach. Now I also use it to make content: I record sequences and export clean vector diagrams and videos to break down technique for a wider audience.',
     tags: ['SVG', 'Single-file', 'Vanilla JS'],
     img: './assets/fightdiagram.png',
   },
@@ -174,7 +174,7 @@ if (modal) {
           });
         } else {
           pmImg.src = item.src;
-          pmImg.alt = p.title + ' — render';
+          pmImg.alt = p.title + ' render';
         }
         [...pmThumbs.children].forEach((b) => b.classList.toggle('active', b.dataset.src === item.src));
       };
