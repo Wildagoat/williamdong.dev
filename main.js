@@ -152,11 +152,16 @@ if (modal) {
       pmModel.hidden = true;
       pmModel.removeAttribute('src');
       pmImg.hidden = true;
+      pmImg.classList.remove('is-loaded');
       pmImg.removeAttribute('src');
+      delete pmImg.dataset.src;
     } else {
       modal.classList.remove('no-media');
       // If a render fails to load AND it's our only media, hide the panel gracefully.
       pmImg.onerror = () => { if (items.length === 1) modal.classList.add('no-media'); };
+      // Reveal a render only once IT has decoded, so switching projects never
+      // flashes the previously-loaded image (see the guarded swap in showItem).
+      pmImg.onload = () => pmImg.classList.add('is-loaded');
 
       const showItem = (item) => {
         const isModel = item.type === 'model';
@@ -173,8 +178,16 @@ if (modal) {
             if (pmModel.getAttribute('src') !== item.src) pmModel.setAttribute('src', item.src);
           });
         } else {
-          pmImg.src = item.src;
           pmImg.alt = p.title + ' render';
+          // Swap the render only when it actually changes, and drop the old
+          // image first so the panel can't paint the previous project's photo
+          // while the new file downloads. `is-loaded` fades it back in onload.
+          if (pmImg.dataset.src !== item.src) {
+            pmImg.dataset.src = item.src;
+            pmImg.classList.remove('is-loaded');
+            pmImg.removeAttribute('src');
+            pmImg.src = item.src;
+          }
         }
         [...pmThumbs.children].forEach((b) => b.classList.toggle('active', b.dataset.src === item.src));
       };
@@ -242,8 +255,10 @@ if (modal) {
       if (track) track.classList.toggle('has-pinned', !wasPinned);
     };
     item.addEventListener('click', (e) => {
-      // clicking inside an already-open blurb (e.g. to read/select) shouldn't close it
-      if (item.classList.contains('tl-pinned') && e.target.closest('.tl-note')) return;
+      // On desktop, clicking inside an already-open blurb (to read/select text) shouldn't close it.
+      // On touch there's no hover-peek and the note fills the tap area, so let a tap close it.
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      if (!coarse && item.classList.contains('tl-pinned') && e.target.closest('.tl-note')) return;
       toggle();
     });
     item.addEventListener('keydown', (e) => {
