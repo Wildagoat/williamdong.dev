@@ -65,6 +65,15 @@ const PROJECTS = {
     tags: ['SVG', 'Single-file', 'Vanilla JS'],
     img: './assets/fightdiagram.png',
   },
+  cycloidal: {
+    status: 'FeatureScript · parametric', title: 'Cycloidal Drive FS',
+    problem: 'A cycloidal disk is the heart of a cycloidal reducer, but its lobed profile is a true epicycloid — painful to draw by hand, and standard sketches don\'t rebuild cleanly when the drive ratio or eccentricity changes.',
+    solution: 'Author an Onshape FeatureScript that derives the whole disk straight from the drivetrain geometry.',
+    desc: 'A custom Onshape feature that generates a complete cycloidal reducer disk from first principles. The user sets the real drive parameters — base circle diameter, rolling-circle diameter (which fixes the lobe count and reduction ratio), pin eccentricity, load-pin diameter and pitch, center bore, and thickness — and the script sweeps the epicycloid path, offsets it for the pin radius, then cuts the eccentric center bore and the load-pin holes in one parametric, fully-associative feature. It encodes the cycloidal-drive math directly: lobe count is the base/rolling ratio, the eccentricity sets the contact offset, and the load holes are placed on their pitch circle so the whole disk regenerates correctly at any ratio. Writing it meant treating the reducer geometry as equations rather than sketches — a distillation of both my CAD workflow and my understanding of how cycloidal drivetrains actually transmit torque.',
+    tags: ['FeatureScript', 'Onshape', 'Cycloidal drive', 'Parametric CAD', 'Mechanical design'],
+    img: './assets/cycloidalfs.webp',
+    link: './assets/cycloidal-drive.fs', linkLabel: 'View the FeatureScript →',
+  },
 };
 
 const modal = document.getElementById('projModal');
