@@ -188,6 +188,7 @@ if (modal) {
           });
         } else {
           pmImg.alt = p.title + ' render';
+          pmImg.classList.add('zoomable'); // click to open the near-fullscreen lightbox
           // Swap the render only when it actually changes, and drop the old
           // image first so the panel can't paint the previous project's photo
           // while the new file downloads. `is-loaded` fades it back in onload.
@@ -244,9 +245,41 @@ if (modal) {
   });
 
   modal.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', closeModal));
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) closeModal();
-  });
+
+  // ---- Lightbox: click a project render to pop it out near-fullscreen ----
+  const lightbox = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lbImg');
+  let lbLastFocus = null;
+  if (lightbox && lbImg) {
+    const openLightbox = () => {
+      const src = pmImg.currentSrc || pmImg.getAttribute('src');
+      if (!src) return;
+      lbLastFocus = document.activeElement;
+      lbImg.src = src;
+      lbImg.alt = pmImg.alt || '';
+      lightbox.hidden = false;
+      lightbox.querySelector('.lightbox-x').focus();
+    };
+    const closeLightbox = () => {
+      lightbox.hidden = true;
+      lbImg.removeAttribute('src');
+      if (lbLastFocus && typeof lbLastFocus.focus === 'function') lbLastFocus.focus();
+    };
+    // The render itself is the only zoomable media (the 3D model has its own controls).
+    pmImg.addEventListener('click', () => { if (!pmImg.hidden) openLightbox(); });
+    lightbox.querySelectorAll('[data-lb-close]').forEach((el) => el.addEventListener('click', closeLightbox));
+    lbImg.addEventListener('click', closeLightbox);
+    // Escape closes the lightbox first (leaving the project modal open), then the modal.
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!lightbox.hidden) closeLightbox();
+      else if (!modal.hidden) closeModal();
+    });
+  } else {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeModal();
+    });
+  }
 }
 
 // ---- Timeline: click a node to pin its blurb open (single-select; ringed while pinned) ----

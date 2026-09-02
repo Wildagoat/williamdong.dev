@@ -351,6 +351,7 @@ footer.foot .muted { color: var(--muted-2); font-size: 12px; }
 .modal.no-media .modal-media { display: none; }
 .modal-media > #pmImg { width: 100%; flex: 1; min-height: 0; object-fit: contain; padding: 18px; opacity: 0; transition: opacity .18s ease; }
 .modal-media > #pmImg.is-loaded { opacity: 1; }
+.modal-media > #pmImg.zoomable { cursor: zoom-in; }
 .modal-media > #pmModel {
   width: 100%; flex: 1; min-height: 340px;
   --poster-color: transparent;
@@ -376,6 +377,25 @@ footer.foot .muted { color: var(--muted-2); font-size: 12px; }
 .pm-thumbs button.thumb-3d::after { content: "\00B7 spin"; font-size: 9px; color: var(--muted); margin-left: 3px; }
 .pm-thumbs button.thumb-3d.active { opacity: 1; color: var(--text); }
 body.modal-open { overflow: hidden; }
+
+/* Lightbox: near-fullscreen render view, layered above the project modal */
+.lightbox { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: clamp(16px, 4vw, 48px); }
+.lightbox[hidden] { display: none; }
+.lightbox-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(6px); animation: modal-fade 0.18s ease; cursor: zoom-out; }
+.lightbox-img {
+  position: relative; z-index: 1; max-width: 94vw; max-height: 92vh;
+  object-fit: contain; border-radius: 6px; cursor: zoom-out;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5); animation: modal-pop 0.18s ease;
+}
+.lightbox-x {
+  position: absolute; top: 16px; right: 18px; z-index: 3;
+  width: 40px; height: 40px; border-radius: 999px; cursor: pointer;
+  display: grid; place-items: center; font-size: 22px; line-height: 1;
+  color: #fff; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.28);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.lightbox-x:hover { background: rgba(0, 0, 0, 0.6); border-color: rgba(255, 255, 255, 0.55); }
+
 @keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modal-pop { from { opacity: 0; transform: translateY(8px) scale(0.99); } to { opacity: 1; transform: none; } }
 @media (max-width: 680px) {
@@ -383,5 +403,5 @@ body.modal-open { overflow: hidden; }
   .modal-media { order: -1; border-left: 0; border-bottom: 1px solid var(--line); min-height: 200px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .modal-backdrop, .modal-card { animation: none; }
+  .modal-backdrop, .modal-card, .lightbox-backdrop, .lightbox-img { animation: none; }
 }
