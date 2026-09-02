@@ -39,7 +39,7 @@ const PROJECTS = {
     model: './assets/models/full-v2-rear.glb',
     modelOrientation: '0deg -90deg 0deg', // Onshape Z-up → viewer Y-up (sits on its wheels)
     modelOrbit: '30deg 72deg 105%',
-    img: './assets/scorpion.webp',
+    imgs: ['./assets/realscorpion.png', './assets/scorpion.webp'], // built prototype photo, then CAD render
   },
   ftad: {
     status: 'Vehicle design', title: 'FTAD Chassis',
@@ -72,7 +72,7 @@ const PROJECTS = {
     desc: 'A custom Onshape feature that generates a complete cycloidal reducer disk from first principles. The user sets the real drive parameters — base circle diameter, rolling-circle diameter (which fixes the lobe count and reduction ratio), pin eccentricity, load-pin diameter and pitch, center bore, and thickness — and the script sweeps the epicycloid path, offsets it for the pin radius, then cuts the eccentric center bore and the load-pin holes in one parametric, fully-associative feature. It encodes the cycloidal-drive math directly: lobe count is the base/rolling ratio, the eccentricity sets the contact offset, and the load holes are placed on their pitch circle so the whole disk regenerates correctly at any ratio. Writing it meant treating the reducer geometry as equations rather than sketches — a distillation of both my CAD workflow and my understanding of how cycloidal drivetrains actually transmit torque.',
     tags: ['FeatureScript', 'Onshape', 'Cycloidal drive', 'Parametric CAD', 'Mechanical design'],
     img: './assets/cycloidalfs.webp',
-    link: './assets/cycloidal-drive.fs', linkLabel: 'View the FeatureScript →',
+    link: 'https://github.com/Wildagoat/cycloidal-drive-featurescript', linkLabel: 'View on GitHub →',
   },
 };
 
@@ -141,6 +141,7 @@ if (modal) {
       a.className = 'btn btn-primary';
       a.href = p.link;
       a.textContent = p.linkLabel || 'Open';
+      if (/^https?:/i.test(p.link)) { a.target = '_blank'; a.rel = 'noopener'; }
       pmActions.appendChild(a);
     }
 
