@@ -1,63 +1,91 @@
-# William Dong — personal site
+<div align="center">
 
-A static personal site (no build step) with a flagship, in-browser **CV Punch Trainer**
-that grades boxing form in real time. Vanilla HTML/CSS/ES-modules; deploys to Vercel by
-serving the folder as-is.
+# William Dong — Personal Site
 
-## Structure
+**Engineer, builder, and competitive boxer.** A static, no-build personal site with a
+flagship, in-browser **CV Punch Trainer** that grades boxing form in real time.
 
-```
-portfolio/
-  index.html            Landing page (hero, projects, about, contact)
-  styles.css            Design tokens + landing styles (shared)
-  main.js               Landing interactions (nav, reveal-on-scroll)
-  games/
-    punch-trainer.html  The CV Punch Trainer page
-    punch-trainer.js    Real-time control + HUD
-    trainer.css         Trainer HUD styles
-    engine/             Vendored analyzer (from the Kodawari project)
-      pose.js           MediaPipe BlazePose wrapper (CDN, GPU)
-      biomech.js        de Leva CoM, base of support, per-frame features
-      detect.js         Punch detection + jab/cross/hook/uppercut classifier
-      scoring.js        Five-dimension technique scoring + coaching notes
-      live.js           Streaming layer: batch analyzer → real-time trainer
-      config.js vec.js filters.js dtw.js overlay.js synth.js
-  vercel.json           cleanUrls + camera permissions-policy
-```
+[![Live site](https://img.shields.io/badge/Live-williamdong.dev-2f5480?style=for-the-badge)](https://williamdong.dev)
+&nbsp;
+[![Try the trainer](https://img.shields.io/badge/Demo-CV_Punch_Trainer-46b56b?style=for-the-badge)](https://williamdong.dev/games/punch-trainer)
 
-The trainer's analysis engine is vendored from **Kodawari**
-(`../kodawari/src`) — the same `pose → features → detection → scoring` pipeline —
-with a thin `engine/live.js` streaming wrapper added on top. To pull upstream fixes,
-re-copy the engine files from `kodawari/src` (all except `app.js`, `charts.js`, `backend.js`,
-`pipeline.js`).
+![Homepage of williamdong.dev](assets/readme-hero.png)
 
-## Run locally
+![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-f7df1e?logo=javascript&logoColor=black&style=flat-square)
+![ES Modules](https://img.shields.io/badge/ES_Modules-no_build-5e5e66?style=flat-square)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-BlazePose-0097a7?style=flat-square)
+![Deployed on Vercel](https://img.shields.io/badge/Vercel-deployed-000?logo=vercel&logoColor=white&style=flat-square)
 
-Any static server works (ES modules need http, not `file://`):
+</div>
+
+---
+
+## ✨ Highlights
+
+- **Real-time CV boxing coach** — your webcam feeds a pose model (33 landmarks/frame); a
+  custom biomechanics engine detects each punch and scores it, all **locally in the browser**.
+- **Zero build step** — hand-written HTML, CSS, and ES modules. Clone it and open it.
+- **Interactive touches** — a spinning CAD backdrop, project detail modals with live 3D
+  models, and a hidden drift game (press <kbd>G</kbd>).
+- **Fast by default** — the homepage ships no WebGL; heavy libraries load on demand.
+
+## 🥊 CV Punch Trainer (the flagship)
+
+A real-time, in-browser boxing-form coach. No install, no upload — the video never leaves
+your device.
+
+- **Pose** — MediaPipe BlazePose reads 33 body landmarks per frame on the GPU.
+- **Biomechanics** — de Leva center-of-mass, base of support, and per-frame features.
+- **Detection** — punch detection with a jab / cross / hook / uppercut classifier.
+- **Scoring** — five-dimension technique scoring (balance, guard, kinetic-chain sequencing,
+  retraction) with plain-language coaching notes.
+- **No webcam?** A **demo** button runs the whole pipeline offline on a synthetic boxer.
+
+The analysis engine is vendored from my **Kodawari** project — the same
+`pose → features → detection → scoring` pipeline — with a thin streaming wrapper
+(`engine/live.js`) added on top for real-time use.
+
+## 🛠 Built with
+
+Vanilla **HTML · CSS · JavaScript (ES modules)** · **MediaPipe BlazePose** ·
+`<model-viewer>` for 3D CAD · deployed on **Vercel**. No framework, no bundler.
+
+## 🚀 Run locally
+
+ES modules need `http` (not `file://`), so serve the folder with any static server:
 
 ```bash
 python -m http.server 4176
-# then open http://localhost:4176/
 ```
 
-The Claude Code launch config **`portfolio`** (port 4176) does the same. `localhost` is a
-secure context, so the webcam works from the dev server. The pose model loads from a CDN on
-first use; the **demo** button runs the whole pipeline offline with a synthetic boxer.
+Then open <http://localhost:4176/>. `localhost` is a secure context, so the webcam works from
+the dev server; the pose model loads from a CDN on first use.
 
-## Deploy to Vercel
+## 📦 Deploy
 
-No framework — it's static. Easiest paths:
+It's fully static — no framework preset needed.
 
-- **Git:** push this folder to a repo and import it in Vercel (Framework preset: *Other*,
-  no build command, output = the folder root).
-- **CLI:** from this folder, `vercel` (first run) then `vercel --prod`.
+- **Git:** import the repo in Vercel (Framework preset *Other*, no build command, output = repo root).
+- **CLI:** `vercel` (first run), then `vercel --prod`.
 
-`vercel.json` sets `cleanUrls` (so `/games/punch-trainer` works) and a
+`vercel.json` sets `cleanUrls` (so `/games/punch-trainer` resolves) and a
 `Permissions-Policy: camera=(self)` header for the webcam.
 
-## TODO (needs your input)
+## 🗂 Structure
 
-- Real bio + focus text in **About** (currently placeholder).
-- Real experience & education entries in the timeline (from your LinkedIn/résumé).
-- Your **GitHub** URL in the contact section.
-- Real project links (repos or live demos) on the project cards.
+```
+index.html            Landing page (hero, projects, story, contact)
+styles.css            Design tokens + landing styles
+main.js               Landing interactions (reveal-on-scroll, project modals)
+drift.js              The cursor-becomes-a-drift-car easter egg
+games/
+  punch-trainer.html  The CV Punch Trainer page
+  punch-trainer.js    Real-time control + HUD
+  engine/             Vendored analyzer (pose · biomech · detect · scoring · live)
+vercel.json           cleanUrls + camera permissions-policy
+assets/               Renders, 3D models, and résumé PDF
+```
+
+<div align="center">
+<sub>Built by William Dong · <a href="https://williamdong.dev">williamdong.dev</a></sub>
+</div>
