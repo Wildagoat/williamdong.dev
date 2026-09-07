@@ -74,6 +74,15 @@ const PROJECTS = {
     img: './assets/cycloidalfs.webp',
     link: 'https://github.com/Wildagoat/cycloidal-drive-featurescript', linkLabel: 'View on GitHub →',
   },
+  miller: {
+    status: 'Live demo', live: true, title: 'Miller Indices Visualizer',
+    problem: 'Reading a crystallographic plane off a flat textbook diagram is hard, especially the four-axis hexagonal system, where the plane normal is not simply [hkl].',
+    solution: 'Draw the plane live inside the unit cell so you can rotate it and watch exactly where it cuts the axes.',
+    desc: 'An interactive 3D tool for visualizing crystallographic planes from their Miller indices, for both cubic (h k l) and hexagonal Miller–Bravais (h k i l) systems. Type in a set of indices and it draws the corresponding plane inside the unit cell, clipped correctly to the cell geometry, with the d-spacing and axis intercepts marked. I built it as a study supplement for my materials science course: being able to rotate the actual plane and watch where it cuts the axes is what made the notation click for me. Under the hood it uses a reciprocal-space normal (g = (A⁻¹)ᵀ·[hkl]) to get the hexagonal case right, then clips the infinite plane against the cell and orders the intersection into a polygon. It runs entirely in the browser as one self-contained file, and I plan to keep extending it as the course goes deeper.',
+    tags: ['Three.js', 'WebGL', 'Crystallography', 'Computational geometry', 'Single-file'],
+    link: './games/miller-indices.html', linkLabel: 'Open the visualizer →',
+    repo: 'https://github.com/Wildagoat/miller-indices-visualizer', repoLabel: 'View on GitHub →',
+  },
 };
 
 const modal = document.getElementById('projModal');
@@ -136,14 +145,18 @@ if (modal) {
     });
 
     pmActions.innerHTML = '';
-    if (p.link) {
+    // Primary action (a live demo, or a single external link), plus an optional
+    // secondary `repo` link (e.g. a live-hosted tool that also has a GitHub page).
+    const addAction = (href, label, primary) => {
       const a = document.createElement('a');
-      a.className = 'btn btn-primary';
-      a.href = p.link;
-      a.textContent = p.linkLabel || 'Open';
-      if (/^https?:/i.test(p.link)) { a.target = '_blank'; a.rel = 'noopener'; }
+      a.className = 'btn ' + (primary ? 'btn-primary' : 'btn-ghost');
+      a.href = href;
+      a.textContent = label;
+      if (/^https?:/i.test(href)) { a.target = '_blank'; a.rel = 'noopener'; }
       pmActions.appendChild(a);
-    }
+    };
+    if (p.link) addAction(p.link, p.linkLabel || 'Open', true);
+    if (p.repo) addAction(p.repo, p.repoLabel || 'View on GitHub →', false);
 
     // Media: a switchable panel that can hold an interactive 3D model and/or render(s).
     // `model` (glb path) becomes the first, default media item; `imgs`/`img` add still renders.

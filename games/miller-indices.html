@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Miller Indices Visualizer</title>
+<style>
+  :root{
+    --bg:#07080a; --panel:#0f1113; --panel2:#16191d; --line:#262b31;
+    --ink:#e8ece9; --muted:#8a938c; --accent:#43d17a; --accent2:#e0a44a;
+    --plane:#ff4d94; --bad:#ff6b6b; --good:#43d17a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+  #app{display:flex;height:100%}
+  #panel{width:320px;flex:0 0 320px;background:var(--panel);border-right:1px solid var(--line);
+    padding:18px;overflow-y:auto}
+  #stage{flex:1;position:relative}
+  canvas{display:block}
+  h1{font-size:16px;margin:0 0 2px;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:12px;margin:0 0 18px}
+  .seg{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);
+    border-radius:8px;padding:3px;margin-bottom:18px}
+  .seg button{flex:1;border:0;background:transparent;color:var(--muted);
+    padding:8px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px}
+  .seg button.on{background:var(--accent);color:#04140b}
+  #viewSeg button{font-size:11px;padding:7px 2px}
+  #pasteBar{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:10px 12px;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;
+    letter-spacing:.5px}
+  #pasteBar::placeholder{color:var(--muted);font-weight:400;letter-spacing:0}
+  #pasteBar:focus{outline:none;border-color:var(--accent)}
+  #pasteBar.bad{border-color:var(--bad)}
+  #pasteBar.ok{border-color:var(--good)}
+  #camState{width:100%;background:#0c1017;border:1px solid var(--line);color:var(--good);
+    border-radius:6px;padding:8px;font:11px/1.45 ui-monospace,Menlo,Consolas,monospace;
+    resize:vertical;word-break:break-all}
+  #camState:focus{outline:none;border-color:var(--accent)}
+  label.fld{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--muted);margin:0 0 6px}
+  .idx{display:flex;gap:8px;margin-bottom:6px}
+  .idx .cell{flex:1;text-align:center}
+  .idx .cell .nm{font-size:10px;color:var(--muted);margin-bottom:3px}
+  .idx input{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:6px;padding:9px 4px;text-align:center;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+  .idx input:focus{outline:none;border-color:var(--accent)}
+  .idx input.derived{color:var(--accent2);background:#141a15;border-color:#2f3a24}
+  .hint{font-size:11px;color:var(--muted);margin:0 0 16px}
+  .hint code{color:var(--accent2)}
+  .row{display:flex;gap:8px;margin-bottom:16px}
+  .row button{flex:1;border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+    padding:9px;border-radius:7px;cursor:pointer;font-weight:600}
+  .row button.primary{background:var(--accent);color:#04140b;border-color:var(--accent)}
+  .row button:hover{border-color:var(--accent)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 18px}
+  .presets button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);
+    border-radius:20px;padding:4px 11px;font-size:12px;cursor:pointer;font-variant-numeric:tabular-nums}
+  .presets button:hover{border-color:var(--accent);color:var(--ink)}
+  .info{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+  .info h2{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+  .kv{display:flex;justify-content:space-between;padding:3px 0;font-variant-numeric:tabular-nums}
+  .kv .k{color:var(--muted)}
+  .kv .v{font-weight:600}
+  .err{color:var(--bad);font-size:12px;min-height:16px;margin-bottom:8px}
+  .toggles label{display:flex;align-items:center;gap:8px;color:var(--muted);
+    font-size:12px;padding:4px 0;cursor:pointer}
+  .toggles input{accent-color:var(--accent)}
+  #hud{position:absolute;left:14px;bottom:12px;color:var(--muted);font-size:11px;
+    background:rgba(14,17,22,.6);padding:6px 10px;border-radius:6px;pointer-events:none}
+  .bar{position:relative;top:-2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="panel">
+    <h1>Miller Indices Visualizer</h1>
+    <p class="sub">Enter indices to see the plane inside the crystal cell.</p>
+
+    <div class="seg" id="sysSeg">
+      <button data-sys="cubic" class="on">Cubic</button>
+      <button data-sys="hex">Hexagonal</button>
+    </div>
+
+    <label class="fld">Paste index</label>
+    <input id="pasteBar" spellcheck="false" autocomplete="off"
+      placeholder="(1 1 -2 1)   ·   (10-10)   ·   (111)">
+    <p class="hint" id="pasteMsg" style="margin:5px 0 16px">Paste <code>(hkl)</code> or <code>(hkil)</code>; use <code>-</code> for negatives. Editing a field below clears this.</p>
+
+    <label class="fld" id="idxLabel">Miller indices (h k l)</label>
+    <div class="idx" id="idxWrap"></div>
+    <p class="hint" id="idxHint"></p>
+
+    <div class="presets" id="presets"></div>
+
+    <div class="err" id="err"></div>
+    <div class="row">
+      <button class="primary" id="gen">Generate plane</button>
+      <button id="reset">Reset view</button>
+    </div>
+
+    <label class="fld" style="margin-top:4px">Camera view</label>
+    <div class="seg" id="viewSeg">
+      <button data-view="iso" class="on">Isometric</button>
+      <button data-view="top">Top (c)</button>
+      <button data-view="front">Front</button>
+      <button data-view="normal">⊥ plane</button>
+    </div>
+
+    <div class="info" id="readout"></div>
+
+    <div class="info toggles">
+      <h2>Display</h2>
+      <label><input type="checkbox" id="tAtoms" checked> Lattice atoms</label>
+      <label><input type="checkbox" id="tNormal" checked> Plane normal [hkl]</label>
+      <label><input type="checkbox" id="tIntercept" checked> Axis intercepts</label>
+      <label><input type="checkbox" id="tSpin"> Auto-rotate</label>
+    </div>
+
+    <div class="info">
+      <h2>Camera debug</h2>
+      <p class="hint" style="margin:-2px 0 8px">Orbit to your angle, Copy, and send me the text. Paste a saved state and hit Apply to reproduce it exactly.</p>
+      <textarea id="camState" rows="4" spellcheck="false"></textarea>
+      <div class="row" style="margin:8px 0 0">
+        <button id="camApply" class="primary">Apply</button>
+        <button id="camCopy">Copy</button>
+      </div>
+      <p class="hint" id="camMsg" style="margin:8px 0 0;min-height:14px"></p>
+    </div>
+  </div>
+  <div id="stage">
+    <div id="hud">drag: rotate &nbsp;•&nbsp; scroll: zoom &nbsp;•&nbsp; right-drag: pan</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ---------- linear algebra helpers (column-vector 3x3) ---------- */
+// matrix stored as [col0, col1, col2], each col = [x,y,z]
+function matVec(M,v){
+  return [
+    M[0][0]*v[0]+M[1][0]*v[1]+M[2][0]*v[2],
+    M[0][1]*v[0]+M[1][1]*v[1]+M[2][1]*v[2],
+    M[0][2]*v[0]+M[1][2]*v[1]+M[2][2]*v[2]
+  ];
+}
+function inv3(M){
+  const a=M[0][0],b=M[1][0],c=M[2][0],
+        d=M[0][1],e=M[1][1],f=M[2][1],
+        g=M[0][2],h=M[1][2],i=M[2][2];
+  const A=e*i-f*h, B=-(d*i-f*g), C=d*h-e*g,
+        D=-(b*i-c*h), E=a*i-c*g, F=-(a*h-b*g),
+        G=b*f-c*e, H=-(a*f-c*d), I=a*e-b*d;
+  const det=a*A+b*B+c*C;
+  // inverse columns
+  return [
+    [A/det, D/det, G/det],
+    [B/det, E/det, H/det],
+    [C/det, F/det, I/det]
+  ];
+}
+function transpose(M){
+  return [
+    [M[0][0],M[1][0],M[2][0]],
+    [M[0][1],M[1][1],M[2][1]],
+    [M[0][2],M[1][2],M[2][2]]
+  ];
+}
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const scl=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>Math.hypot(a[0],a[1],a[2]);
+const normalize=a=>{const n=norm(a);return n<1e-12?[0,0,0]:scl(a,1/n);};
+
+/* ---------- three.js scene ---------- */
+const stage=document.getElementById('stage');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x07080a);
+const camera=new THREE.PerspectiveCamera(45, 1, 0.01, 1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+stage.appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0xffffff,0.75));
+const dl=new THREE.DirectionalLight(0xffffff,0.6); dl.position.set(4,6,5); scene.add(dl);
+const dl2=new THREE.DirectionalLight(0xffffff,0.25); dl2.position.set(-4,-2,-3); scene.add(dl2);
+
+const world=new THREE.Group(); scene.add(world);      // holds cell + plane, recentred
+// orient so the crystallographic vertical (data +Z, i.e. the c-axis) points UP on screen.
+// data +Z -> world +Y, so the basal plane (data z=0) becomes the horizontal floor.
+world.rotation.x = -Math.PI/2;
+let spin=false;
+let normalWorld=[0,1,0];   // current plane normal, in on-screen world coords
+let curView='iso';
+
+// simple orbit camera (Y-up spherical). theta=azimuth, phi=polar from +Y.
+const cam={theta:Math.PI/4, phi:0.955, r:4.2, target:new THREE.Vector3(0,0,0)};
+function applyCam(){
+  const x=cam.r*Math.sin(cam.phi)*Math.cos(cam.theta);
+  const y=cam.r*Math.cos(cam.phi);
+  const z=cam.r*Math.sin(cam.phi)*Math.sin(cam.theta);
+  camera.position.set(x+cam.target.x, y+cam.target.y, z+cam.target.z);
+  camera.lookAt(cam.target);
+  updateCamDebug();
+}
+// live camera-state readout (skips while the box is focused so you can paste into it)
+function updateCamDebug(){
+  const ta=document.getElementById('camState');
+  if(!ta || document.activeElement===ta) return;
+  const p=camera.position, t=cam.target, r4=x=>Math.round(x*1e4)/1e4;
+  ta.value=JSON.stringify({
+    pos:[r4(p.x),r4(p.y),r4(p.z)], target:[r4(t.x),r4(t.y),r4(t.z)],
+    theta:r4(cam.theta), phi:r4(cam.phi), r:r4(cam.r), sys:sysMode, view:curView
+  });
+}
+// camera-view presets. r is kept from the current cell fit.
+function setView(name){
+  curView=name;
+  cam.target.set(0,0,0);
+  if(name==='iso'){          // classic isometric: c up, basal plane as floor
+    if(sysMode==='hex'){ cam.theta=-0.6066; cam.phi=0.971; }  // a1 toward lower-left
+    else { cam.theta=-0.7854; cam.phi=0.97; }   // cubic corner-on: origin far-bottom-centre, x lower-left, y lower-right, z up
+  }else if(name==='top'){    // straight down the c-axis onto the basal plane
+    cam.theta=Math.PI/4; cam.phi=0.017;
+  }else if(name==='front'){  // side-on, c vertical
+    cam.theta=Math.PI/2; cam.phi=Math.PI/2-0.001;
+  }else if(name==='normal'){ // look straight down the plane normal [hkl]
+    const D=normalize(normalWorld);
+    cam.phi=Math.acos(Math.max(-1,Math.min(1,D[1])));
+    cam.theta=Math.atan2(D[2],D[0]);
+    if(cam.phi<0.01)cam.phi=0.01;
+  }
+  applyCam();
+}
+(function orbit(){
+  let mode=null,px=0,py=0;
+  const el=renderer.domElement;
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+  el.addEventListener('mousedown',e=>{mode=e.button===2?'pan':'rot';px=e.clientX;py=e.clientY;});
+  window.addEventListener('mouseup',()=>mode=null);
+  window.addEventListener('mousemove',e=>{
+    if(!mode)return;
+    const dx=e.clientX-px, dy=e.clientY-py; px=e.clientX; py=e.clientY;
+    if(mode==='rot'){
+      cam.theta-=dx*0.008;
+      cam.phi=Math.max(0.05,Math.min(Math.PI-0.05,cam.phi-dy*0.008));
+    }else{
+      const right=new THREE.Vector3().subVectors(camera.position,cam.target).cross(camera.up).normalize();
+      const up=camera.up.clone();
+      const k=cam.r*0.0018;
+      cam.target.addScaledVector(right,-dx*k);
+      cam.target.addScaledVector(up, dy*k);
+    }
+    applyCam();
+  });
+  el.addEventListener('wheel',e=>{e.preventDefault();
+    cam.r=Math.max(1.2,Math.min(40,cam.r*(1+Math.sign(e.deltaY)*0.1)));applyCam();
+  },{passive:false});
+})();
+
+function resize(){
+  const w=stage.clientWidth,h=stage.clientHeight;
+  renderer.setSize(w,h); renderer.setPixelRatio(Math.min(2,devicePixelRatio));
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+
+/* ---------- geometry builders ---------- */
+// A cell = { verts:[[x,y,z]...], edges:[[i,j]...], A:[a1,a2,c] lattice matrix (cols),
+//            axes:[{vec,label,color}], atomFrac:[[u,v,w]...] }
+// parallelepiped spanned by v1,v2,v3 based at O -> {verts,edges}. This is the PRIMITIVE
+// cell the Miller plane's characteristic polygon is clipped against.
+function parallelepiped(O,v1,v2,v3){
+  const V=[]; const idx=(u,v,w)=>u+2*v+4*w;
+  for(let w=0;w<2;w++)for(let v=0;v<2;v++)for(let u=0;u<2;u++)
+    V.push([O[0]+u*v1[0]+v*v2[0]+w*v3[0], O[1]+u*v1[1]+v*v2[1]+w*v3[1], O[2]+u*v1[2]+v*v2[2]+w*v3[2]]);
+  const E=[];
+  for(let w=0;w<2;w++)for(let v=0;v<2;v++)E.push([idx(0,v,w),idx(1,v,w)]);
+  for(let w=0;w<2;w++)for(let u=0;u<2;u++)E.push([idx(u,0,w),idx(u,1,w)]);
+  for(let v=0;v<2;v++)for(let u=0;u<2;u++)E.push([idx(u,v,0),idx(u,v,1)]);
+  return {verts:V,edges:E};
+}
+// unit clip cell placed in the OCTANT matching the signs of (h,k,l), so it always
+// contains the intercepts. Spanned by the lattice vectors (cell.A columns) from the
+// origin: axis j runs [0,1] when its index >=0, else [-1,0]. e.g. (-1-120) -> the
+// cell over -a1,-a2 => vertical plane through the -a1 and -a2 corners.
+function clipCellFor(cell,hkl){
+  const O=cell.origin, C=cell.A;                 // C[0]=a1/x, C[1]=a2/y, C[2]=c/z (columns)
+  const rng=hkl.map(m=> m>=0 ? [0,1] : [-1,0]);
+  const V=[]; const idx=(u,v,w)=>u+2*v+4*w;
+  for(let w=0;w<2;w++)for(let v=0;v<2;v++)for(let u=0;u<2;u++){
+    const cu=rng[0][u], cv=rng[1][v], cw=rng[2][w];
+    V.push([O[0]+cu*C[0][0]+cv*C[1][0]+cw*C[2][0],
+            O[1]+cu*C[0][1]+cv*C[1][1]+cw*C[2][1],
+            O[2]+cu*C[0][2]+cv*C[1][2]+cw*C[2][2]]);
+  }
+  const E=[];
+  for(let w=0;w<2;w++)for(let v=0;v<2;v++)E.push([idx(0,v,w),idx(1,v,w)]);
+  for(let w=0;w<2;w++)for(let u=0;u<2;u++)E.push([idx(u,0,w),idx(u,1,w)]);
+  for(let v=0;v<2;v++)for(let u=0;u<2;u++)E.push([idx(u,v,0),idx(u,v,1)]);
+  return {verts:V,edges:E};
+}
+function cubicCell(){
+  const a=1;
+  const A=[[a,0,0],[0,a,0],[0,0,a]];
+  const V=[[0,0,0],[a,0,0],[a,a,0],[0,a,0],[0,0,a],[a,0,a],[a,a,a],[0,a,a]];
+  const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  const axes=[
+    {vec:[a,0,0],label:'x',color:0xff6b6b},
+    {vec:[0,a,0],label:'y',color:0x7ee787},
+    {vec:[0,0,a],label:'z',color:0xb08bf0}
+  ];
+  const atoms=[];
+  for(const v of V) atoms.push(v.slice());
+  // cubic primitive cell = the cube itself
+  return {A,verts:V,edges:E,axes,atoms,origin:[0,0,0],clip:{verts:V,edges:E}};
+}
+function hexCell(){
+  const a=1, c=1.2;
+  const a1=[a,0,0], a2=[-a/2, a*Math.SQRT3/2||a*Math.sqrt(3)/2,0], cc=[0,0,c];
+  const A=[a1,a2,cc];
+  // hexagon corner directions (radius a) at 0,60,...300 deg
+  const corners=[];
+  for(let k=0;k<6;k++){const ang=k*Math.PI/3;corners.push([a*Math.cos(ang),a*Math.sin(ang),0]);}
+  const V=[]; // bottom 0..5, top 6..11
+  for(const p of corners) V.push([p[0],p[1],0]);
+  for(const p of corners) V.push([p[0],p[1],c]);
+  const E=[];
+  for(let k=0;k<6;k++){E.push([k,(k+1)%6]);E.push([6+k,6+(k+1)%6]);E.push([k,6+k]);}
+  const sq=Math.sqrt(3)/2;
+  const axes=[
+    {vec:a1,label:'a₁',color:0xff6b6b},
+    {vec:a2,label:'a₂',color:0x7ee787},
+    {vec:[-a/2,-a*sq,0],label:'a₃',color:0xf7b955},  // a3 = -(a1+a2): 0/120/240 deg, 120 apart
+    {vec:cc,label:'c',color:0xb08bf0}
+  ];
+  const atoms=V.map(v=>v.slice());
+  atoms.push([0,0,0],[0,0,c]); // center column
+  // primitive cell = parallelepiped(a1,a2,c) at the basal centre -> plane clips to the
+  // a1/a2/c intercepts, e.g. (11-21) => triangle through a1 corner, a2 corner, top centre
+  const clip=parallelepiped([0,0,0],a1,a2,cc);
+  return {A,verts:V,edges:E,axes,atoms,origin:[0,0,0],hex:true,c,clip};
+}
+
+/* ---------- plane computation & polygon clipping ---------- */
+// Given cell + indices, plane is g.r = 1 where g = (A^-1)^T [h,k,l].
+// Clip that infinite plane against the convex cell polyhedron -> ordered polygon.
+function planePolygon(cell, hkl){
+  const g = matVec(inv3(cell.A), hkl);   // reciprocal-space normal g = (A^-1)^T[hkl]; inv3 already returns (A^-1)^T here
+  const gn = norm(g);
+  if(gn<1e-9) return null;
+  // choose the clip region for hex:
+  //  - if ANY index is zero (h,k,i=-(h+k), or l) the plane is parallel to that axis and
+  //    must run the full width of the cell along it -> clip to the whole hexagonal prism.
+  //    e.g. (0001) => full basal hexagon; (10-11) => runs a2 to -a2; (2-1-10) => -a2 to -a3.
+  //  - if all four indices are nonzero it's a corner plane -> clip to the intercept octant
+  //    (gives the a1/a2/top triangle for (11-21)).
+  let clip;
+  if(cell.hex){
+    const parallel = (hkl[0]===0 || hkl[1]===0 || (hkl[0]+hkl[1])===0 || hkl[2]===0);
+    clip = parallel ? {verts:cell.verts, edges:cell.edges} : clipCellFor(cell, hkl);
+  } else {
+    clip = clipCellFor(cell, hkl);
+  }
+  const pts=[];
+  for(const [i,j] of clip.edges){
+    const p=clip.verts[i], q=clip.verts[j];
+    const dp=dot(g,p)-1, dq=dot(g,q)-1;
+    if(Math.abs(dp)<1e-9){pushUnique(pts,p);}
+    if(Math.abs(dq)<1e-9){pushUnique(pts,q);}
+    if(dp*dq<0){
+      const t=dp/(dp-dq);
+      pushUnique(pts, add(p, scl(sub(q,p),t)));
+    }
+  }
+  if(pts.length<3) return {poly:[],g,gn,empty:true};
+  // order points around normal
+  const n=normalize(g);
+  const cen=scl(pts.reduce((s,p)=>add(s,p),[0,0,0]),1/pts.length);
+  let u=sub(pts[0],cen); u=sub(u,scl(n,dot(u,n))); u=normalize(u);
+  const w=cross(n,u);
+  pts.sort((p,q)=>{
+    const pa=sub(p,cen), qa=sub(q,cen);
+    return Math.atan2(dot(pa,w),dot(pa,u))-Math.atan2(dot(qa,w),dot(qa,u));
+  });
+  return {poly:pts, g, gn, center:cen, normal:n};
+}
+function pushUnique(arr,p){
+  for(const q of arr) if(Math.hypot(p[0]-q[0],p[1]-q[1],p[2]-q[2])<1e-6) return;
+  arr.push(p);
+}
+// diagonal (45deg) hatch lines filling a convex planar polygon -> [ [3d],[3d], ... ] pairs
+function hatchSegments(poly, normal, spacing){
+  if(poly.length<3) return [];
+  const n=normalize(normal);
+  let u=sub(poly[1],poly[0]); u=sub(u,scl(n,dot(u,n))); u=normalize(u);
+  const w=cross(n,u);
+  const o=poly[0];
+  const P=poly.map(p=>[dot(sub(p,o),u), dot(sub(p,o),w)]);   // 2D coords in-plane
+  const dir=[Math.SQRT1_2, Math.SQRT1_2], perp=[-Math.SQRT1_2, Math.SQRT1_2];
+  let lo=Infinity,hi=-Infinity;
+  for(const q of P){const off=q[0]*perp[0]+q[1]*perp[1]; if(off<lo)lo=off; if(off>hi)hi=off;}
+  const to3=q=>[o[0]+q[0]*u[0]+q[1]*w[0], o[1]+q[0]*u[1]+q[1]*w[1], o[2]+q[0]*u[2]+q[1]*w[2]];
+  const segs=[];
+  for(let off=Math.ceil(lo/spacing)*spacing; off<hi; off+=spacing){
+    const hits=[];
+    for(let i=0;i<P.length;i++){
+      const a=P[i], b=P[(i+1)%P.length];
+      const da=a[0]*perp[0]+a[1]*perp[1]-off, db=b[0]*perp[0]+b[1]*perp[1]-off;
+      if((da<=0&&db>0)||(da>0&&db<=0)){
+        const t=da/(da-db);
+        hits.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]);
+      }
+    }
+    if(hits.length>=2) segs.push(to3(hits[0]), to3(hits[1]));
+  }
+  return segs;
+}
+
+/* ---------- render one configuration ---------- */
+let currentCell=null;
+function draw(cell, hkl, opts){
+  while(world.children.length) world.remove(world.children[0]);
+  currentCell=cell;
+
+  // recenter whole thing on cell centroid
+  const centroid=scl(cell.verts.reduce((s,p)=>add(s,p),[0,0,0]),1/cell.verts.length);
+  const shift=v=>[v[0]-centroid[0],v[1]-centroid[1],v[2]-centroid[2]];
+
+  // cell wireframe
+  const cellMat=new THREE.LineBasicMaterial({color:0x333940});
+  const cg=new THREE.BufferGeometry();
+  const cp=[];
+  for(const [i,j] of cell.edges){const A=shift(cell.verts[i]),B=shift(cell.verts[j]);cp.push(...A,...B);}
+  cg.setAttribute('position',new THREE.Float32BufferAttribute(cp,3));
+  world.add(new THREE.LineSegments(cg,cellMat));
+
+  // atoms
+  if(opts.atoms){
+    const sph=new THREE.SphereGeometry(0.05,20,16);
+    const am=new THREE.MeshStandardMaterial({color:0x9a9f98,roughness:0.55,metalness:0.05});
+    for(const p of cell.atoms){const m=new THREE.Mesh(sph,am);const s=shift(p);m.position.set(s[0],s[1],s[2]);world.add(m);}
+  }
+
+  // axes with cones + labels
+  const oShift=shift(cell.origin);
+  for(const ax of cell.axes){
+    const dir=normalize(ax.vec);
+    const len=norm(ax.vec)*1.18;
+    const end=[oShift[0]+dir[0]*len,oShift[1]+dir[1]*len,oShift[2]+dir[2]*len];
+    const lg=new THREE.BufferGeometry();
+    lg.setAttribute('position',new THREE.Float32BufferAttribute([...oShift,...end],3));
+    world.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:ax.color})));
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(0.035,0.11,16),
+      new THREE.MeshBasicMaterial({color:ax.color}));
+    cone.position.set(end[0],end[1],end[2]);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dir[0],dir[1],dir[2]));
+    world.add(cone);
+    world.add(makeLabel(ax.label, [end[0]+dir[0]*0.12,end[1]+dir[1]*0.12,end[2]+dir[2]*0.12], '#'+ax.color.toString(16).padStart(6,'0')));
+  }
+
+  // the plane
+  const res=planePolygon(cell,hkl);
+  const info={hkl,res};
+  if(res && res.normal){
+    const n=res.normal;                 // apply world.rotation.x=-90deg: (x,y,z)->(x,z,-y)
+    normalWorld=[n[0], n[2], -n[1]];
+  }
+  if(res && res.poly && res.poly.length>=3){
+    const poly=res.poly.map(shift);
+    const geo=new THREE.BufferGeometry();
+    const cen=scl(poly.reduce((s,p)=>add(s,p),[0,0,0]),1/poly.length);
+    const tri=[];
+    for(let i=0;i<poly.length;i++){
+      const b=poly[i], c=poly[(i+1)%poly.length];
+      tri.push(...cen,...b,...c);
+    }
+    geo.setAttribute('position',new THREE.Float32BufferAttribute(tri,3));
+    geo.computeVertexNormals();
+    world.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+      color:0xff4d94,transparent:true,opacity:0.16,side:THREE.DoubleSide,
+      roughness:0.5,metalness:0.0,emissive:0x2a0a1a})));
+    // diagonal hatch lines across the plane (pink)
+    const hatch=hatchSegments(poly,res.normal,0.11);
+    if(hatch.length){
+      const hg=new THREE.BufferGeometry();
+      hg.setAttribute('position',new THREE.Float32BufferAttribute(hatch.flat(),3));
+      world.add(new THREE.LineSegments(hg,new THREE.LineBasicMaterial({color:0xff77b0,transparent:true,opacity:0.85})));
+    }
+    // outline
+    const og=new THREE.BufferGeometry();
+    const op=[];
+    for(let i=0;i<poly.length;i++){op.push(...poly[i],...poly[(i+1)%poly.length]);}
+    og.setAttribute('position',new THREE.Float32BufferAttribute(op,3));
+    world.add(new THREE.LineSegments(og,new THREE.LineBasicMaterial({color:0xff9ecb})));
+
+    // normal arrow from plane center
+    if(opts.normal){
+      const n=res.normal, c0=shift(res.center);
+      const L=0.6;
+      const e=[c0[0]+n[0]*L,c0[1]+n[1]*L,c0[2]+n[2]*L];
+      const ng=new THREE.BufferGeometry();
+      ng.setAttribute('position',new THREE.Float32BufferAttribute([...c0,...e],3));
+      world.add(new THREE.LineSegments(ng,new THREE.LineBasicMaterial({color:0xffb3d4})));
+      const nc=new THREE.Mesh(new THREE.ConeGeometry(0.04,0.13,16),new THREE.MeshBasicMaterial({color:0xffb3d4}));
+      nc.position.set(e[0],e[1],e[2]);
+      nc.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(n[0],n[1],n[2]));
+      world.add(nc);
+    }
+  }else{
+    info.empty=true;
+  }
+
+  // intercept markers
+  if(opts.intercept){
+    const A=cell.A;
+    const dirs=[[A[0],hkl[0]],[A[1],hkl[1]],[A[2],hkl[2]]];
+    // hex: also mark the a3 intercept (a3 = -(a1+a2), i = -(h+k))
+    if(cell.hex) dirs.push([[-(A[0][0]+A[1][0]),-(A[0][1]+A[1][1]),-(A[0][2]+A[1][2])], -(hkl[0]+hkl[1])]);
+    for(const [vec,idx] of dirs){
+      if(Math.abs(idx)<1e-9) continue; // parallel, no finite intercept
+      const p=scl(vec,1/idx);
+      const s=shift(p);
+      const mk=new THREE.Mesh(new THREE.SphereGeometry(0.055,16,12),
+        new THREE.MeshBasicMaterial({color:0xffffff}));
+      mk.position.set(s[0],s[1],s[2]); world.add(mk);
+    }
+  }
+  return info;
+}
+
+/* text sprite labels */
+function makeLabel(text,pos,color){
+  const c=document.createElement('canvas');const s=128;c.width=c.height=s;
+  const g=c.getContext('2d');g.font='bold 76px system-ui,Arial';g.textAlign='center';
+  g.textBaseline='middle';g.fillStyle=color||'#e6edf3';g.fillText(text,s/2,s/2);
+  const tex=new THREE.CanvasTexture(c);tex.anisotropy=4;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  sp.position.set(pos[0],pos[1],pos[2]);sp.scale.set(0.28,0.28,1);
+  return sp;
+}
+
+/* ---------- UI wiring ---------- */
+let sysMode='cubic';
+const presetsByMode={
+  cubic:[[1,0,0],[1,1,0],[1,1,1],[2,1,0],[1,1,-1],[2,2,1]],
+  hex:[[0,0,0,1],[1,0,-1,0],[1,1,-2,0],[1,0,-1,1],[1,1,-2,2],[2,-1,-1,0]]
+};
+function overline(n){ return n<0 ? '̅'+ Math.abs(n) : ''+n; } // (approx) prefix combining overline
+function fmt(n){ return n<0 ? Math.abs(n)+'̅' : ''+n; }        // trailing overline reads better
+
+function buildInputs(){
+  const wrap=document.getElementById('idxWrap');
+  wrap.innerHTML='';
+  const names = sysMode==='cubic' ? ['h','k','l'] : ['h','k','i','l'];
+  names.forEach((nm,ix)=>{
+    const cell=document.createElement('div');cell.className='cell';
+    const derived = sysMode==='hex' && nm==='i';
+    cell.innerHTML=`<div class="nm">${nm}</div><input id="in_${ix}" ${derived?'readonly':''}
+      class="${derived?'derived':''}" inputmode="numeric" value="0">`;
+    wrap.appendChild(cell);
+  });
+  document.getElementById('idxLabel').textContent =
+    sysMode==='cubic' ? 'Miller indices (h k l)' : 'Miller–Bravais indices (h k i l)';
+  document.getElementById('idxHint').innerHTML =
+    sysMode==='cubic'
+      ? 'Type integers, negatives allowed (e.g. <code>1 1 -1</code> for (11̅1)).'
+      : 'Enter <code>h k l</code>; <code>i = −(h+k)</code> is filled in automatically.';
+  if(sysMode==='hex'){
+    ['in_0','in_1'].forEach(id=>document.getElementById(id).addEventListener('input',syncI));
+    syncI();
+  }
+  buildPresets();
+}
+function syncI(){
+  const h=parseInt(document.getElementById('in_0').value||'0',10);
+  const k=parseInt(document.getElementById('in_1').value||'0',10);
+  document.getElementById('in_2').value = -(h+k);
+}
+function buildPresets(){
+  const box=document.getElementById('presets');box.innerHTML='';
+  for(const p of presetsByMode[sysMode]){
+    const b=document.createElement('button');
+    b.textContent='('+p.map(fmt).join('')+')';
+    b.onclick=()=>{clearPasteBar();p.forEach((v,ix)=>{const el=document.getElementById('in_'+ix);if(el)el.value=v;});generate();};
+    box.appendChild(b);
+  }
+}
+
+function readIndices(){
+  const n = sysMode==='cubic'?3:4;
+  const vals=[];
+  for(let i=0;i<n;i++){
+    const raw=document.getElementById('in_'+i).value.trim();
+    if(raw===''||raw==='-'){return {err:'Fill in all indices.'};}
+    const v=parseInt(raw,10);
+    if(!Number.isFinite(v)){return {err:'Indices must be integers.'};}
+    vals.push(v);
+  }
+  if(vals.every(v=>v===0)) return {err:'(0 0 0) is not a valid plane.'};
+  // convert to (h k l) triple for the maths
+  let hkl;
+  if(sysMode==='cubic') hkl=vals;
+  else hkl=[vals[0],vals[1],vals[3]]; // (h k i l) -> use h,k,l against a1,a2,c
+  return {vals,hkl};
+}
+
+function opts(){return {
+  atoms:document.getElementById('tAtoms').checked,
+  normal:document.getElementById('tNormal').checked,
+  intercept:document.getElementById('tIntercept').checked
+};}
+
+function generate(){
+  const err=document.getElementById('err');err.textContent='';
+  const r=readIndices();
+  if(r.err){err.textContent=r.err;return;}
+  const cell = sysMode==='cubic'?cubicCell():hexCell();
+  const info=draw(cell,r.hkl,opts());
+  showReadout(r.vals,r.hkl,cell,info);
+  if(curView==='normal') setView('normal');   // re-aim: normal depends on the indices
+}
+
+function showReadout(vals,hkl,cell,info){
+  const box=document.getElementById('readout');
+  const label='('+vals.map(fmt).join(' ')+')';
+  // d-spacing
+  const g=matVec(inv3(cell.A),hkl); // 1/d = |g|, g=(A^-1)^T[hkl]; units where cell lengths are those in A
+  const d = norm(g)>1e-9 ? (1/norm(g)) : Infinity;
+  // intercepts (fractional, in cell-length units)
+  const axNames = sysMode==='cubic'?['x','y','z']:['a₁','a₂','c'];
+  const interDesc = hkl.map((v,i)=> v===0? axNames[i]+': ∞' : axNames[i]+': '+frac(1,v));
+  let rows = `
+    <h2>Plane ${label}</h2>
+    <div class="kv"><span class="k">System</span><span class="v">${sysMode==='cubic'?'Cubic':'Hexagonal'}</span></div>`;
+  if(sysMode==='hex'){
+    rows+=`<div class="kv"><span class="k">4-index</span><span class="v">(${vals.map(fmt).join(' ')})</span></div>`;
+  }
+  rows+=`<div class="kv"><span class="k">d-spacing</span><span class="v">${isFinite(d)?d.toFixed(4)+' a':'∞'}</span></div>`;
+  rows+=interDesc.map(t=>`<div class="kv"><span class="k">${t.split(':')[0]} intercept</span><span class="v">${t.split(': ')[1]}</span></div>`).join('');
+  if(info.empty){
+    rows+=`<div class="kv"><span class="v" style="color:var(--accent2)">Plane lies outside this cell — try smaller indices.</span></div>`;
+  }
+  box.innerHTML=rows;
+}
+function frac(a,b){
+  if(b<0){a=-a;b=-b;}
+  const g=gcd(Math.abs(a),Math.abs(b));a/=g;b/=g;
+  return b===1?''+a:a+'/'+b;
+}
+function gcd(a,b){return b?gcd(b,a%b):a||1;}
+
+// system segmented control
+// switch crystal system (rebuilds the index fields); does not set values or draw
+function setSystem(mode){
+  if(mode===sysMode) return;
+  sysMode=mode;
+  document.querySelectorAll('#sysSeg button').forEach(x=>x.classList.toggle('on',x.dataset.sys===mode));
+  cam.r = mode==='hex'?4.8:4.2;
+  buildInputs();
+}
+document.getElementById('sysSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  clearPasteBar();
+  setSystem(b.dataset.sys);
+  // sensible default
+  if(sysMode==='cubic'){setVals([1,1,1]);}else{setVals([1,0,-1,1]);}
+  generate();
+  setView(curView);   // re-apply the active view so each system gets its own preset angle
+});
+function setVals(a){a.forEach((v,ix)=>{const el=document.getElementById('in_'+ix);if(el)el.value=v;});}
+
+document.getElementById('gen').onclick=generate;
+document.getElementById('viewSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  [...document.querySelectorAll('#viewSeg button')].forEach(x=>x.classList.toggle('on',x===b));
+  setView(b.dataset.view);
+});
+document.getElementById('reset').onclick=()=>{cam.r = sysMode==='hex'?4.8:4.2; setView(curView);};
+
+// camera debug: apply a pasted state (absolute pos+target preferred, else spherical)
+document.getElementById('camApply').onclick=()=>{
+  const msg=document.getElementById('camMsg');
+  try{
+    const o=JSON.parse(document.getElementById('camState').value);
+    if(Array.isArray(o.target)) cam.target.set(o.target[0]||0,o.target[1]||0,o.target[2]||0);
+    if(Array.isArray(o.pos)){
+      const d=[o.pos[0]-cam.target.x,o.pos[1]-cam.target.y,o.pos[2]-cam.target.z];
+      const r=Math.hypot(d[0],d[1],d[2]);
+      if(r>1e-6){cam.r=r;cam.phi=Math.acos(Math.max(-1,Math.min(1,d[1]/r)));cam.theta=Math.atan2(d[2],d[0]);}
+    }else{
+      if(typeof o.theta==='number')cam.theta=o.theta;
+      if(typeof o.phi==='number')cam.phi=o.phi;
+      if(typeof o.r==='number')cam.r=o.r;
+    }
+    curView='custom';
+    [...document.querySelectorAll('#viewSeg button')].forEach(x=>x.classList.remove('on'));
+    applyCam();
+    msg.textContent='Applied.'; msg.style.color='var(--good)';
+  }catch(e){ msg.textContent='Invalid JSON — check the pasted text.'; msg.style.color='var(--bad)'; }
+};
+document.getElementById('camCopy').onclick=async()=>{
+  const ta=document.getElementById('camState'), msg=document.getElementById('camMsg');
+  try{ await navigator.clipboard.writeText(ta.value); }
+  catch(e){ ta.select(); document.execCommand&&document.execCommand('copy'); }
+  msg.textContent='Copied to clipboard.'; msg.style.color='var(--good)';
+};
+['tAtoms','tNormal','tIntercept'].forEach(id=>document.getElementById(id).addEventListener('change',generate));
+document.getElementById('tSpin').addEventListener('change',e=>spin=e.target.checked);
+document.getElementById('idxWrap').addEventListener('keydown',e=>{if(e.key==='Enter')generate();});
+
+/* ---------- paste-index bar ---------- */
+// parse "(1 1 -2 1)", "(10-10)", "1,-1,1", "(11̄1)" -> array of signed ints.
+// with separators (space/comma): multi-digit ok. compact: each digit is one index,
+// '-' negates the next digit, a combining overbar negates the preceding digit.
+function parseIndices(str){
+  let s=(str||'').trim().replace(/[()\[\]{}]/g,'').trim();
+  if(!s) return null;
+  if(/[\s,]/.test(s)){
+    const nums=s.split(/[\s,]+/).filter(Boolean).map(p=>parseInt(p,10));
+    return nums.some(n=>!Number.isFinite(n))?null:nums;
+  }
+  const nums=[]; let neg=false;
+  for(const ch of s){
+    if(ch==='-'||ch==='−'){ neg=true; }
+    else if(ch>='0'&&ch<='9'){ nums.push(neg?-(+ch):+ch); neg=false; }
+    else if(ch==='̄'||ch==='̅'){ if(nums.length) nums[nums.length-1]=-Math.abs(nums[nums.length-1]); }
+    else return null;
+  }
+  return nums.length?nums:null;
+}
+function clearPasteBar(){
+  const bar=document.getElementById('pasteBar');
+  if(!bar) return;
+  bar.value=''; bar.classList.remove('bad','ok');
+  const m=document.getElementById('pasteMsg');
+  if(m) m.textContent='Paste (hkl) or (hkil); use - for negatives. Editing a field below clears this.';
+}
+function applyPasted(){
+  const bar=document.getElementById('pasteBar'), msg=document.getElementById('pasteMsg');
+  const raw=bar.value;
+  bar.classList.remove('bad','ok');
+  if(raw.trim()===''){ msg.textContent='Paste (hkl) or (hkil); use - for negatives. Editing a field below clears this.'; return; }
+  const nums=parseIndices(raw);
+  if(!nums){ bar.classList.add('bad'); msg.textContent='Unrecognized — use digits, - and ( ).'; return; }
+  if(nums.length<3){ msg.textContent='Enter 3 (hkl) or 4 (hkil) numbers…'; return; }
+  if(nums.length>4){ bar.classList.add('bad'); msg.textContent='Too many numbers (max 4).'; return; }
+  if(nums.every(n=>n===0)){ bar.classList.add('bad'); msg.textContent='(0 0 0) is not a valid plane.'; return; }
+  // 4 numbers => hexagonal; switch if needed
+  if(nums.length===4) setSystem('hex');
+  if(sysMode==='hex'){
+    const h = nums[0], k = nums[1], l = (nums.length===4)? nums[3] : nums[2];
+    in_0.value=h; in_1.value=k; in_3.value=l; syncI();
+    const iGiven = nums.length===4 ? nums[2] : null;
+    msg.textContent = (iGiven!==null && iGiven!==-(h+k))
+      ? 'Note: i='+iGiven+' is inconsistent; using i='+(-(h+k))+'.'
+      : 'Applied — i = '+(-(h+k))+' filled in.';
+  } else {
+    in_0.value=nums[0]; in_1.value=nums[1]; in_2.value=nums[2];
+    msg.textContent='Applied.';
+  }
+  bar.classList.add('ok');
+  generate(); setView(curView);
+}
+document.getElementById('pasteBar').addEventListener('input',applyPasted);
+// editing any h/k/i/l field directly resets the paste bar (delegated, survives rebuilds)
+document.getElementById('idxWrap').addEventListener('input',()=>{
+  const bar=document.getElementById('pasteBar');
+  if(bar.value!=='') clearPasteBar();
+});
+
+/* ---------- boot ---------- */
+buildInputs();
+setVals([1,1,1]);
+resize(); setView('iso'); generate();
+(function loop(){requestAnimationFrame(loop);
+  if(spin){cam.theta+=0.004;applyCam();}
+  renderer.render(scene,camera);
+})();
+</script>
+</body>
+</html>
