@@ -28,6 +28,9 @@ flagship, in-browser **CV Punch Trainer** that grades boxing form in real time.
 - **Interactive touches** — a spinning CAD backdrop, project detail modals with live 3D
   models, and a hidden drift game (press <kbd>G</kbd>).
 - **Fast by default** — the homepage ships no WebGL; heavy libraries load on demand.
+- **Engineering work, too** — the project modals also cover hardware: SCORPION (a UGV I
+  led at Raptor Defense), the FTAD chassis, and an open-circuit **wind tunnel** I designed
+  and CFD-validated in SimScale as a study of the Venturi effect.
 
 ## 🥊 CV Punch Trainer (the flagship)
 

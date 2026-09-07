@@ -49,6 +49,14 @@ const PROJECTS = {
     tags: ['Onshape', 'Fusion 360', 'CFD', 'Topology opt.'],
     imgs: ['./assets/car1.webp', './assets/car2.webp'],
   },
+  windtunnel: {
+    status: 'CFD · aero rig', title: 'Wind Tunnel',
+    problem: 'Simulation only gets you so far. FTAD needed a way to validate aero on real hardware, and I wanted something impressive for our club fair.',
+    solution: 'Design an open-circuit wind tunnel and CFD-validate it before cutting anything.',
+    desc: 'An open-circuit wind tunnel I designed as a hands-on study of the Venturi effect — a way to test FTAD\'s aero beyond CFD and a centerpiece for our club fair. The geometry runs a contraction into a clear test chamber and back out through a diffuser, built around a 5:6 inlet-to-outlet ratio and a 2:1 inlet-to-chamber cross-sectional ratio to accelerate the flow. I validated it in SimScale — cloud compute I got for free for my FTAD nonprofit — with an incompressible flow simulation and particle traces. My first pass hit a theoretical doubling of the windspeed through the test section (roughly 14 → 29 mph). Honestly not the tunnel I\'d ship, but a genuinely fun first crack at the fluid mechanics and a solid intro to CFD workflows.',
+    tags: ['SimScale', 'CFD', 'Aerodynamics', 'Venturi effect'],
+    imgs: ['./assets/windtunnelCAD.png', './assets/windtunnelsim.png'],
+  },
   vex: {
     status: 'World-qualified', title: 'VEX Robotics',
     problem: 'The Push Back game rewards tall bots with confident collision capabilities.',

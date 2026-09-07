@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260907" />
+  <link rel="stylesheet" href="./styles.css?v=20260907b" />
 </head>
 <body class="home">
   <!-- Ambient monochrome CAD backdrop: a PRE-RENDERED spin of the SCORPION as a
@@ -87,6 +87,17 @@
               <p class="ps-line sol"><span class="ps-k">Solution</span>Build one myself.</p>
             </div>
             <div class="p-tags"><span>Onshape</span><span>CFD</span><span>Topology</span></div>
+            <span class="p-arrow">→</span>
+          </a>
+
+          <a class="proj reveal" href="#projects" data-project="windtunnel">
+            <div class="p-top"><span class="p-status">CFD · aero rig</span></div>
+            <h3>Wind Tunnel</h3>
+            <div class="p-ps">
+              <p class="ps-line"><span class="ps-k">Problem</span>Simulation only gets you so far. FTAD needed to validate aero on real hardware.</p>
+              <p class="ps-line sol"><span class="ps-k">Solution</span>Design an open-circuit wind tunnel and CFD-validate it first.</p>
+            </div>
+            <div class="p-tags"><span>SimScale</span><span>CFD</span><span>Venturi</span></div>
             <span class="p-arrow">→</span>
           </a>
 
@@ -277,8 +288,8 @@
 
   <!-- model-viewer is NOT loaded here: main.js imports it on demand only when a
        project with a 3D model is opened, so the homepage ships zero WebGL. -->
-  <script src="./main.js?v=20260907"></script>
+  <script src="./main.js?v=20260907b"></script>
   <!-- Interactive: the cursor becomes a drift AE86 that drives the page (desktop only). -->
-  <script src="./drift.js?v=20260907" defer></script>
+  <script src="./drift.js?v=20260907b" defer></script>
 </body>
 </html>
