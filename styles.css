@@ -352,6 +352,7 @@ footer.foot .muted { color: var(--muted-2); font-size: 12px; }
 .modal-media > #pmImg { width: 100%; flex: 1; min-height: 0; object-fit: contain; padding: 18px; opacity: 0; transition: opacity .18s ease; }
 .modal-media > #pmImg.is-loaded { opacity: 1; }
 .modal-media > #pmImg.zoomable { cursor: zoom-in; }
+.modal-media > #pmImg[hidden] { display: none; }
 .modal-media > #pmModel {
   width: 100%; flex: 1; min-height: 340px;
   --poster-color: transparent;

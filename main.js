@@ -192,6 +192,11 @@ if (modal) {
         pmModel.hidden = !isModel;
         pmImg.hidden = isModel;
         if (isModel) {
+          // Empty the still-image so the previous project's render can't bleed in
+          // behind/around the model — don't rely on the CSS `[hidden]` rule alone.
+          pmImg.classList.remove('is-loaded', 'zoomable');
+          pmImg.removeAttribute('src');
+          delete pmImg.dataset.src;
           // Import model-viewer on first use, and set the decoder location BEFORE src
           // so the compressed .glb decodes correctly.
           ensureModelViewer().then(() => {
