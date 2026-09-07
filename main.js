@@ -80,6 +80,7 @@ const PROJECTS = {
     solution: 'So I built my own visualizer to just draw the plane in 3D and see where it actually cuts the axes.',
     desc: 'An interactive 3D tool for visualizing crystallographic planes from their Miller indices, for both cubic (h k l) and hexagonal Miller–Bravais (h k i l) systems. Type in a set of indices and it draws the corresponding plane inside the unit cell, clipped correctly to the cell geometry, with the d-spacing and axis intercepts marked. I built it as a study supplement for my materials science course: being able to rotate the actual plane and watch where it cuts the axes is what made the notation click for me. Under the hood it uses a reciprocal-space normal (g = (A⁻¹)ᵀ·[hkl]) to get the hexagonal case right, then clips the infinite plane against the cell and orders the intersection into a polygon. It runs entirely in the browser as one self-contained file, and I plan to keep extending it as the course goes deeper.',
     tags: ['Three.js', 'WebGL', 'Crystallography', 'Computational geometry', 'Single-file'],
+    img: './assets/millerindices.png',
     link: './games/miller-indices.html', linkLabel: 'Open the visualizer →',
     repo: 'https://github.com/Wildagoat/miller-indices-visualizer', repoLabel: 'View on GitHub →',
   },
