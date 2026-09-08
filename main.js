@@ -79,7 +79,7 @@ const PROJECTS = {
     solution: 'Author an Onshape FeatureScript that derives the whole disk straight from the drivetrain geometry.',
     desc: 'A custom Onshape feature that generates a complete cycloidal reducer disk from first principles. The user sets the real drive parameters — pitch-circle radius (R), roller radius (r_r), roller count (N), eccentricity (E), plus the output-pin holes, center bore, and thickness — and the script sweeps the true meshing profile as the envelope of the N rollers, then cuts the eccentric center bore and the load-pin holes in one parametric, fully-associative feature. It encodes the cycloidal-drive math directly: the disk grows N − 1 lobes, the eccentricity sets the contact offset, and each output hole is bored oversize by 2E so the pins clear the disk\'s orbit — so the whole disk regenerates correctly at any ratio. Writing it meant treating the reducer geometry as equations rather than sketches — a distillation of both my CAD workflow and my understanding of how cycloidal drivetrains actually transmit torque.',
     tags: ['FeatureScript', 'Onshape', 'Cycloidal drive', 'Parametric CAD', 'Mechanical design'],
-    img: './assets/cycloidalfs.webp',
+    img: './assets/cycloidalfs.png',
     link: 'https://github.com/Wildagoat/cycloidal-drive-featurescript', linkLabel: 'View on GitHub →',
   },
   miller: {
