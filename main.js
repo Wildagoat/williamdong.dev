@@ -73,6 +73,16 @@ const PROJECTS = {
     tags: ['SVG', 'Single-file', 'Vanilla JS'],
     img: './assets/fightdiagram.png',
   },
+  'cycloidal-gearbox': {
+    status: 'Reducer · 20:1', title: 'Cycloidal Gearbox',
+    problem: 'A NEMA 24 stepper makes modest torque at speed, but an actuator wants the opposite — high torque at low speed with minimal backlash.',
+    solution: 'Wrap the motor in a compact single-stage cycloidal reducer.',
+    desc: 'A single-stage cycloidal reducer I designed around a NEMA 24 stepper (229 oz·in / 1.62 N·m holding torque) for a 20:1 reduction. It runs two discs 180° out of phase for load balancing, and both discs come straight from my own parametric Cycloidal Drive FeatureScript — including the even-lobe offset option I added specifically to phase the second disc\'s load holes on this build. That puts the theoretical output torque at about 32 N·m (~24 ft·lb): the motor\'s 1.62 N·m times the 20:1 ratio. That figure is the ideal, lossless number — it does not account for tolerance stack-up, friction, rotational inertia, or the other real-world inefficiencies, which I plan to characterize empirically at a later date. The whole thing was speed-CADed in about six hours while I was still learning the drive\'s dynamics and how its variable parameters play off each other — as much a study of cycloidal kinematics as a finished part. Open-sourced on Onshape.',
+    tags: ['Onshape', 'Cycloidal reducer', 'FeatureScript', 'NEMA 24', 'Two-disc'],
+    imgs: ['./assets/cycloidalisometric.png', './assets/cycloidalinsideview.png'],
+    link: 'https://cad.onshape.com/documents/3441fdcadacb8dfabe01591a/w/c05e0240ae0ef194d44ad1c3/e/6c05321141a9979654707139', linkLabel: 'Open the CAD on Onshape →',
+    repo: 'https://github.com/Wildagoat/cycloidal-drive-featurescript', repoLabel: 'Disc FeatureScript →',
+  },
   cycloidal: {
     status: 'FeatureScript · parametric', title: 'Cycloidal Drive FS',
     problem: 'A cycloidal disk is the heart of a cycloidal reducer, but its lobed profile is a true epicycloid — painful to draw by hand, and standard sketches don\'t rebuild cleanly when the drive ratio or eccentricity changes.',
