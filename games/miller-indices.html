@@ -69,14 +69,57 @@
   #hud{position:absolute;left:14px;bottom:12px;color:var(--muted);font-size:11px;
     background:rgba(14,17,22,.6);padding:6px 10px;border-radius:6px;pointer-events:none}
   .bar{position:relative;top:-2px}
+  input[type=range]{accent-color:var(--accent);width:100%;margin:2px 0 14px}
+  #modeSeg button{font-size:11px;padding:8px 2px}
+  #cellViewSeg button,#tileSeg button{font-size:12px;padding:7px 2px}
+  #layerSeg button{font-size:13px}
+  .val{float:right;color:var(--accent2);font-weight:600;text-transform:none;letter-spacing:0}
+  .sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .note{font-size:11px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+  .numin{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:9px 10px;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+  .numin:focus{outline:none;border-color:var(--accent)}
+  /* XRD study stage (overlays the 3D stage in XRD mode) */
+  #xrdStage{position:absolute;inset:0;background:var(--bg);overflow-y:auto;padding:22px 26px}
+  .xwrap{max-width:840px;margin:0 auto}
+  #xrdStage section{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:16px 20px 20px;margin-bottom:20px}
+  #xrdStage h3{font-size:14px;margin:0 0 4px;letter-spacing:.3px}
+  #xrdStage .lead{color:var(--muted);font-size:12px;margin:0 0 14px}
+  #xrdStage svg{display:block;width:100%;height:auto}
+  .xctrl{display:flex;flex-wrap:wrap;gap:18px;margin:14px 0 6px}
+  .xctrl .c{flex:1;min-width:150px}
+  .xctrl label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--muted);margin-bottom:4px}
+  .xctrl .rv{color:var(--accent2);font-weight:700;font-variant-numeric:tabular-nums}
+  #braggEq{font:13px/1.8 ui-monospace,Consolas,monospace;background:var(--panel2);
+    border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-top:12px}
+  .hit{color:var(--good);font-weight:700}.miss{color:var(--bad);font-weight:700}
+  .xtab{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12px;margin-top:6px}
+  .xtab th,.xtab td{text-align:right;padding:5px 9px;border-bottom:1px solid var(--line)}
+  .xtab th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.5px}
+  .xtab td:first-child,.xtab th:first-child{text-align:left}
+  .rules{display:flex;flex-direction:column;gap:10px}
+  .rule{border:1px solid var(--line);border-radius:8px;padding:11px 13px;background:var(--panel2)}
+  .rule.act{border-color:var(--accent);background:#0e1a12}
+  .rule b{color:var(--ink)}.rule .seq{font:12px/1.6 ui-monospace,Consolas,monospace;color:var(--accent2);word-break:break-word}
+  .rule .k{color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="panel">
-    <h1>Miller Indices Visualizer</h1>
-    <p class="sub">Enter indices to see the plane inside the crystal cell.</p>
+    <h1 id="appTitle">Miller Indices Visualizer</h1>
+    <p class="sub" id="appSub">Enter indices to see the plane inside the crystal cell.</p>
 
+    <div class="seg" id="modeSeg">
+      <button data-mode="miller" class="on">Planes</button>
+      <button data-mode="pack">Packing</button>
+      <button data-mode="cell">Unit cell</button>
+      <button data-mode="xrd">XRD</button>
+    </div>
+
+    <div id="millerUI">
     <div class="seg" id="sysSeg">
       <button data-sys="cubic" class="on">Cubic</button>
       <button data-sys="hex">Hexagonal</button>
@@ -127,9 +170,140 @@
       </div>
       <p class="hint" id="camMsg" style="margin:8px 0 0;min-height:14px"></p>
     </div>
+    </div><!-- /millerUI -->
+
+    <div id="packUI" hidden>
+      <div class="seg" id="structSeg">
+        <button data-struct="fcc" class="on">FCC · CCP</button>
+        <button data-struct="hcp">HCP</button>
+      </div>
+      <p class="hint" id="packHint" style="margin:-8px 0 16px"></p>
+
+      <label class="fld">Stacking layers <span class="val" id="layerVal">3</span></label>
+      <div class="seg" id="layerSeg">
+        <button data-n="2">2</button>
+        <button data-n="3" class="on">3</button>
+        <button data-n="4">4</button>
+        <button data-n="5">5</button>
+        <button data-n="6">6</button>
+      </div>
+
+      <label class="fld">Explode layers <span class="val" id="explodeVal">1.0×</span></label>
+      <input type="range" id="explode" min="1" max="3" step="0.1" value="1">
+
+      <label class="fld">Camera view</label>
+      <div class="seg" id="packViewSeg">
+        <button data-view="iso" class="on">Isometric</button>
+        <button data-view="top">Top (c)</button>
+        <button data-view="front">Front</button>
+      </div>
+
+      <div class="info" id="packReadout"></div>
+
+      <div class="info toggles">
+        <h2>Display</h2>
+        <label><input type="checkbox" id="pColor" checked> Colour layers A / B / C</label>
+        <label><input type="checkbox" id="pLabels" checked> Layer labels</label>
+        <label><input type="checkbox" id="pBonds"> Bonds · ball &amp; stick (12 neighbours)</label>
+        <label><input type="checkbox" id="pGuide" checked> Stacking guide (zig-zag)</label>
+        <label><input type="checkbox" id="pPlane"> Highlight top close-packed plane</label>
+        <label><input type="checkbox" id="pSpin"> Auto-rotate</label>
+      </div>
+    </div><!-- /packUI -->
+
+    <div id="cellUI" hidden>
+      <div class="seg" id="cellSeg">
+        <button data-cell="sc">SC</button>
+        <button data-cell="bcc" class="on">BCC</button>
+        <button data-cell="fcc">FCC</button>
+      </div>
+      <p class="hint" id="cellHint" style="margin:-8px 0 16px"></p>
+
+      <label class="fld">Repeat cells <span class="val" id="tileVal">1×1×1</span></label>
+      <div class="seg" id="tileSeg">
+        <button data-t="1" class="on">1³</button>
+        <button data-t="2">2³</button>
+        <button data-t="3">3³</button>
+      </div>
+
+      <label class="fld">View down axis</label>
+      <div class="seg" id="cellViewSeg">
+        <button data-view="iso" class="on">Iso</button>
+        <button data-view="100">[100]</button>
+        <button data-view="110">[110]</button>
+        <button data-view="111">[111]</button>
+      </div>
+
+      <div class="info" id="cellReadout"></div>
+
+      <div class="info toggles">
+        <h2>Display</h2>
+        <label><input type="checkbox" id="cRoles" checked> Colour atom sites</label>
+        <label><input type="checkbox" id="cBonds" checked> Nearest-neighbour bonds</label>
+        <label><input type="checkbox" id="cFill"> Space-filling (touching)</label>
+        <label><input type="checkbox" id="cPlane"> Densest plane ({110}/{111})</label>
+        <label><input type="checkbox" id="cLabels" checked> Site labels</label>
+        <label><input type="checkbox" id="cSpin"> Auto-rotate</label>
+      </div>
+    </div><!-- /cellUI -->
+
+    <div id="xrdUI" hidden>
+      <div class="seg" id="xStructSeg">
+        <button data-x="sc">SC</button>
+        <button data-x="bcc">BCC</button>
+        <button data-x="fcc" class="on">FCC</button>
+      </div>
+      <p class="hint" style="margin:-8px 0 16px">Pick a cubic structure and see which planes actually diffract, and where their peaks land.</p>
+
+      <label class="fld">Lattice parameter a (Å)</label>
+      <input id="xA" class="numin" type="number" value="3.61" step="0.01" min="1" max="12">
+      <div class="presets" id="xAPresets" style="margin-top:8px"></div>
+
+      <label class="fld" style="margin-top:6px">X-ray wavelength λ (Å)</label>
+      <input id="xLambda" class="numin" type="number" value="1.5406" step="0.0001" min="0.1" max="3">
+      <div class="presets" id="xLambdaPresets" style="margin-top:8px"></div>
+
+      <label class="fld" style="margin-top:6px">Max 2θ shown (°)</label>
+      <input id="xMax" class="numin" type="number" value="120" step="5" min="20" max="180">
+
+      <div class="info toggles" style="margin-top:16px">
+        <h2>Display</h2>
+        <label><input type="checkbox" id="xWeight" checked> Weight peaks by intensity</label>
+        <label><input type="checkbox" id="xLabels" checked> Label peaks (hkl)</label>
+      </div>
+      <p class="note">The pattern, Bragg diagram and rules on the right update live. Scroll the right panel — it's a full study sheet.</p>
+    </div><!-- /xrdUI -->
   </div>
   <div id="stage">
     <div id="hud">drag: rotate &nbsp;•&nbsp; scroll: zoom &nbsp;•&nbsp; right-drag: pan</div>
+    <div id="xrdStage" hidden>
+      <div class="xwrap">
+        <section>
+          <h3>1 · Bragg's law &nbsp;—&nbsp; nλ = 2d·sinθ</h3>
+          <p class="lead">X-rays reflected off successive atomic planes interfere. They reinforce (a peak) only when the extra path the lower ray travels, <b>2d·sinθ</b>, is a whole number of wavelengths. Drag the sliders.</p>
+          <div id="braggSvg"></div>
+          <div class="xctrl">
+            <div class="c"><label>Glancing angle θ = <span class="rv" id="bThetaV"></span></label><input type="range" id="bTheta" min="5" max="85" step="0.5" value="22"></div>
+            <div class="c"><label>Interplanar d = <span class="rv" id="bDV"></span></label><input type="range" id="bD" min="0.6" max="4" step="0.05" value="2"></div>
+            <div class="c"><label>Wavelength λ = <span class="rv" id="bLV"></span></label><input type="range" id="bL" min="0.5" max="2.5" step="0.01" value="1.54"></div>
+          </div>
+          <div id="braggEq"></div>
+        </section>
+
+        <section>
+          <h3>2 · Powder diffraction pattern</h3>
+          <p class="lead" id="powderLead"></p>
+          <div id="powderSvg"></div>
+          <div id="powderTable"></div>
+        </section>
+
+        <section>
+          <h3>3 · Selection rules &amp; indexing fingerprints</h3>
+          <p class="lead">Not every plane diffracts: waves from the extra atoms in BCC/FCC can cancel (a <i>systematic absence</i>). Which (hkl) survive gives each structure a unique sequence of h²+k²+l² — the key to indexing a pattern.</p>
+          <div class="rules" id="xrdRules"></div>
+        </section>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -280,13 +454,14 @@ function parallelepiped(O,v1,v2,v3){
   for(let v=0;v<2;v++)for(let u=0;u<2;u++)E.push([idx(u,v,0),idx(u,v,1)]);
   return {verts:V,edges:E};
 }
-// unit clip cell placed in the OCTANT matching the signs of (h,k,l), so it always
-// contains the intercepts. Spanned by the lattice vectors (cell.A columns) from the
-// origin: axis j runs [0,1] when its index >=0, else [-1,0]. e.g. (-1-120) -> the
-// cell over -a1,-a2 => vertical plane through the -a1 and -a2 corners.
-function clipCellFor(cell,hkl){
+// unit clip cell spanned by the lattice vectors (cell.A columns) from the origin.
+// Symmetric axes (hex basal a1/a2) run [0,1] or [-1,0] by index sign, since the drawn
+// hexagon covers both sides. Asymmetric axes (all cubic axes; the hex c-axis) always
+// run [0,1] because the drawn cell only extends the +side there -- the origin has been
+// relocated (see planePolygon) so a negative index still lands inside the drawn cell.
+function clipCellFor(cell,hkl,asym){
   const O=cell.origin, C=cell.A;                 // C[0]=a1/x, C[1]=a2/y, C[2]=c/z (columns)
-  const rng=hkl.map(m=> m>=0 ? [0,1] : [-1,0]);
+  const rng=hkl.map((m,j)=> (asym[j] || m>=0) ? [0,1] : [-1,0]);
   const V=[]; const idx=(u,v,w)=>u+2*v+4*w;
   for(let w=0;w<2;w++)for(let v=0;v<2;v++)for(let u=0;u<2;u++){
     const cu=rng[0][u], cv=rng[1][v], cw=rng[2][w];
@@ -349,23 +524,31 @@ function planePolygon(cell, hkl){
   const g = matVec(inv3(cell.A), hkl);   // reciprocal-space normal g = (A^-1)^T[hkl]; inv3 already returns (A^-1)^T here
   const gn = norm(g);
   if(gn<1e-9) return null;
+  // ORIGIN RELOCATION. The drawn cell only extends the +side of the "asymmetric" axes
+  // (every cubic axis; the hex c-axis), so a negative index there would put the plane
+  // outside the cell. Convention: relocate the origin to that axis's far face so the
+  // negative intercept points back into the cell. e.g. (-1-12-1): move origin to the top
+  // face -> the l=-1 intercept points down into the prism.
+  const asym = cell.hex ? [false,false,true] : [true,true,true];
+  const oFrac = hkl.map((m,j)=> (asym[j] && m<0) ? 1 : 0);
+  const O = matVec(cell.A, oFrac);                 // relocated origin (Cartesian)
+  const rhs = 1 + (hkl[0]*oFrac[0] + hkl[1]*oFrac[1] + hkl[2]*oFrac[2]); // plane: g.r = rhs
   // choose the clip region for hex:
-  //  - if ANY index is zero (h,k,i=-(h+k), or l) the plane is parallel to that axis and
-  //    must run the full width of the cell along it -> clip to the whole hexagonal prism.
+  //  - if ANY index is zero the plane is parallel to that axis and must run the full
+  //    width of the cell along it -> clip to the whole hexagonal prism.
   //    e.g. (0001) => full basal hexagon; (10-11) => runs a2 to -a2; (2-1-10) => -a2 to -a3.
-  //  - if all four indices are nonzero it's a corner plane -> clip to the intercept octant
-  //    (gives the a1/a2/top triangle for (11-21)).
+  //  - otherwise it's a corner plane -> clip to the intercept octant (triangle for (11-21)).
   let clip;
   if(cell.hex){
     const parallel = (hkl[0]===0 || hkl[1]===0 || (hkl[0]+hkl[1])===0 || hkl[2]===0);
-    clip = parallel ? {verts:cell.verts, edges:cell.edges} : clipCellFor(cell, hkl);
+    clip = parallel ? {verts:cell.verts, edges:cell.edges} : clipCellFor(cell, hkl, asym);
   } else {
-    clip = clipCellFor(cell, hkl);
+    clip = clipCellFor(cell, hkl, asym);
   }
   const pts=[];
   for(const [i,j] of clip.edges){
     const p=clip.verts[i], q=clip.verts[j];
-    const dp=dot(g,p)-1, dq=dot(g,q)-1;
+    const dp=dot(g,p)-rhs, dq=dot(g,q)-rhs;
     if(Math.abs(dp)<1e-9){pushUnique(pts,p);}
     if(Math.abs(dq)<1e-9){pushUnique(pts,q);}
     if(dp*dq<0){
@@ -373,7 +556,7 @@ function planePolygon(cell, hkl){
       pushUnique(pts, add(p, scl(sub(q,p),t)));
     }
   }
-  if(pts.length<3) return {poly:[],g,gn,empty:true};
+  if(pts.length<3) return {poly:[],g,gn,O,empty:true};
   // order points around normal
   const n=normalize(g);
   const cen=scl(pts.reduce((s,p)=>add(s,p),[0,0,0]),1/pts.length);
@@ -383,7 +566,7 @@ function planePolygon(cell, hkl){
     const pa=sub(p,cen), qa=sub(q,cen);
     return Math.atan2(dot(pa,w),dot(pa,u))-Math.atan2(dot(qa,w),dot(qa,u));
   });
-  return {poly:pts, g, gn, center:cen, normal:n};
+  return {poly:pts, g, gn, O, center:cen, normal:n};
 }
 function pushUnique(arr,p){
   for(const q of arr) if(Math.hypot(p[0]-q[0],p[1]-q[1],p[2]-q[2])<1e-6) return;
@@ -511,20 +694,30 @@ function draw(cell, hkl, opts){
     info.empty=true;
   }
 
-  // intercept markers
+  // intercept markers (measured from the relocated origin O so they sit on the drawn plane)
   if(opts.intercept){
-    const A=cell.A;
+    const A=cell.A, O=(res&&res.O)||[0,0,0];
     const dirs=[[A[0],hkl[0]],[A[1],hkl[1]],[A[2],hkl[2]]];
     // hex: also mark the a3 intercept (a3 = -(a1+a2), i = -(h+k))
     if(cell.hex) dirs.push([[-(A[0][0]+A[1][0]),-(A[0][1]+A[1][1]),-(A[0][2]+A[1][2])], -(hkl[0]+hkl[1])]);
     for(const [vec,idx] of dirs){
       if(Math.abs(idx)<1e-9) continue; // parallel, no finite intercept
-      const p=scl(vec,1/idx);
+      const p=add(O, scl(vec,1/idx));
       const s=shift(p);
       const mk=new THREE.Mesh(new THREE.SphereGeometry(0.055,16,12),
         new THREE.MeshBasicMaterial({color:0xffffff}));
       mk.position.set(s[0],s[1],s[2]); world.add(mk);
     }
+  }
+
+  // highlight the relocated origin in orange whenever it was moved (negative indices)
+  if(res && res.O && norm(res.O)>1e-9){
+    const s=shift(res.O);
+    const mk=new THREE.Mesh(new THREE.SphereGeometry(0.075,22,16),
+      new THREE.MeshBasicMaterial({color:0xff8c00}));
+    mk.position.set(s[0],s[1],s[2]); world.add(mk);
+    world.add(makeLabel('O',[s[0],s[1]+0.17,s[2]],'#ff8c00'));
+    info.originMoved=true;
   }
   return info;
 }
@@ -638,6 +831,9 @@ function showReadout(vals,hkl,cell,info){
   }
   rows+=`<div class="kv"><span class="k">d-spacing</span><span class="v">${isFinite(d)?d.toFixed(4)+' a':'∞'}</span></div>`;
   rows+=interDesc.map(t=>`<div class="kv"><span class="k">${t.split(':')[0]} intercept</span><span class="v">${t.split(': ')[1]}</span></div>`).join('');
+  if(info.originMoved){
+    rows+=`<div class="kv"><span class="v" style="color:#ff8c00">Origin relocated (orange) so the negative index stays inside the cell.</span></div>`;
+  }
   if(info.empty){
     rows+=`<div class="kv"><span class="v" style="color:var(--accent2)">Plane lies outside this cell — try smaller indices.</span></div>`;
   }
@@ -768,6 +964,568 @@ document.getElementById('idxWrap').addEventListener('input',()=>{
   const bar=document.getElementById('pasteBar');
   if(bar.value!=='') clearPasteBar();
 });
+
+/* ---------- close-packed structures ---------- */
+// Two close-packed structures differ only in how successive close-packed layers stack:
+//   FCC (cubic close-packed): A B C A B C ...  (stacking axis = the cubic [111])
+//   HCP:                       A B A B ...      (stacking axis = the hexagonal c)
+// Each layer is a 2D triangular (hexagonal) sheet of touching spheres, diameter d=1.
+// The next layer nests into one of two sets of hollows: B or C. Both share coordination
+// number 12 and atomic packing fraction 0.7405 -- only the sequence changes.
+let mode='miller';
+const pack={ structure:'fcc', n:3, explode:1 };
+const LAYER_DZ=Math.sqrt(2/3);                 // interlayer spacing for touching spheres
+const SHIFT={A:[0,0], B:[0.5, Math.sqrt(3)/6], C:[1.0, Math.sqrt(3)/3]}; // in-plane nest offsets
+const LCOL={A:0x43d17a, B:0xe0a44a, C:0x6ba3ff};
+
+// triangular lattice of sphere centres within a disc (basis vectors 60deg apart, d=1)
+function packSites(){
+  const e1=[1,0], e2=[0.5, Math.sqrt(3)/2], R=2.35, pts=[];
+  for(let i=-4;i<=4;i++)for(let j=-4;j<=4;j++){
+    const x=i*e1[0]+j*e2[0], y=i*e1[1]+j*e2[1];
+    if(x*x+y*y<=R*R+1e-9) pts.push([x,y]);
+  }
+  return {pts,R};
+}
+function sequence(structure,n){
+  const cyc = structure==='fcc' ? ['A','B','C'] : ['A','B'];
+  return Array.from({length:n},(_,k)=>cyc[k%cyc.length]);
+}
+function drawPacking(){
+  while(world.children.length) world.remove(world.children[0]);
+  const {pts,R}=packSites();
+  const seq=sequence(pack.structure,pack.n);
+  const dz=LAYER_DZ*pack.explode;
+  const useColor=document.getElementById('pColor').checked;
+  const showLabels=document.getElementById('pLabels').checked;
+  const showGuide=document.getElementById('pGuide').checked;
+  const showPlane=document.getElementById('pPlane').checked;
+  const showBonds=document.getElementById('pBonds').checked;
+  const cz=(seq.length-1)*dz/2;                // vertical centring; data +Z is screen up
+  const at=(x,y,z)=>[x,y,z-cz];
+  // bonds on -> ball-and-stick (small spheres so the sticks show); off -> touching space-filling
+  const sph=new THREE.SphereGeometry(showBonds?0.26:0.5,26,20);
+  const atoms=[];                              // {p:displayed xyz, px,py planar, k layer}
+
+  seq.forEach((lab,k)=>{
+    const sh=SHIFT[lab], z=k*dz;
+    const mat=new THREE.MeshStandardMaterial({
+      color: useColor?LCOL[lab]:0x9a9f98, roughness:0.42, metalness:0.05});
+    for(const [x,y] of pts){
+      const m=new THREE.Mesh(sph,mat);
+      const px=x+sh[0], py=y+sh[1], p=at(px,py,z);
+      m.position.set(p[0],p[1],p[2]); world.add(m);
+      atoms.push({p,px,py,k});
+    }
+    if(showLabels){
+      const p=at(-R-0.6, 0, z);
+      world.add(makeLabel(lab, p, '#'+(useColor?LCOL[lab]:0xcfd6cd).toString(16).padStart(6,'0')));
+    }
+  });
+
+  // bonds: connect every pair of atoms that actually touch (nearest-neighbour distance = 1
+  // sphere diameter). Contact is judged on the TRUE lattice (unexploded z) so the coordination
+  // topology is fixed, then drawn to the displayed positions -> exploding stretches the sticks
+  // and lets you count the 6 in-plane + 3 up + 3 down = 12 contacts per interior atom.
+  if(showBonds){
+    const bp=[], thr=1.08*1.08;
+    for(let i=0;i<atoms.length;i++)for(let j=i+1;j<atoms.length;j++){
+      const a=atoms[i], b=atoms[j];
+      const dx=a.px-b.px, dy=a.py-b.py, dzt=(a.k-b.k)*LAYER_DZ;
+      if(dx*dx+dy*dy+dzt*dzt<=thr) bp.push(a.p[0],a.p[1],a.p[2], b.p[0],b.p[1],b.p[2]);
+    }
+    if(bp.length){
+      const bg=new THREE.BufferGeometry();
+      bg.setAttribute('position',new THREE.Float32BufferAttribute(bp,3));
+      world.add(new THREE.LineSegments(bg,new THREE.LineBasicMaterial({
+        color:0xc0cad4,transparent:true,opacity:0.8})));
+    }
+  }
+
+  // translucent hexagon over the top close-packed layer -> shows the {111}/(0001) plane
+  if(showPlane){
+    const topZ=(seq.length-1)*dz, sh=SHIFT[seq[seq.length-1]];
+    const c=at(sh[0],sh[1],topZ);
+    const disc=new THREE.Mesh(new THREE.CircleGeometry(R+0.5,6),
+      new THREE.MeshStandardMaterial({color:0xff4d94,transparent:true,opacity:0.20,
+        side:THREE.DoubleSide,emissive:0x2a0a1a,roughness:0.5}));
+    disc.position.set(c[0],c[1],c[2]); world.add(disc);
+    const ringPts=[];
+    for(let a=0;a<=6;a++){const t=a*Math.PI/3;ringPts.push(c[0]+(R+0.5)*Math.cos(t),c[1]+(R+0.5)*Math.sin(t),c[2]);}
+    const rg=new THREE.BufferGeometry(); const rl=[];
+    for(let a=0;a<6;a++){rl.push(ringPts[a*3],ringPts[a*3+1],ringPts[a*3+2],ringPts[a*3+3],ringPts[a*3+4],ringPts[a*3+5]);}
+    rg.setAttribute('position',new THREE.Float32BufferAttribute(rl,3));
+    world.add(new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xff9ecb})));
+  }
+
+  // stacking guide: zig-zag through the layer centres so ABAB vs ABCABC is obvious
+  if(showGuide){
+    const gp=[];
+    for(let k=0;k<seq.length-1;k++){
+      const a=at(SHIFT[seq[k]][0],SHIFT[seq[k]][1],k*dz);
+      const b=at(SHIFT[seq[k+1]][0],SHIFT[seq[k+1]][1],(k+1)*dz);
+      gp.push(a[0],a[1],a[2],b[0],b[1],b[2]);
+    }
+    if(gp.length){
+      const gg=new THREE.BufferGeometry();
+      gg.setAttribute('position',new THREE.Float32BufferAttribute(gp,3));
+      world.add(new THREE.LineSegments(gg,new THREE.LineBasicMaterial({color:0xffffff})));
+    }
+    seq.forEach((lab,k)=>{
+      const p=at(SHIFT[lab][0],SHIFT[lab][1],k*dz);
+      const mk=new THREE.Mesh(new THREE.SphereGeometry(0.09,16,12),
+        new THREE.MeshBasicMaterial({color:0xffffff}));
+      mk.position.set(p[0],p[1],p[2]); world.add(mk);
+    });
+  }
+}
+function packReadout(){
+  const fcc=pack.structure==='fcc';
+  const seq=sequence(pack.structure,pack.n).join('');
+  const dot=c=>`<span class="sw" style="background:#${c.toString(16).padStart(6,'0')}"></span>`;
+  const legend = fcc
+    ? `${dot(LCOL.A)}A ${dot(LCOL.B)}B ${dot(LCOL.C)}C`
+    : `${dot(LCOL.A)}A ${dot(LCOL.B)}B`;
+  document.getElementById('packReadout').innerHTML=`
+    <h2>${fcc?'Face-centred cubic':'Hexagonal close-packed'}</h2>
+    <div class="kv"><span class="k">Layers shown</span><span class="v">${legend}</span></div>
+    <div class="kv"><span class="k">Stacking</span><span class="v">${seq}${seq.length<9?'…':''}</span></div>
+    <div class="kv"><span class="k">Coordination</span><span class="v">12 · ${fcc?'cuboctahedron':'anticuboctahedron'}</span></div>
+    <div class="kv"><span class="k">Packing fraction</span><span class="v">0.7405</span></div>
+    <div class="kv"><span class="k">Ideal c/a</span><span class="v">${fcc?'—':'1.633'}</span></div>
+    <div class="kv"><span class="k">Close-packed plane</span><span class="v">${fcc?'{111}':'(0001)'}</span></div>
+    <div class="kv"><span class="k">Close-packed dirs</span><span class="v">${fcc?'⟨110⟩':'⟨112̅0⟩'}</span></div>
+    <div class="kv"><span class="k">Stacking axis</span><span class="v">${fcc?'[111]':'[0001] (c)'}</span></div>
+    <div class="kv"><span class="k">Examples</span><span class="v">${fcc?'Cu, Al, Ni, Au, Ag':'Mg, Zn, Ti, Co, Cd'}</span></div>
+    <p class="note">${fcc
+      ? 'Every third layer repeats, so the stacking guide steps A→B→C then back to A. Stacking these close-packed sheets along a body diagonal builds the cubic cell — its {111} planes are these sheets.'
+      : 'Alternate layers coincide (A→B→A), so the guide rocks back and forth between two columns. The sheets are the (0001) basal planes of the hexagonal cell.'}</p>`;
+}
+let packView='iso';
+function setPackView(name){
+  packView=name; cam.target.set(0,0,0);
+  document.querySelectorAll('#packViewSeg button').forEach(x=>x.classList.toggle('on',x.dataset.view===name));
+  if(name==='iso'){ cam.theta=-0.7854; cam.phi=1.16; }
+  else if(name==='top'){ cam.theta=Math.PI/4; cam.phi=0.017; }
+  else if(name==='front'){ cam.theta=Math.PI/2; cam.phi=Math.PI/2-0.001; }
+  applyCam();
+}
+// frame the whole stack: fit both the disc width and the total (exploded) height
+function fitPackCamera(){
+  const {R}=packSites();
+  const width=2*(R+0.6);
+  const height=(pack.n-1)*LAYER_DZ*pack.explode + 1;
+  const fov=camera.fov*Math.PI/180;
+  const rH=(height/2)/Math.tan(fov/2);
+  const rW=(width/2)/Math.tan(fov/2)/Math.max(camera.aspect,0.35);
+  cam.r=Math.max(4.5, Math.min(40, Math.max(rH,rW)*1.15));
+  applyCam();
+}
+function buildPacking(){ drawPacking(); packReadout(); fitPackCamera(); }
+
+/* ---------- cubic unit cells (identify SC / BCC / FCC) ---------- */
+// The conventional cubic cell (side a=1) tells the three cubic metals apart by WHERE the
+// atoms sit: SC = corners only; BCC = corners + one atom dead-centre; FCC = corners + one
+// atom on every face. Working in half-cell (a/2) integer units makes the site test clean:
+//   SC  : all coords even              BCC : all coords same parity (corner or body)
+//   FCC : coord sum even (corner or face). odd-coord count -> 0 corner, 2 face, 3 body.
+const uc={ structure:'bcc', tile:1 };
+let cellView='iso';
+const CELLCOL={corner:0x6a727c, face:0xe89a2c, body:0xff3d7f};
+const CELLINFO={
+  sc:{name:'Simple cubic', per:1, cn:6, apf:'0.524', nn:'⟨100⟩', dense:'{100}',
+      ex:'α-Po (rare)', spot:'Atoms sit only on the 8 corners — the cube is empty inside.'},
+  bcc:{name:'Body-centred cubic', per:2, cn:8, apf:'0.680', nn:'⟨111⟩', dense:'{110}',
+      ex:'α-Fe, W, Cr, Mo, Nb, V, Na, K', spot:'One atom dead-centre of the cube touches all 8 corners along ⟨111⟩. Not close-packed.'},
+  fcc:{name:'Face-centred cubic', per:4, cn:12, apf:'0.740', nn:'⟨110⟩', dense:'{111}',
+      ex:'Cu, Al, Ni, Ag, Au, Pt, γ-Fe', spot:'An atom is centred on each of the 6 faces, none in the body. Its {111} planes are the close-packed layers.'}
+};
+function cellAtoms(structure,N){
+  const M=2*N, out=[];
+  const keep=(x,y,z)=> structure==='sc' ? (x%2===0&&y%2===0&&z%2===0)
+    : structure==='bcc' ? ((x&1)===(y&1)&&(y&1)===(z&1))
+    : ((x+y+z)%2===0);                                   // fcc
+  for(let x=0;x<=M;x++)for(let y=0;y<=M;y++)for(let z=0;z<=M;z++){
+    if(!keep(x,y,z)) continue;
+    const odd=(x&1)+(y&1)+(z&1);
+    const role = odd===0?'corner': odd===2?'face': odd===3?'body':null;
+    if(!role) continue;                                  // edge sites (not in these lattices)
+    out.push({x:x/2,y:y/2,z:z/2, role});
+  }
+  return out;
+}
+function drawCell(){
+  while(world.children.length) world.remove(world.children[0]);
+  const N=uc.tile, atoms=cellAtoms(uc.structure,N), c=N/2;
+  const at=(x,y,z)=>[x-c,y-c,z-c];
+  const roles=document.getElementById('cRoles').checked;
+  const fill =document.getElementById('cFill').checked;
+  const bonds=document.getElementById('cBonds').checked;
+  const labels=document.getElementById('cLabels').checked;
+  const plane=document.getElementById('cPlane').checked;
+  const NN = uc.structure==='sc'?1 : uc.structure==='bcc'?Math.sqrt(3)/2 : Math.SQRT1_2;
+  const rFill = uc.structure==='sc'?0.5 : uc.structure==='bcc'?Math.sqrt(3)/4 : Math.SQRT2/4;
+  const r = fill? rFill : 0.16;
+
+  // cubic grid wireframe (all unit-cell edges of the N^3 block)
+  const gp=[];
+  for(let i=0;i<=N;i++)for(let j=0;j<=N;j++){
+    let A=at(0,i,j),B=at(N,i,j); gp.push(A[0],A[1],A[2],B[0],B[1],B[2]);
+    A=at(i,0,j);B=at(i,N,j); gp.push(A[0],A[1],A[2],B[0],B[1],B[2]);
+    A=at(i,j,0);B=at(i,j,N); gp.push(A[0],A[1],A[2],B[0],B[1],B[2]);
+  }
+  const gg=new THREE.BufferGeometry();
+  gg.setAttribute('position',new THREE.Float32BufferAttribute(gp,3));
+  world.add(new THREE.LineSegments(gg,new THREE.LineBasicMaterial({color:0x333940})));
+
+  // atoms, coloured by site role so the identifying atom (body/face) stands out
+  const sph=new THREE.SphereGeometry(r,26,20);
+  for(const a of atoms){
+    const col = roles? CELLCOL[a.role] : 0x9a9f98;
+    const m=new THREE.Mesh(sph,new THREE.MeshStandardMaterial({color:col,roughness:0.45,metalness:0.05}));
+    const p=at(a.x,a.y,a.z); m.position.set(p[0],p[1],p[2]); world.add(m);
+  }
+
+  // nearest-neighbour bonds -> shows the coordination that defines each structure (6/8/12)
+  if(bonds){
+    const bp=[], thr=(NN*1.06)**2;
+    for(let i=0;i<atoms.length;i++)for(let j=i+1;j<atoms.length;j++){
+      const A=atoms[i],B=atoms[j];
+      const dx=A.x-B.x,dy=A.y-B.y,dz=A.z-B.z,dd=dx*dx+dy*dy+dz*dz;
+      if(dd>1e-6&&dd<=thr){const p=at(A.x,A.y,A.z),q=at(B.x,B.y,B.z);bp.push(p[0],p[1],p[2],q[0],q[1],q[2]);}
+    }
+    if(bp.length){
+      const bg=new THREE.BufferGeometry();
+      bg.setAttribute('position',new THREE.Float32BufferAttribute(bp,3));
+      world.add(new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0xc0cad4,transparent:true,opacity:0.75})));
+    }
+  }
+
+  // one label per distinct site role
+  if(labels){
+    const names={corner:'corner',face:'face-centre',body:'body-centre'}, seen={};
+    for(const a of atoms) if(!seen[a.role]) seen[a.role]=a;
+    for(const role in seen){
+      const a=seen[role], p=at(a.x,a.y,a.z);
+      world.add(makeLabel(names[role],[p[0],p[1]+r+0.2,p[2]],'#'+CELLCOL[role].toString(16).padStart(6,'0')));
+    }
+  }
+
+  // densest plane through the central unit cube: SC {100}, BCC {110}, FCC {111}
+  if(plane){
+    const hkl = uc.structure==='sc'?[1,0,0] : uc.structure==='bcc'?[1,1,0] : [1,1,1];
+    const res=planePolygon(cubicCell(),hkl);
+    if(res && res.poly && res.poly.length>=3){
+      const poly=res.poly.map(P=>[P[0]-0.5,P[1]-0.5,P[2]-0.5]);   // centre the [0,1] cube
+      const cen=scl(poly.reduce((s,p)=>add(s,p),[0,0,0]),1/poly.length);
+      const tri=[];
+      for(let i=0;i<poly.length;i++){const b=poly[i],d=poly[(i+1)%poly.length];tri.push(...cen,...b,...d);}
+      const geo=new THREE.BufferGeometry();
+      geo.setAttribute('position',new THREE.Float32BufferAttribute(tri,3)); geo.computeVertexNormals();
+      world.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0xff4d94,transparent:true,
+        opacity:0.18,side:THREE.DoubleSide,emissive:0x2a0a1a,roughness:0.5})));
+      const op=[];
+      for(let i=0;i<poly.length;i++){op.push(...poly[i],...poly[(i+1)%poly.length]);}
+      const og=new THREE.BufferGeometry();
+      og.setAttribute('position',new THREE.Float32BufferAttribute(op,3));
+      world.add(new THREE.LineSegments(og,new THREE.LineBasicMaterial({color:0xff9ecb})));
+    }
+  }
+}
+function cellReadout(){
+  const d=CELLINFO[uc.structure], dot=c=>`<span class="sw" style="background:#${c.toString(16).padStart(6,'0')}"></span>`;
+  const legend = uc.structure==='sc' ? `${dot(CELLCOL.corner)}corner`
+    : uc.structure==='bcc' ? `${dot(CELLCOL.corner)}corner ${dot(CELLCOL.body)}body`
+    : `${dot(CELLCOL.corner)}corner ${dot(CELLCOL.face)}face`;
+  document.getElementById('cellReadout').innerHTML=`
+    <h2>${d.name}</h2>
+    <div class="kv"><span class="k">Sites</span><span class="v">${legend}</span></div>
+    <div class="kv"><span class="k">Atoms / cell</span><span class="v">${d.per}</span></div>
+    <div class="kv"><span class="k">Coordination</span><span class="v">${d.cn}</span></div>
+    <div class="kv"><span class="k">Packing fraction</span><span class="v">${d.apf}</span></div>
+    <div class="kv"><span class="k">Nearest-nbr dir</span><span class="v">${d.nn}</span></div>
+    <div class="kv"><span class="k">Densest plane</span><span class="v">${d.dense}</span></div>
+    <div class="kv"><span class="k">Examples</span><span class="v">${d.ex}</span></div>
+    <p class="note"><b>Spot it:</b> ${d.spot}</p>`;
+}
+// aim the camera straight down a crystal direction (data coords -> screen-world x,z,-y)
+function aimDataDir(dv){
+  const W=[dv[0],dv[2],-dv[1]], n=Math.hypot(W[0],W[1],W[2]);
+  cam.phi=Math.max(0.01,Math.min(Math.PI-0.01,Math.acos(W[1]/n)));
+  cam.theta=Math.atan2(W[2],W[0]);
+}
+function setCellView(name){
+  cellView=name; cam.target.set(0,0,0);
+  document.querySelectorAll('#cellViewSeg button').forEach(x=>x.classList.toggle('on',x.dataset.view===name));
+  if(name==='iso'){ cam.theta=-0.7854; cam.phi=0.95; }
+  else if(name==='100') aimDataDir([1,0,0]);
+  else if(name==='110') aimDataDir([1,1,0]);
+  else if(name==='111') aimDataDir([1,1,1]);
+  applyCam();
+}
+function fitCellCamera(){
+  const half=uc.tile*Math.sqrt(3)/2 + 0.7, fov=camera.fov*Math.PI/180;
+  cam.r=Math.max(3.5,Math.min(40,(half/Math.tan(fov/2))*1.1));
+  applyCam();
+}
+function setCellHint(){
+  document.getElementById('cellHint').innerHTML = {
+    sc:'Simple cubic: atoms on corners only — the reference case.',
+    bcc:'Body-centred cubic: look for the single atom in the cube’s centre.',
+    fcc:'Face-centred cubic: look for an atom on the middle of every face.'
+  }[uc.structure];
+}
+function buildCell(){ drawCell(); cellReadout(); fitCellCamera(); }
+
+/* ---------- XRD / Bragg study sheet (2D SVG, overlays the 3D stage) ---------- */
+const xrd={ structure:'fcc', a:3.61, lambda:1.5406, max:120 };
+const SVGNS='http://www.w3.org/2000/svg';
+const allowedHKL={
+  sc:()=>true,
+  bcc:(h,k,l)=>((h+k+l)%2===0),
+  fcc:(h,k,l)=>(((h&1)===(k&1))&&((k&1)===(l&1)))     // all even or all odd
+};
+function multiplicity(h,k,l){
+  const set=new Set();
+  const perms=[[h,k,l],[h,l,k],[k,h,l],[k,l,h],[l,h,k],[l,k,h]];
+  for(const p of perms)for(const sx of[1,-1])for(const sy of[1,-1])for(const sz of[1,-1])
+    set.add((p[0]*sx)+','+(p[1]*sy)+','+(p[2]*sz));
+  return set.size;                                    // exact family multiplicity
+}
+// aggregate all allowed reflections by N=h^2+k^2+l^2 (same N -> same 2θ in cubic -> overlap)
+function reflections(){
+  const rule=allowedHKL[xrd.structure], byN=new Map();
+  for(let h=0;h<=8;h++)for(let k=0;k<=h;k++)for(let l=0;l<=k;l++){
+    const N=h*h+k*k+l*l; if(N===0) continue;
+    if(!rule(h,k,l)) continue;
+    const s=xrd.lambda*Math.sqrt(N)/(2*xrd.a); if(s>1) continue;   // beyond diffraction limit
+    const theta=Math.asin(s), tt=2*theta*180/Math.PI; if(tt>xrd.max) continue;
+    const m=multiplicity(h,k,l);
+    const LP=(1+Math.cos(2*theta)**2)/(Math.sin(theta)**2*Math.cos(theta)); // Lorentz–polarization
+    const q=Math.sqrt(N)/(2*xrd.a);                    // sinθ/λ
+    const env=Math.exp(-8.8*q*q);                      // schematic scattering-factor + thermal falloff
+    const I=m*LP*env;
+    if(!byN.has(N)) byN.set(N,{N,theta,tt,d:xrd.a/Math.sqrt(N),I:0,fam:[]});
+    const e=byN.get(N); e.I+=I; e.fam.push([h,k,l]); e.mult=(e.mult||0)+m;
+  }
+  const list=[...byN.values()].sort((a,b)=>a.tt-b.tt);
+  const Imax=list.reduce((m,e)=>Math.max(m,e.I),1e-9);
+  list.forEach(e=>e.Irel=100*e.I/Imax);
+  return list;
+}
+function drawBragg(){
+  const th=+document.getElementById('bTheta').value*Math.PI/180;
+  const d=+document.getElementById('bD').value, lam=+document.getElementById('bL').value;
+  document.getElementById('bThetaV').textContent=(th*180/Math.PI).toFixed(1)+'°';
+  document.getElementById('bDV').textContent=d.toFixed(2)+' Å';
+  document.getElementById('bLV').textContent=lam.toFixed(2)+' Å';
+  const W=760,H=340, Ax=380, Ayt=110, scale=70, Dpx=d*scale;
+  const By=Ayt+Dpx;
+  const ct=Math.cos(th), st=Math.sin(th);
+  const uin=[ct,st], uout=[ct,-st], L=200;
+  const P=(x,y)=>x.toFixed(1)+','+y.toFixed(1);
+  const A=[Ax,Ayt], B=[Ax,By];
+  // rays
+  const inA=[A[0]-L*uin[0],A[1]-L*uin[1]], outA=[A[0]+L*uout[0],A[1]+L*uout[1]];
+  const inB=[B[0]-L*uin[0],B[1]-L*uin[1]], outB=[B[0]+L*uout[0],B[1]+L*uout[1]];
+  // feet of perpendicular from A onto B's incident/reflected rays -> the 2 path pieces (each d·sinθ)
+  const dotIn=(A[0]-B[0])*uin[0]+(A[1]-B[1])*uin[1];
+  const dotOut=(A[0]-B[0])*uout[0]+(A[1]-B[1])*uout[1];
+  const C=[B[0]+dotIn*uin[0],B[1]+dotIn*uin[1]];
+  const Dd=[B[0]+dotOut*uout[0],B[1]+dotOut*uout[1]];
+  const atoms=(y)=>{let s='';for(let x=60;x<=700;x+=46)s+=`<circle cx="${x}" cy="${y}" r="6.5" fill="#3a4048"/>`;return s;};
+  const delta=2*d*st, ratio=delta/lam, nInt=Math.round(ratio), hit=Math.abs(ratio-nInt)<0.03 && nInt>=1;
+  const svg=`<svg viewBox="0 0 ${W} ${H}">
+    <line x1="40" y1="${Ayt}" x2="720" y2="${Ayt}" stroke="#2a3038"/>
+    <line x1="40" y1="${By}" x2="720" y2="${By}" stroke="#2a3038"/>
+    ${atoms(Ayt)}${atoms(By)}
+    <line x1="${P(inA[0],inA[1]).split(',')[0]}" y1="${inA[1].toFixed(1)}" x2="${A[0]}" y2="${A[1]}" stroke="#7ea6ff" stroke-width="2"/>
+    <line x1="${A[0]}" y1="${A[1]}" x2="${outA[0].toFixed(1)}" y2="${outA[1].toFixed(1)}" stroke="#7ea6ff" stroke-width="2"/>
+    <line x1="${inB[0].toFixed(1)}" y1="${inB[1].toFixed(1)}" x2="${B[0]}" y2="${B[1]}" stroke="#7ea6ff" stroke-width="2"/>
+    <line x1="${B[0]}" y1="${B[1]}" x2="${outB[0].toFixed(1)}" y2="${outB[1].toFixed(1)}" stroke="#7ea6ff" stroke-width="2"/>
+    <line x1="${A[0]}" y1="${A[1]}" x2="${C[0].toFixed(1)}" y2="${C[1].toFixed(1)}" stroke="#555c65" stroke-dasharray="4 3"/>
+    <line x1="${A[0]}" y1="${A[1]}" x2="${Dd[0].toFixed(1)}" y2="${Dd[1].toFixed(1)}" stroke="#555c65" stroke-dasharray="4 3"/>
+    <line x1="${C[0].toFixed(1)}" y1="${C[1].toFixed(1)}" x2="${B[0]}" y2="${B[1]}" stroke="${hit?'#43d17a':'#ff6b6b'}" stroke-width="4"/>
+    <line x1="${B[0]}" y1="${B[1]}" x2="${Dd[0].toFixed(1)}" y2="${Dd[1].toFixed(1)}" stroke="${hit?'#43d17a':'#ff6b6b'}" stroke-width="4"/>
+    <circle cx="${A[0]}" cy="${A[1]}" r="5" fill="#e8ece9"/>
+    <circle cx="${B[0]}" cy="${B[1]}" r="5" fill="#e8ece9"/>
+    <text x="${A[0]+8}" y="${A[1]-8}" fill="#8a938c" font-size="13">plane 1</text>
+    <text x="${B[0]+8}" y="${By+20}" fill="#8a938c" font-size="13">plane 2</text>
+    <text x="${(C[0]+B[0])/2-40}" y="${(C[1]+B[1])/2+4}" fill="${hit?'#43d17a':'#ff9ecb'}" font-size="13">d·sinθ</text>
+    <path d="M ${A[0]-70} ${A[1]} A 70 70 0 0 0 ${(A[0]-70*ct).toFixed(1)} ${(A[1]+70*st).toFixed(1)}" fill="none" stroke="#e0a44a"/>
+    <text x="${A[0]-92}" y="${A[1]+20}" fill="#e0a44a" font-size="13">θ</text>
+    <line x1="40" y1="${Ayt}" x2="40" y2="${By}" stroke="#e0a44a" stroke-dasharray="3 3"/>
+    <text x="14" y="${(Ayt+By)/2+4}" fill="#e0a44a" font-size="13">d</text>
+  </svg>`;
+  document.getElementById('braggSvg').innerHTML=svg;
+  const bragg=`2d·sinθ = 2 × ${d.toFixed(2)} × sin(${(th*180/Math.PI).toFixed(1)}°) = <b>${delta.toFixed(3)} Å</b>` +
+    `&nbsp; | &nbsp; λ = ${lam.toFixed(2)} Å &nbsp; → &nbsp; 2d·sinθ ⁄ λ = <b>${ratio.toFixed(2)}</b><br>` +
+    (hit ? `<span class="hit">✓ Constructive — n = ${nInt}. A diffraction peak forms here.</span>`
+         : `<span class="miss">✗ Not a whole number of λ — waves cancel, no peak. Adjust θ.</span>`);
+  document.getElementById('braggEq').innerHTML=bragg;
+}
+function drawPowder(){
+  const list=reflections();
+  const weight=document.getElementById('xWeight').checked;
+  const labels=document.getElementById('xLabels').checked;
+  document.getElementById('powderLead').innerHTML=
+    `${xrd.structure.toUpperCase()}, a = ${xrd.a} Å, λ = ${xrd.lambda} Å — ${list.length} reflections up to 2θ = ${xrd.max}°. `+
+    `Stick height ≈ relative intensity (multiplicity × Lorentz–polarization × a schematic high-angle falloff). Positions are exact; intensities are indicative.`;
+  const W=780,H=250, mL=20,mR=10,mT=16,mB=34, pw=W-mL-mR, ph=H-mT-mB;
+  const x2=tt=>mL+pw*tt/xrd.max;
+  let ticks='';
+  for(let t=0;t<=xrd.max;t+=20){ticks+=`<line x1="${x2(t)}" y1="${mT+ph}" x2="${x2(t)}" y2="${mT+ph+5}" stroke="#4a515a"/><text x="${x2(t)}" y="${H-10}" fill="#8a938c" font-size="11" text-anchor="middle">${t}</text>`;}
+  let sticks='';
+  for(const e of list){
+    const hgt=weight ? Math.max(3,ph*e.Irel/100) : ph*0.72;
+    const x=x2(e.tt), y0=mT+ph, y1=y0-hgt;
+    sticks+=`<line x1="${x.toFixed(1)}" y1="${y0}" x2="${x.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#43d17a" stroke-width="2.4"/>`;
+    if(labels && (!weight || e.Irel>4)){
+      const f=e.fam[0].map(v=>v).join('');
+      sticks+=`<text x="${x.toFixed(1)}" y="${(y1-5).toFixed(1)}" fill="#cfd6cd" font-size="10.5" text-anchor="middle">${f}</text>`;
+    }
+  }
+  document.getElementById('powderSvg').innerHTML=`<svg viewBox="0 0 ${W} ${H}">
+    <line x1="${mL}" y1="${mT+ph}" x2="${W-mR}" y2="${mT+ph}" stroke="#4a515a"/>
+    ${ticks}${sticks}
+    <text x="${mL+pw/2}" y="${H-1}" fill="#8a938c" font-size="11" text-anchor="middle">2θ (degrees)</text>
+  </svg>`;
+  // table
+  let rows='';
+  for(const e of list){
+    rows+=`<tr><td>${e.fam.map(f=>'('+f.join('')+')').join(' ')}</td><td>${e.N}</td>`+
+      `<td>${e.d.toFixed(3)}</td><td>${e.tt.toFixed(2)}</td><td>${e.mult}</td><td>${e.Irel.toFixed(0)}</td></tr>`;
+  }
+  document.getElementById('powderTable').innerHTML=`<table class="xtab">
+    <tr><th>(hkl)</th><th>h²+k²+l²</th><th>d (Å)</th><th>2θ (°)</th><th>mult.</th><th>I (rel)</th></tr>${rows}</table>`;
+}
+function drawRules(){
+  // fingerprint = allowed N sequence for each structure (up to N=24)
+  const seq=(struct)=>{const r=allowedHKL[struct],out=[],seen=new Set();
+    for(let h=0;h<=4;h++)for(let k=0;k<=h;k++)for(let l=0;l<=k;l++){const N=h*h+k*k+l*l;
+      if(N>0&&N<=24&&r(h,k,l))seen.add(N);}
+    return [...seen].sort((a,b)=>a-b);};
+  const defs={
+    sc:{t:'Simple cubic',c:'All (hkl) allowed — no missing reflections.'},
+    bcc:{t:'Body-centred cubic',c:'Allowed only when <b>h+k+l is even</b>. (100),(111) etc. are absent.'},
+    fcc:{t:'Face-centred cubic',c:'Allowed only when h,k,l are <b>all even or all odd</b> (unmixed).'}
+  };
+  let html='';
+  for(const s of ['sc','bcc','fcc']){
+    const act=s===xrd.structure?' act':'';
+    html+=`<div class="rule${act}"><b>${defs[s].t}</b> — <span class="k">${defs[s].c}</span>`+
+      `<div class="seq">N = ${seq(s).join(', ')} …</div></div>`;
+  }
+  html+=`<p class="note">Indexing trick: sin²θ ∝ N, so the ratio of the peaks' sin²θ equals the ratio of these N. `+
+    `The first two peaks give it away — SC & BCC start 1:2, FCC starts 3:4.</p>`;
+  document.getElementById('xrdRules').innerHTML=html;
+}
+function buildXRD(){ drawBragg(); drawPowder(); drawRules(); }
+
+/* ---------- top-level mode switch ---------- */
+function setMode(m){
+  if(m===mode) return;
+  mode=m;
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.toggle('on',x.dataset.mode===m));
+  document.getElementById('millerUI').hidden = m!=='miller';
+  document.getElementById('packUI').hidden   = m!=='pack';
+  document.getElementById('cellUI').hidden    = m!=='cell';
+  document.getElementById('xrdUI').hidden     = m!=='xrd';
+  // XRD is a 2D study sheet: swap the 3D canvas for the SVG overlay
+  const isXrd=m==='xrd';
+  renderer.domElement.style.display=isXrd?'none':'block';
+  document.getElementById('xrdStage').hidden=!isXrd;
+  document.getElementById('hud').style.display=isXrd?'none':'block';
+  const titles={miller:'Miller Indices Visualizer', pack:'Close-Packed Structures', cell:'Cubic Unit Cells', xrd:'XRD & Bragg Diffraction'};
+  const subs={
+    miller:'Enter indices to see the plane inside the crystal cell.',
+    pack:'Stack close-packed layers to see how FCC and HCP arise.',
+    cell:'Tell SC, BCC and FCC apart by where the atoms sit.',
+    xrd:'Bragg’s law, powder patterns and selection rules — exam review.'};
+  document.getElementById('appTitle').textContent=titles[m];
+  document.getElementById('appSub').textContent=subs[m];
+  spin=false;
+  if(m==='pack'){ cam.r=6.6; setStructHint(); buildPacking(); setPackView('iso'); }
+  else if(m==='cell'){ setCellHint(); buildCell(); setCellView('iso'); }
+  else if(m==='xrd'){ buildXRD(); }
+  else { cam.r = sysMode==='hex'?4.8:4.2; generate(); setView(curView); }
+}
+function setStructHint(){
+  document.getElementById('packHint').innerHTML = pack.structure==='fcc'
+    ? 'Cubic close-packed: layers stack <code>A B C</code> and repeat every third sheet.'
+    : 'Hexagonal close-packed: layers alternate <code>A B</code> and repeat every other sheet.';
+}
+document.getElementById('modeSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(b) setMode(b.dataset.mode);
+});
+document.getElementById('structSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#structSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  pack.structure=b.dataset.struct; setStructHint(); buildPacking(); setPackView(packView);
+});
+document.getElementById('layerSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#layerSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  pack.n=+b.dataset.n; document.getElementById('layerVal').textContent=pack.n; buildPacking();
+});
+document.getElementById('explode').addEventListener('input',e=>{
+  pack.explode=+e.target.value;
+  document.getElementById('explodeVal').textContent=pack.explode.toFixed(1)+'×';
+  drawPacking(); fitPackCamera();
+});
+document.getElementById('packViewSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(b) setPackView(b.dataset.view);
+});
+['pColor','pLabels','pGuide','pPlane','pBonds'].forEach(id=>
+  document.getElementById(id).addEventListener('change',drawPacking));
+document.getElementById('pSpin').addEventListener('change',e=>spin=e.target.checked);
+
+// unit-cell wiring
+document.getElementById('cellSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#cellSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  uc.structure=b.dataset.cell; setCellHint(); buildCell(); setCellView(cellView);
+});
+document.getElementById('tileSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#tileSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  uc.tile=+b.dataset.t; document.getElementById('tileVal').textContent=`${uc.tile}×${uc.tile}×${uc.tile}`;
+  buildCell();
+});
+document.getElementById('cellViewSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(b) setCellView(b.dataset.view);
+});
+['cRoles','cBonds','cFill','cPlane','cLabels'].forEach(id=>
+  document.getElementById(id).addEventListener('change',drawCell));
+document.getElementById('cSpin').addEventListener('change',e=>spin=e.target.checked);
+
+// XRD wiring
+document.getElementById('xStructSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  document.querySelectorAll('#xStructSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  xrd.structure=b.dataset.x; drawPowder(); drawRules();
+});
+['xA','xLambda','xMax'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{
+  const v=parseFloat(e.target.value);
+  if(!Number.isFinite(v)) return;
+  if(id==='xA') xrd.a=v; else if(id==='xLambda') xrd.lambda=v; else xrd.max=v;
+  drawPowder();
+}));
+['xWeight','xLabels'].forEach(id=>document.getElementById(id).addEventListener('change',drawPowder));
+['bTheta','bD','bL'].forEach(id=>document.getElementById(id).addEventListener('input',drawBragg));
+// lattice-parameter & wavelength quick presets
+(function(){
+  const aP=document.getElementById('xAPresets');
+  [['Cu 3.61',3.61],['Al 4.05',4.05],['Fe 2.87',2.87],['W 3.16',3.16],['Au 4.08',4.08]].forEach(([t,v])=>{
+    const b=document.createElement('button');b.textContent=t;
+    b.onclick=()=>{xrd.a=v;document.getElementById('xA').value=v;drawPowder();};aP.appendChild(b);
+  });
+  const lP=document.getElementById('xLambdaPresets');
+  [['Cu Kα 1.5406',1.5406],['Mo Kα 0.7107',0.7107],['Co Kα 1.7890',1.7890],['Cr Kα 2.2897',2.2897]].forEach(([t,v])=>{
+    const b=document.createElement('button');b.textContent=t;
+    b.onclick=()=>{xrd.lambda=v;document.getElementById('xLambda').value=v;drawPowder();};lP.appendChild(b);
+  });
+})();
 
 /* ---------- boot ---------- */
 buildInputs();
