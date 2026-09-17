@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260908a" />
+  <link rel="stylesheet" href="./styles.css?v=20260917a" />
 </head>
 <body class="home">
   <!-- Ambient monochrome CAD backdrop: a PRE-RENDERED spin of the SCORPION as a
@@ -169,6 +169,46 @@
           </a>
         </div><!-- .projects-layout -->
         <!-- NOTE(placeholder): add real repo/demo URLs to the project links when ready. -->
+      </div>
+    </section>
+
+    <!-- Research experience -->
+    <section class="section" id="research">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div class="kicker">Research</div>
+          <h2>Research Experience</h2>
+          <p>Bio-inspired robotics at Carnegie Mellon.</p>
+        </div>
+
+        <details class="research-card reveal">
+          <summary class="rc-summary">
+            <div class="rc-top">
+              <span class="rc-org">CMU Biorobotics Lab</span>
+              <span class="rc-status live">● Ongoing · 2026</span>
+            </div>
+            <h3>Spider-Man Robot — grappling &amp; dynamic locomotion</h3>
+            <div class="rc-meta">
+              <span>Reporting to Yizhu Gu (Ph.D.)</span>
+              <span>Concept by Prof. Howie Choset</span>
+              <span>Sole researcher</span>
+            </div>
+            <span class="rc-toggle" aria-hidden="true"><span class="rc-t-more">Details</span><span class="rc-t-less">Collapse</span> <span class="rc-chev">›</span></span>
+          </summary>
+
+          <div class="rc-detail">
+            <div class="rc-ps">
+              <p class="ps-line"><span class="ps-k">The task</span>Pioneer the concept of a &ldquo;Spider-Man robot&rdquo; — a grappling, self-anchoring platform — from a one-line brief with no predefined requirements and no prior work in the lab.</p>
+              <p class="ps-line sol"><span class="ps-k">What I did</span>Ran a full literature review across tethered perching, surface-attachment mechanisms, and animal anchoring biomechanics; reframed the problem, arguing a grapple&rsquo;s real value is dynamic, controlled traversal — swinging and jumping between self-placed anchors — rather than climbing; identified <em>post-launch attitude control</em> (reorienting the body mid-air, as a jumping spider does with its dragline) as the open, biologically-grounded problem; developed seven prototype directions with original mechanism diagrams; and authored a formal proposal recommending a lead design and a validation experiment.</p>
+            </div>
+
+            <p class="rc-note">As of now, I am the only researcher developing this concept, which was originated by Prof. Howie Choset.</p>
+
+            <div class="rc-actions">
+              <a class="rc-cta" href="./assets/Spiderman_Robot_Proposal.pdf" target="_blank" rel="noopener">Read the proposal (PDF) →</a>
+            </div>
+          </div>
+        </details>
       </div>
     </section>
 
