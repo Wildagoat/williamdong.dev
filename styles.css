@@ -179,9 +179,24 @@ img { max-width: 100%; display: block; }
 .proj-feature .ps-line { font-size: 12.5px; }
 
 /* Trainer sits standalone on the right (it has an interactive demo); the other work is a grid on the left. */
-.projects-layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 10px; align-items: stretch; }
-.projects-layout > .grid { grid-template-columns: 1fr 1fr; }
-@media (max-width: 720px) { .projects-layout { grid-template-columns: 1fr; } }
+.projects-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 10px; align-items: stretch; }
+/* Column-major: fill a column 4 cards deep, then start a new column. */
+.projects-layout > .grid {
+  grid-template-columns: none;
+  grid-template-rows: repeat(4, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-content: start;
+}
+@media (max-width: 720px) {
+  .projects-layout { grid-template-columns: 1fr; }
+  /* Stack vertically on narrow screens: revert to normal row flow. */
+  .projects-layout > .grid {
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+  }
+}
 @media (max-width: 540px) { .projects-layout > .grid { grid-template-columns: 1fr; } }
 
 .proj-feature { padding: 20px; background: var(--panel-2); border-color: var(--line-2); }
