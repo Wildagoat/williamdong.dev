@@ -84,7 +84,8 @@
     <a href="#estimate">10. The revolved-body card</a>
     <a href="#trouble">11. Troubleshooting</a>
     <a href="#glossary">12. Symbols &amp; glossary</a>
-    <a href="#cheat">13. Cheat sheet</a>
+    <a href="#report">13. Ending a test &amp; the report</a>
+    <a href="#cheat">14. Cheat sheet</a>
   </nav>
   <main>
     <h1>The Air Sim: <span>a beginner's guide</span></h1>
@@ -396,7 +397,40 @@
     </table></div>
 
     <!-- 13 -->
-    <h2 id="cheat"><span class="n">13</span>Cheat sheet</h2>
+    <h2 id="report"><span class="n">13</span>Ending a test &amp; the report card</h2>
+    <p><b>■ End test</b> stops the run and opens a report sheet. <b>★ Run standard test</b> is the one-click
+      version: Re 1,000 · 0° · 170 rows · 24% size, auto-ending at 6 flow-throughs (about 2 minutes). The
+      <b>Auto-end at N flow-throughs</b> box does the same for any settings. A test needs at least 2 flow-throughs,
+      and 4+ counts as settled. Only the <b>second half</b> of the run is scored. The first half is start-up
+      ("settling", shaded grey on the charts).</p>
+    <h3>The stars</h3>
+    <p>Out of 10, in ½-star steps. Your shape is compared, metric by metric, with the <b>ideal body</b> (the
+      "Ideal" example) flown through the same tunnel at the same conditions. The ideal scores 10. For reference,
+      a revolved NACA 0025 scores about 7.5, the packaging hull about 5–5.5, and a flat-faced can 1.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Metric (weight)</th><th>What it tells you</th><th>Good looks like</th></tr>
+      <tr><td>Drag per volume (2.5)</td><td>Real-scale drag to carry the volume you enclose (Hoerner, at the speed in the revolved card).</td><td>Close to the ideal's 0.063</td></tr>
+      <tr><td>Wake steadiness, C<sub>L</sub> RMS (2)</td><td>How much the wake flaps side to side (vortex shedding). This is vibration and noise in real life.</td><td>Below 0.005: a flat C<sub>L</sub> line</td></tr>
+      <tr><td>Wake width (1.5)</td><td>Width of the slowed air behind you, in frontal heights.</td><td>About 1.8 H</td></tr>
+      <tr><td>C<sub>D</sub> corrected (1)</td><td>The tunnel's drag coefficient, corrected for the walls.</td><td>Close to the ideal's</td></tr>
+      <tr><td>Recirculation area (1)</td><td>Size of the reversed-flow bubbles (trapped, churning air).</td><td>Small, no big bubble behind the tail</td></tr>
+      <tr><td>Tail pressure C<sub>p</sub> (1)</td><td>Whether pressure recovers on the rear 15%. Suction there is drag.</td><td>Near −0.3 or higher</td></tr>
+      <tr><td>Attached flow (0.5)</td><td>How far back the flow hugs the surface.</td><td>No early detachment at the nose</td></tr>
+      <tr><td>Max tail slope (0.5)</td><td>Steepest aft angle, from the geometry.</td><td>≤ 12–15°</td></tr>
+    </table></div>
+    <p>A green banner means the run matched the benchmark conditions. An amber <b>Provisional</b> banner lists
+      what differed (Re, grid, size, angle, or too short). The score is still computed against the nearest
+      benchmark (Re 500, 1,000 or 2,000), but it isn't like-for-like.</p>
+    <h3>Reading the report</h3>
+    <ul>
+      <li><b>Scorecard:</b> your value, the ideal value, a score bar (green ≥ 80%, amber ≥ 50%, red below), and points = weight × score.</li>
+      <li><b>Over time:</b> six charts. The orange line is your run, the dotted line your settled mean, the green dashed line the ideal. A C<sub>L</sub> chart that oscillates means shedding. A C<sub>D</sub> chart that won't flatten means the test was too short.</li>
+      <li><b>Flow &amp; shape:</b> the final vorticity picture and your silhouette over the ideal one at the same length. The gap between them is usually the tail.</li>
+      <li><b>What to improve:</b> tips for every metric under 70%, worst first. Packaging clearances are listed too, because a constraint that forces a blunt tail is a legitimate reason for a lower score. The report shows you what it costs.</li>
+      <li><b>Download report (.html)</b> saves a self-contained copy, and <b>Print / PDF</b> prints just the sheet.</li>
+    </ul>
+
+    <h2 id="cheat"><span class="n">14</span>Cheat sheet</h2>
     <div class="grid2">
       <div class="card key"><b>Default recipe</b>Re 1,000 · AoA 0° · size 24% · 170 rows · run to 3 flow-throughs · read C<sub>D</sub>.</div>
       <div class="card key"><b>Diagnose high drag</b>Vorticity field → where do the sheets leave the surface? Then pressure → is the tail blue? Fix the tail taper.</div>

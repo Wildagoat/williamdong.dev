@@ -78,6 +78,64 @@
   .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
   .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#2a2410;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
   .toast.show{opacity:1}
+  .cbtn{display:inline-flex;align-items:center;gap:5px}
+  .cbtn b{display:inline-block;min-width:16px;text-align:center;color:var(--accent);font-weight:700}
+  .chip{display:inline-block;padding:0 7px;border-radius:999px;border:1px solid #5a4a1a;background:#2a2410;color:var(--accent);font-size:11px;margin:0 3px 3px 0}
+  .consItem{display:flex;align-items:center;gap:6px;padding:2px 6px;border-radius:6px;font-size:12px}
+  .consItem:hover{background:#1f2630}
+  .consItem .g{width:22px;text-align:center;color:var(--accent);font-weight:700}
+  .consItem .t{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .consItem button{padding:0 6px;font-size:11px}
+</style>
+<style id="reportCss">
+  #report{position:fixed;inset:0;background:rgba(5,7,10,.74);z-index:20;overflow:auto;padding:24px 16px}
+  #report[hidden]{display:none}
+  .sheet{max-width:1060px;margin:0 auto;background:#fbfbf8;color:#1b2330;border-radius:12px;padding:26px 30px 30px;box-shadow:0 20px 60px rgba(0,0,0,.5);font:13px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .sheet h1{font-size:22px;margin:0}
+  .sheet h2{font-size:14px;text-transform:uppercase;letter-spacing:.7px;color:#5b6776;margin:22px 0 8px;border-bottom:1px solid #e3e6ea;padding-bottom:4px}
+  .sheet .sub{color:#5b6776}
+  .sheet .top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:14px}
+  .sheet .score{display:flex;align-items:center;gap:16px}
+  .sheet .num{font-size:46px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;flex-shrink:0}
+  .sheet .num small{font-size:18px;color:#8a94a1;font-weight:600}
+  .sheet .stars{font-size:25px;letter-spacing:2px;white-space:nowrap}
+  .sheet .st{position:relative;display:inline-block;color:#d9dce1}
+  .sheet .st.f{color:#e0a100}
+  .sheet .st.h::before{content:'★';position:absolute;left:0;top:0;width:50%;overflow:hidden;color:#e0a100}
+  .sheet .verdict{font-size:15px;font-weight:700;margin-top:4px}
+  .sheet .kvr{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-variant-numeric:tabular-nums}
+  .sheet .kvr span:nth-child(odd){color:#5b6776}
+  .sheet .banner{background:#fff4d6;border:1px solid #f0c75e;border-radius:8px;padding:8px 12px;margin-top:12px}
+  .sheet .banner.ok{background:#e6f6ee;border-color:#8fd3b0}
+  .sheet table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .sheet th{text-align:left;font-size:11px;color:#5b6776;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid #d6dbe1}
+  .sheet td{padding:6px 8px;border-bottom:1px solid #eceef1;vertical-align:top}
+  .sheet td .d{display:block;color:#6b7684;font-size:11.5px}
+  .sheet .rbar{height:8px;background:#e6e8ec;border-radius:4px;min-width:90px;margin-top:5px}
+  .sheet .rbar i{display:block;height:100%;border-radius:4px}
+  .sheet .charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .sheet .chart{border:1px solid #e3e6ea;border-radius:8px;padding:6px 8px;background:#fff}
+  .sheet .chart b{font-size:12px}
+  .sheet .chart .d{color:#6b7684;font-size:11px;min-height:30px}
+  .sheet .chart canvas,.sheet .chart img{width:100%;height:150px;display:block}
+  .sheet .pics{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+  .sheet .pics figure{margin:0;border:1px solid #e3e6ea;border-radius:8px;padding:6px;background:#fff}
+  .sheet .pics img,.sheet .pics canvas{width:100%;display:block;border-radius:4px}
+  .sheet figcaption{color:#6b7684;font-size:11.5px;margin-top:4px}
+  .sheet ul{margin:6px 0;padding-left:20px}
+  .sheet .bar{position:sticky;top:-24px;display:flex;gap:8px;justify-content:flex-end;margin:-8px -10px 8px;padding:8px 10px;background:#fbfbf8;z-index:1}
+  .sheet .bar button{background:#1b2330;color:#fff;border:0;border-radius:7px;padding:6px 12px;cursor:pointer;font:inherit}
+  .sheet .bar button.alt{background:#e6e8ec;color:#1b2330}
+  @media (max-width:760px){.sheet .top,.sheet .pics{grid-template-columns:minmax(0,1fr)}.sheet .charts{grid-template-columns:minmax(0,1fr)}.sheet{padding:18px 16px}}
+  @media print{
+    html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+    body>*:not(#report){display:none!important}
+    #report{position:static;background:none;padding:0;overflow:visible}
+    .sheet{box-shadow:none;max-width:none;border-radius:0;padding:0}
+    .noprint{display:none!important}
+    .sheet .chart,.sheet figure,.sheet tr{break-inside:avoid}
+    .sheet h2{break-after:avoid}
+  }
 </style>
 </head>
 <body>
@@ -139,6 +197,9 @@
     <h3>Selection</h3>
     <div id="selPanel" class="hint">Nothing selected.</div>
 
+    <h3>Constraints <span id="solveBadge"></span></h3>
+    <div id="consPanel"></div>
+
     <h3>Profile</h3>
     <label class="chk"><input type="checkbox" id="mirrorChk" checked /> Mirror about x-axis (closed, symmetric silhouette)</label>
     <div id="curveList" class="list"></div>
@@ -157,6 +218,8 @@
       <button id="dlSvg">SVG</button>
       <button id="dlCsv">CSV points</button>
     </div>
+    <div class="row"><label title="Opens in Onshape via Sketch → Insert DXF/DWG">DXF (Onshape)</label><select id="dxfMode"><option value="full">Closed silhouette</option><option value="half">Upper half + axis (for Revolve)</option></select><button id="dlDxf">DXF</button></div>
+    <label class="chk"><input type="checkbox" id="dxfGuides" /> Include guides &amp; known parts (own layers)</label>
 
     <h3>Guides</h3>
     <div class="row"><label>Horiz. at y =</label><input type="number" id="qH" step="any" value="0" /><button id="qHBtn">Add</button></div>
@@ -193,6 +256,12 @@
     <div class="btns">
       <button class="primary" id="simRun">▶ Run</button>
       <button id="simReset">⟲ Reset</button>
+      <button id="simEnd" title="Stop the test and generate the report card">■ End test</button>
+    </div>
+    <div class="card">
+      <div class="btns" style="margin-top:0"><button id="stdTest" title="Re 1,000 · 0° · 170 rows · 24% body size, auto-ends at 6 flow-throughs">★ Run standard test</button><button id="lastReport" hidden>Open last report</button></div>
+      <label class="chk"><input type="checkbox" id="autoEnd" checked /> Auto-end at <input type="number" id="autoEndFt" value="6" min="2" max="40" step="1" style="width:54px" /> flow-throughs</label>
+      <div class="hint" id="testProgress">Ending a test produces a report card rated out of 10 against the ideal body's benchmark.</div>
     </div>
     <div class="row"><label title="Based on the body's longest side: length for slender shapes, frontal height for bluff ones">Reynolds (Re, longest side)</label><input type="range" id="simRe" min="1.7" max="4.3" step="0.01" value="3" /><span class="v" id="simReV"></span></div>
     <div class="row"><label>Angle of attack</label><input type="range" id="simAoa" min="-30" max="30" step="1" value="0" /><span class="v" id="simAoaV"></span></div>
@@ -230,6 +299,7 @@
     <div id="estOut" class="card"></div>
   </aside>
 </div>
+<div id="report" hidden><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -563,6 +633,7 @@ const UI = {
   tool: 'select', sel: null, view: { s: 4, ox: 200, oy: 300 }, viewInit: false,
   snapGrid: false, showRaw: true, showDots: true, showHandles: true, fill: true,
   ref: null, altDown: false, typed: '',
+  picks: [], hoverPt: null, hoverEnt: null, hlCons: null, solve: { ok: true, maxR: 0 },
 };
 const findItem = id => S.guides.find(g => g.id === id) || S.curves.find(c => c.id === id);
 const isCurve = it => it && it.raw !== undefined;
@@ -627,13 +698,14 @@ function refreshMatches(changed) {
 /* ---------- persistence & undo ---------- */
 function serialize() {
   return JSON.stringify({
-    v: 1, units: S.units, mirror: S.mirror, nextId: S.nextId, example: S.example || undefined, guides: S.guides,
+    v: 1, units: S.units, mirror: S.mirror, nextId: S.nextId, example: S.example || undefined, guides: S.guides, cons: S.cons || [],
     curves: S.curves.map(c => ({ id: c.id, name: c.name, raw: c.raw, opts: c.opts, snapStart: c.snapStart, snapEnd: c.snapEnd, fit: c.fit, manual: c.manual })),
   });
 }
 function restore(json) {
   const o = typeof json === 'string' ? JSON.parse(json) : json;
-  S = { guides: o.guides || [], curves: o.curves || [], mirror: o.mirror !== false, units: o.units || 'mm', nextId: o.nextId || 1, example: o.example || '' };
+  S = { guides: o.guides || [], curves: o.curves || [], cons: o.cons || [], mirror: o.mirror !== false, units: o.units || 'mm', nextId: o.nextId || 1, example: o.example || '' };
+  UI.picks = [];
   for (const c of S.curves) { c.opts = { ...DEF_OPTS, ...c.opts }; processCurve(c, true); }
   if (UI.sel && !findItem(UI.sel)) UI.sel = null;
   syncViewControls();
@@ -712,7 +784,7 @@ function pieces() {
     const f = c.fit;
     if (f.mode === 'bezier') {
       const segs = rev ? f.segs.slice().reverse().map(s => s.slice().reverse()) : f.segs;
-      segs.forEach((s, i) => out.push({ type: 'bezier', P: s, name: c.name, sub: `seg ${i + 1}/${segs.length}` }));
+      segs.forEach((s, i) => out.push({ type: 'bezier', P: s, name: c.name, cid: c.id, sub: `seg ${i + 1}/${segs.length}` }));
     } else if (f.mode === 'poly') out.push({ type: 'bern', P: rev ? f.P.slice().reverse() : f.P, name: c.name });
     else if (f.mode === 'line') out.push({ type: 'line', P: rev ? [f.b, f.a] : [f.a, f.b], name: c.name });
     else if (f.mode === 'cst') out.push({ type: 'cst', f, flip: !!f.rev !== rev, name: c.name });
@@ -816,10 +888,11 @@ function gridStep() {
   return 10 * p10;
 }
 function guideLines(excl) { // straight edges usable for snapping/intersection
-  const L = [{ a: [0, 0], b: [1, 0], inf: true, gid: 'axis' }, { a: [0, 0], b: [0, 1], inf: true, gid: 'yaxis' }];
+  const L = [{ a: [0, 0], b: [1, 0], inf: true, gid: 'axis', ref: { axis: 1 } }, { a: [0, 0], b: [0, 1], inf: true, gid: 'yaxis' }];
   for (const g of S.guides) {
     if (g.id === excl) continue;
-    if (g.type === 'line') L.push({ a: g.p1, b: g.p2, inf: !!g.inf, gid: g.id });
+    if (g.type === 'line') L.push({ a: g.p1, b: g.p2, inf: !!g.inf, gid: g.id, ref: { g: g.id } });
+    if (g.type === 'dim') L.push({ a: g.p1, b: g.p2, inf: false, gid: g.id, ref: { g: g.id } });
     if (g.type === 'rect') {
       const c = rectCorners(g);
       for (let i = 0; i < 4; i++) L.push({ a: c[i], b: c[(i + 1) % 4], inf: false, gid: g.id });
@@ -829,26 +902,26 @@ function guideLines(excl) { // straight edges usable for snapping/intersection
 }
 function rectCorners(g) { return [[g.p1[0], g.p1[1]], [g.p2[0], g.p1[1]], [g.p2[0], g.p2[1]], [g.p1[0], g.p2[1]]]; }
 function snapPoints(excl) {
-  const P = [{ p: [0, 0], kind: 'origin', dir: [1, 0] }];
+  const P = [{ p: [0, 0], kind: 'origin', dir: [1, 0], ref: { o: 1 } }];
   for (const g of S.guides) {
     if (g.id === excl) continue;
-    if (g.type === 'point') P.push({ p: g.p, kind: 'point' });
+    if (g.type === 'point') P.push({ p: g.p, kind: 'point', ref: { g: g.id, k: 'p' } });
     if (g.type === 'line') {
       const dir = sub(g.p2, g.p1);
-      if (!g.inf) { P.push({ p: g.p1, kind: 'end', dir, gid: g.id }, { p: g.p2, kind: 'end', dir, gid: g.id }, { p: lerp(g.p1, g.p2, 0.5), kind: 'mid', dir, gid: g.id }); }
+      if (!g.inf) { P.push({ p: g.p1, kind: 'end', dir, gid: g.id, ref: { g: g.id, k: 'p1' } }, { p: g.p2, kind: 'end', dir, gid: g.id, ref: { g: g.id, k: 'p2' } }, { p: lerp(g.p1, g.p2, 0.5), kind: 'mid', dir, gid: g.id, lineRef: { g: g.id } }); }
     }
-    if (g.type === 'dim') P.push({ p: g.p1, kind: 'end' }, { p: g.p2, kind: 'end' });
-    if (g.type === 'circle') P.push({ p: g.c, kind: 'center' });
+    if (g.type === 'dim') P.push({ p: g.p1, kind: 'end', ref: { g: g.id, k: 'p1' } }, { p: g.p2, kind: 'end', ref: { g: g.id, k: 'p2' } });
+    if (g.type === 'circle') P.push({ p: g.c, kind: 'center', ref: { g: g.id, k: 'c' } });
     if (g.type === 'rect') {
-      const c = rectCorners(g);
-      c.forEach((q, i) => { P.push({ p: q, kind: 'corner' }); P.push({ p: lerp(q, c[(i + 1) % 4], 0.5), kind: 'mid', dir: sub(c[(i + 1) % 4], q) }); });
+      const c = rectCorners(normRect(g));
+      c.forEach((q, i) => { P.push({ p: q, kind: 'corner', ref: { g: g.id, k: 'r' + i } }); P.push({ p: lerp(q, c[(i + 1) % 4], 0.5), kind: 'mid', dir: sub(c[(i + 1) % 4], q) }); });
     }
     if (g.type === 'ref' && g.pts.length) P.push({ p: g.pts[0], kind: 'ref end' }, { p: g.pts[g.pts.length - 1], kind: 'ref end' });
   }
   for (const c of S.curves) {
     if (c.id === excl || !c.samples) continue;
-    P.push({ p: curveEnd(c, 'start'), kind: 'curve-end', dir: fitEndTan(c, 'start'), cid: c.id });
-    P.push({ p: curveEnd(c, 'end'), kind: 'curve-end', dir: fitEndTan(c, 'end'), cid: c.id });
+    P.push({ p: curveEnd(c, 'start'), kind: 'curve-end', dir: fitEndTan(c, 'start'), cid: c.id, ref: { c: c.id, k: 'start' } });
+    P.push({ p: curveEnd(c, 'end'), kind: 'curve-end', dir: fitEndTan(c, 'end'), cid: c.id, ref: { c: c.id, k: 'end' } });
   }
   const L = guideLines(excl);
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
@@ -859,11 +932,11 @@ function snapPoints(excl) {
     if (!L[i].inf && (r.t < -e || r.t > 1 + e)) continue;
     if (!L[j].inf && (r.u < -e || r.u > 1 + e)) continue;
     const p = add(L[i].a, mul(sub(L[i].b, L[i].a), r.t));
-    if (Math.abs(p[0]) < 1e7 && Math.abs(p[1]) < 1e7) P.push({ p, kind: 'intersection' });
+    if (Math.abs(p[0]) < 1e7 && Math.abs(p[1]) < 1e7) P.push({ p, kind: 'intersection', lines: L[i].ref && L[j].ref ? [L[i].ref, L[j].ref] : null });
   }
   return P;
 }
-function snap(w, rPx = 10, excl = null) {
+function snap(w, rPx = 13, excl = null) {
   if (UI.altDown) return { p: w, kind: 'free' };
   const r = rPx / UI.view.s;
   let best = null, bd = r;
@@ -871,18 +944,18 @@ function snap(w, rPx = 10, excl = null) {
     const d = dist(c.p, w) - (c.kind === 'curve-end' ? r * 0.3 : 0); // favour joining curves
     if (d < bd) { bd = d; best = c; }
   }
-  if (best) return { p: best.p.slice(), kind: best.kind, dir: best.dir, gid: best.gid, cid: best.cid };
-  let lb = null; bd = r * 0.8;
+  if (best) return { p: best.p.slice(), kind: best.kind, dir: best.dir, gid: best.gid, cid: best.cid, ref: best.ref, lineRef: best.lineRef, lines: best.lines };
+  let lb = null; bd = r * 0.7;
   for (const l of guideLines(excl)) {
     const { q, t } = segProj(w, l.a, l.b, false);
     if (!l.inf && (t < 0 || t > 1)) continue;
     const d = dist(q, w);
-    if (d < bd) { bd = d; lb = { p: q, kind: l.gid === 'axis' ? 'on axis' : 'on line', dir: sub(l.b, l.a), gid: l.gid }; }
+    if (d < bd) { bd = d; lb = { p: q, kind: l.gid === 'axis' ? 'on axis' : 'on line', dir: sub(l.b, l.a), gid: l.gid, lineRef: l.ref && !l.ref.axis ? l.ref : null }; }
   }
   for (const g of S.guides) {
     if (g.id === excl || g.type !== 'circle') continue;
     const v = sub(w, g.c), d = Math.abs(len(v) - g.r);
-    if (d < bd) { bd = d; const q = add(g.c, mul(norm(v), g.r)); lb = { p: q, kind: 'on circle', dir: [-v[1], v[0]], gid: g.id }; }
+    if (d < bd) { bd = d; const q = add(g.c, mul(norm(v), g.r)); lb = { p: q, kind: 'on circle', dir: [-v[1], v[0]], gid: g.id, circRef: { g: g.id } }; }
   }
   if (lb) return lb;
   if (UI.snapGrid) { const st = gridStep() / 5; return { p: [Math.round(w[0] / st) * st, Math.round(w[1] / st) * st], kind: 'grid' }; }
@@ -983,6 +1056,309 @@ function translateGuide(g, d) {
 }
 
 /* =====================================================================
+   Sketch constraints ("definers"): a small position-based solver over the guide geometry.
+   Point refs:  {g: id, k: 'p' | 'p1' | 'p2' | 'c' | 'r0'..'r3'}   guide points (rect corners r0..r3)
+                {c: id, k: 'start' | 'end'}                         curve ends (the curve follows, it never drives)
+                {o: 1}                                              the origin
+   Entity refs: {g: id} (line, dimension, circle, part box)
+   ===================================================================== */
+const CONS = {
+  coincident: { label: 'Coincident', glyph: '●', tip: 'Merge two points' },
+  alignH: { label: 'Horizontal', glyph: 'H', tip: 'Two points at the same height' },
+  alignV: { label: 'Vertical', glyph: 'V', tip: 'Two points at the same x' },
+  symmetric: { label: 'Symmetric (axis)', glyph: '⇅', tip: 'Mirror images about the x-axis' },
+  onAxis: { label: 'On axis', glyph: 'A', tip: 'Point lies on the x-axis' },
+  fix: { label: 'Fix', glyph: '⚓', tip: 'Point cannot move' },
+  horizontal: { label: 'Horizontal', glyph: 'H', tip: 'Line is horizontal' },
+  vertical: { label: 'Vertical', glyph: 'V', tip: 'Line is vertical' },
+  length: { label: 'Lock length', glyph: '↔', tip: 'Driving dimension: the length stays at its value' },
+  parallel: { label: 'Parallel', glyph: '∥', tip: 'Two lines parallel' },
+  perpendicular: { label: 'Perpendicular', glyph: '⊥', tip: 'Two lines at 90°' },
+  equal: { label: 'Equal length', glyph: '=', tip: 'Two lines the same length' },
+  onLine: { label: 'On line', glyph: '∈', tip: 'Point lies on the (extended) line' },
+  midpoint: { label: 'Midpoint', glyph: 'M', tip: 'Point at the middle of the line' },
+  onCircle: { label: 'On circle', glyph: '◦', tip: 'Point lies on the circle' },
+  tangent: { label: 'Tangent', glyph: 'T', tip: 'Line touches the circle' },
+  concentric: { label: 'Concentric', glyph: '◎', tip: 'Same centre' },
+  equalR: { label: 'Equal radius', glyph: '=R', tip: 'Same radius' },
+};
+const isPtRef = r => r && (r.k !== undefined || r.o);
+const refKey = r => (r.o ? 'o' : r.c !== undefined ? `c${r.c}.${r.k}` : r.k ? `g${r.g}.${r.k}` : `g${r.g}`);
+const sameRef = (a, b) => refKey(a) === refKey(b);
+const findGuide = id => S.guides.find(g => g.id === id);
+const findCurve = id => S.curves.find(c => c.id === id);
+function refPos(r) {
+  if (r.o) return [0, 0];
+  if (r.c !== undefined) { const c = findCurve(r.c); return c && c.samples ? curveEnd(c, r.k) : null; }
+  const g = findGuide(r.g); if (!g) return null;
+  if (r.k === 'p') return g.p;
+  if (r.k === 'p1' || r.k === 'p2') return g[r.k];
+  if (r.k === 'c') return g.c;
+  if (r.k && r.k[0] === 'r') return rectCorners(normRect(g))[+r.k[1]];
+  return null;
+}
+function normRect(g) {
+  if (g.type === 'rect') { const a = g.p1, b = g.p2; g.p1 = [Math.min(a[0], b[0]), Math.min(a[1], b[1])]; g.p2 = [Math.max(a[0], b[0]), Math.max(a[1], b[1])]; }
+  return g;
+}
+function entKind(r) {
+  if (isPtRef(r)) return 'pt';
+  const g = findGuide(r.g); if (!g) return null;
+  return g.type === 'line' || g.type === 'dim' ? 'line' : g.type === 'circle' ? 'circle' : g.type === 'rect' ? 'rect' : null;
+}
+/* Every pickable point, for hit testing: guide points, rect corners, circle centres, curve ends, origin. */
+function allPointRefs() {
+  const out = [{ ref: { o: 1 }, p: [0, 0] }];
+  for (const g of S.guides) {
+    if (g.type === 'point') out.push({ ref: { g: g.id, k: 'p' }, p: g.p });
+    if (g.type === 'line' || g.type === 'dim') out.push({ ref: { g: g.id, k: 'p1' }, p: g.p1 }, { ref: { g: g.id, k: 'p2' }, p: g.p2 });
+    if (g.type === 'circle') out.push({ ref: { g: g.id, k: 'c' }, p: g.c });
+    if (g.type === 'rect') rectCorners(normRect(g)).forEach((p, i) => out.push({ ref: { g: g.id, k: 'r' + i }, p }));
+  }
+  for (const c of S.curves) if (c.samples) out.push({ ref: { c: c.id, k: 'start' }, p: curveEnd(c, 'start') }, { ref: { c: c.id, k: 'end' }, p: curveEnd(c, 'end') });
+  return out;
+}
+/* Move one guide point directly (before solving). A size-locked part box moves as a whole. */
+function setPt(r, q) {
+  const g = findGuide(r.g); if (!g) return;
+  if (r.k === 'p' || r.k === 'p1' || r.k === 'p2' || r.k === 'c') { g[r.k] = q.slice(); return; }
+  if (r.k[0] === 'r') {
+    normRect(g);
+    const i = +r.k[1], cur = rectCorners(g)[i];
+    if (g.lockSize !== false) { translateGuide(g, sub(q, cur)); return; }
+    const xs = i === 0 || i === 3 ? 'x1' : 'x2', ys = i < 2 ? 'y1' : 'y2';
+    if (xs === 'x1') g.p1 = [q[0], g.p1[1]]; else g.p2 = [q[0], g.p2[1]];
+    if (ys === 'y1') g.p1 = [g.p1[0], q[1]]; else g.p2 = [g.p2[0], q[1]];
+  }
+}
+/* Solve all constraints. pin: {guides, points}: geometry the user is dragging / editing. It's soft-pinned (weight
+   SOFT_PIN), so it tracks the cursor but still yields to its own relations (an on-axis point slides along the axis). */
+const SOFT_PIN = 0.02;
+function solveSketch(pin = {}) {
+  const cons = S.cons || [];
+  UI.solve = { ok: true, maxR: 0 };
+  if (!cons.length) { syncCurveLinks(); return UI.solve; }
+  const X = [], Wt = [], idx = new Map(), write = [];
+  const pinG = pin.guides || new Set(), pinP = pin.points || new Set();
+  const v = (key, val, w) => { if (!idx.has(key)) { idx.set(key, X.length); X.push(val); Wt.push(w); } return idx.get(key); };
+  const fixed = new Set();
+  for (const c of cons) if (c.type === 'fix') for (const r of c.refs) fixed.add(refKey(r));
+  const specs = new Map();
+  let scale = 1;
+  for (const g of S.guides) for (const q of [g.p, g.p1, g.p2, g.c]) if (q) scale = Math.max(scale, Math.abs(q[0]), Math.abs(q[1]));
+  const ptSpec = r => {
+    const key = refKey(r);
+    if (specs.has(key)) return specs.get(key);
+    let s = null;
+    if (r.o) s = { ix: -1, iy: -1, ox: 0, oy: 0 };
+    else if (r.g !== undefined) {
+      const g = findGuide(r.g);
+      if (g) {
+        const w = fixed.has(key) ? 0 : pinG.has(g.id) || pinP.has(key) ? SOFT_PIN : 1;
+        if (r.k === 'p' || r.k === 'p1' || r.k === 'p2' || r.k === 'c') {
+          s = { ix: v(`${g.id}.${r.k}.x`, g[r.k][0], w), iy: v(`${g.id}.${r.k}.y`, g[r.k][1], w), ox: 0, oy: 0 };
+          const k = r.k, sx = s;
+          if (!write.some(e => e.key === `${g.id}.${k}`)) write.push({ key: `${g.id}.${k}`, fn: () => { g[k] = [X[sx.ix], X[sx.iy]]; } });
+        } else if (r.k[0] === 'r') {
+          normRect(g);
+          const i = +r.k[1], wR = fixed.has(key) ? 0 : pinG.has(g.id) || pinP.has(key) ? SOFT_PIN : 1;
+          if (g.lockSize !== false) {
+            const W0 = g.p2[0] - g.p1[0], H0 = g.p2[1] - g.p1[1];
+            const ix = v(`${g.id}.rx`, g.p1[0], wR), iy = v(`${g.id}.ry`, g.p1[1], wR);
+            if (wR < 1) { Wt[ix] = Math.min(Wt[ix], wR); Wt[iy] = Math.min(Wt[iy], wR); }
+            s = { ix, iy, ox: i === 1 || i === 2 ? W0 : 0, oy: i >= 2 ? H0 : 0 };
+            if (!write.some(e => e.key === `${g.id}.rect`)) write.push({ key: `${g.id}.rect`, fn: () => { g.p1 = [X[ix], X[iy]]; g.p2 = [X[ix] + W0, X[iy] + H0]; } });
+          } else {
+            const x1 = v(`${g.id}.x1`, g.p1[0], wR), y1 = v(`${g.id}.y1`, g.p1[1], wR), x2 = v(`${g.id}.x2`, g.p2[0], wR), y2 = v(`${g.id}.y2`, g.p2[1], wR);
+            if (wR < 1) [x1, y1, x2, y2].forEach(j => (Wt[j] = Math.min(Wt[j], wR)));
+            s = { ix: i === 0 || i === 3 ? x1 : x2, iy: i < 2 ? y1 : y2, ox: 0, oy: 0 };
+            if (!write.some(e => e.key === `${g.id}.rect`)) write.push({ key: `${g.id}.rect`, fn: () => { g.p1 = [X[x1], X[y1]]; g.p2 = [X[x2], X[y2]]; normRect(g); } });
+          }
+        }
+      }
+    }
+    specs.set(key, s);
+    return s;
+  };
+  const P = s => [s.ix < 0 ? s.ox : X[s.ix] + s.ox, s.iy < 0 ? s.oy : X[s.iy] + s.oy];
+  const lineSpec = r => { const g = findGuide(r.g); return g && (g.type === 'line' || g.type === 'dim') ? { a: ptSpec({ g: g.id, k: 'p1' }), b: ptSpec({ g: g.id, k: 'p2' }) } : null; };
+  const circSpec = r => {
+    const g = findGuide(r.g); if (!g || g.type !== 'circle') return null;
+    const w = pinG.has(g.id) ? SOFT_PIN : 1, ir = v(`${g.id}.r`, g.r, w);
+    if (!write.some(e => e.key === `${g.id}.r`)) write.push({ key: `${g.id}.r`, fn: () => { g.r = Math.max(1e-9, Math.abs(X[ir])); } });
+    return { c: ptSpec({ g: g.id, k: 'c' }), ir };
+  };
+  const vs = (...ss) => { const o = []; for (const s of ss) if (s) { if (typeof s === 'number') o.push(s); else { if (s.ix >= 0) o.push(s.ix); if (s.iy >= 0) o.push(s.iy); } } return [...new Set(o)]; };
+  const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
+  const R = []; // residuals: {vars, f, n (normaliser)}
+  for (const c of cons) {
+    if (c.refs.some(r => r.c !== undefined) || c.type === 'fix') continue; // curve ends follow afterwards; fix = zero weight
+    const [r0, r1] = c.refs;
+    const T = c.type;
+    if (T === 'coincident' || T === 'concentric') {
+      const a = T === 'concentric' ? ptSpec({ g: r0.g, k: 'c' }) : ptSpec(r0), b = T === 'concentric' ? ptSpec({ g: r1.g, k: 'c' }) : ptSpec(r1);
+      if (!a || !b) continue;
+      R.push({ vars: vs(a, b), f: () => P(a)[0] - P(b)[0], n: scale }, { vars: vs(a, b), f: () => P(a)[1] - P(b)[1], n: scale });
+    } else if (T === 'alignH' || T === 'alignV') {
+      const a = ptSpec(r0), b = ptSpec(r1), k = T === 'alignH' ? 1 : 0; if (!a || !b) continue;
+      R.push({ vars: vs(a, b), f: () => P(a)[k] - P(b)[k], n: scale });
+    } else if (T === 'symmetric') {
+      const a = ptSpec(r0), b = ptSpec(r1); if (!a || !b) continue;
+      R.push({ vars: vs(a, b), f: () => P(a)[0] - P(b)[0], n: scale }, { vars: vs(a, b), f: () => P(a)[1] + P(b)[1], n: scale });
+    } else if (T === 'onAxis') {
+      const a = ptSpec(r0); if (!a) continue;
+      R.push({ vars: vs(a), f: () => P(a)[1], n: scale });
+    } else if (T === 'horizontal' || T === 'vertical') {
+      const L = lineSpec(r0), k = T === 'horizontal' ? 1 : 0; if (!L) continue;
+      R.push({ vars: vs(L.a, L.b), f: () => P(L.b)[k] - P(L.a)[k], n: scale });
+    } else if (T === 'length') {
+      const L = lineSpec(r0); if (!L) continue;
+      R.push({ vars: vs(L.a, L.b), f: () => dist(P(L.a), P(L.b)) - c.value, n: scale });
+    } else if (T === 'parallel' || T === 'perpendicular' || T === 'equal') {
+      const A = lineSpec(r0), B = lineSpec(r1); if (!A || !B) continue;
+      const d = L => sub(P(L.b), P(L.a));
+      const f = T === 'parallel' ? () => cross(d(A), d(B)) / (len(d(A)) * len(d(B)) || 1)
+        : T === 'perpendicular' ? () => dot(d(A), d(B)) / (len(d(A)) * len(d(B)) || 1)
+        : () => len(d(A)) - len(d(B));
+      R.push({ vars: vs(A.a, A.b, B.a, B.b), f, n: T === 'equal' ? scale : 1 });
+    } else if (T === 'onLine' || T === 'midpoint') {
+      const p = ptSpec(r0), L = lineSpec(r1); if (!p || !L) continue;
+      if (T === 'onLine') R.push({ vars: vs(p, L.a, L.b), f: () => { const a = P(L.a), b = P(L.b), dd = sub(b, a); return cross(dd, sub(P(p), a)) / (len(dd) || 1); }, n: scale });
+      else R.push({ vars: vs(p, L.a, L.b), f: () => P(p)[0] - (P(L.a)[0] + P(L.b)[0]) / 2, n: scale }, { vars: vs(p, L.a, L.b), f: () => P(p)[1] - (P(L.a)[1] + P(L.b)[1]) / 2, n: scale });
+    } else if (T === 'onCircle') {
+      const p = ptSpec(r0), C = circSpec(r1); if (!p || !C) continue;
+      R.push({ vars: vs(p, C.c, C.ir), f: () => dist(P(p), P(C.c)) - X[C.ir], n: scale });
+    } else if (T === 'tangent') {
+      const L = lineSpec(r0), C = circSpec(r1); if (!L || !C) continue;
+      R.push({ vars: vs(L.a, L.b, C.c, C.ir), f: () => { const a = P(L.a), dd = sub(P(L.b), a); return Math.abs(cross(dd, sub(P(C.c), a))) / (len(dd) || 1) - X[C.ir]; }, n: scale });
+    } else if (T === 'equalR') {
+      const A = circSpec(r0), B = circSpec(r1); if (!A || !B) continue;
+      R.push({ vars: vs(A.ir, B.ir), f: () => X[A.ir] - X[B.ir], n: scale });
+    }
+  }
+  const h = 1e-7 * scale;
+  let maxR = 0;
+  for (let it = 0; it < 600; it++) {
+    maxR = 0;
+    for (const r of R) {
+      const r0 = r.f();
+      maxR = Math.max(maxR, Math.abs(r0) / r.n);
+      if (Math.abs(r0) < 1e-14) continue;
+      const gs = r.vars.map(i => { if (!Wt[i]) return 0; const x = X[i]; X[i] = x + h; const fp = r.f(); X[i] = x - h; const fm = r.f(); X[i] = x; return (fp - fm) / (2 * h); });
+      let den = 0; r.vars.forEach((i, j) => (den += Wt[i] * gs[j] * gs[j]));
+      if (den < 1e-20) continue;
+      const lam = -r0 / den;
+      r.vars.forEach((i, j) => (X[i] += Wt[i] * lam * gs[j]));
+    }
+    if (maxR < 1e-9) break;
+  }
+  if (X.every(isFinite)) write.forEach(e => e.fn());
+  UI.solve = { ok: maxR < 1e-6, maxR };
+  syncCurveLinks();
+  return UI.solve;
+}
+/* Curve ends constrained to guide points / the axis / a line follow them (the curve is re-fitted). */
+function curveEndTarget(c, which) {
+  const me = { c: c.id, k: which }, p = curveEnd(c, which);
+  for (const k of S.cons || []) {
+    if (!k.refs.some(r => sameRef(r, me))) continue;
+    const other = k.refs.find(r => !sameRef(r, me));
+    if (k.type === 'coincident' && other && other.c === undefined) return refPos(other);
+    if (k.type === 'onAxis') return [p[0], 0];
+    if (k.type === 'onLine' && other) { const g = findGuide(other.g); if (g) return segProj(p, g.p1, g.p2, false).q; }
+  }
+  return null;
+}
+function shiftCurveEnds(c, ds, de) {
+  if (c.manual) { // keep hand edits: move only the end control points
+    const f = c.fit;
+    if (f.mode === 'bezier') { const s0 = f.segs[0], s1 = f.segs[f.segs.length - 1]; s0[0] = add(s0[0], ds); s0[1] = add(s0[1], ds); s1[3] = add(s1[3], de); s1[2] = add(s1[2], de); }
+    else if (f.mode === 'poly') { const n = f.P.length - 1; f.P[0] = add(f.P[0], ds); f.P[1] = add(f.P[1], ds); f.P[n] = add(f.P[n], de); f.P[n - 1] = add(f.P[n - 1], de); }
+    else if (f.mode === 'line') { f.a = add(f.a, ds); f.b = add(f.b, de); }
+  }
+  let acc = 0;
+  const pts = c.raw, cum = pts.map((p, i) => (i ? (acc += dist(p, pts[i - 1])) : 0));
+  c.raw = pts.map((p, i) => { const s = cum[i] / (acc || 1); return add(p, add(mul(ds, 1 - s), mul(de, s))); });
+  processCurve(c, true);
+}
+function syncCurveLinks() {
+  for (const c of S.curves) {
+    if (!c.samples) continue;
+    const ts = curveEndTarget(c, 'start'), te = curveEndTarget(c, 'end');
+    const ds = ts ? sub(ts, curveEnd(c, 'start')) : [0, 0], de = te ? sub(te, curveEnd(c, 'end')) : [0, 0];
+    if (len(ds) + len(de) > 1e-9) { shiftCurveEnds(c, ds, de); refreshMatches(c); }
+  }
+}
+function addCons(type, refs, extra = {}) {
+  S.cons = S.cons || [];
+  const key = type + ':' + refs.map(refKey).sort().join('|');
+  if (S.cons.some(k => k.type + ':' + k.refs.map(refKey).sort().join('|') === key)) return null;
+  const k = { id: S.nextId++, type, refs: refs.map(r => ({ ...r })), ...extra };
+  S.cons.push(k);
+  return k;
+}
+function dropConsFor(pred) { S.cons = (S.cons || []).filter(k => !k.refs.some(pred)); }
+/* Constraints implied by where a point was snapped (CAD-style auto relations). */
+function autoConstrain(ref, sn) {
+  if (!sn || UI.altDown) return;
+  if (sn.ref && !sameRef(sn.ref, ref) && !(ref.c !== undefined && sn.ref.c !== undefined)) addCons('coincident', [ref, sn.ref]);
+  else if (sn.kind === 'on axis') addCons('onAxis', [ref]);
+  else if (sn.lineRef) addCons(sn.kind === 'mid' ? 'midpoint' : 'onLine', [ref, sn.lineRef]);
+  else if (sn.circRef && ref.c === undefined) addCons('onCircle', [ref, sn.circRef]);
+  else if (sn.lines) for (const L of sn.lines) { if (L.axis) addCons('onAxis', [ref]); else if (ref.c === undefined) addCons('onLine', [ref, L]); }
+}
+/* Which relations fit the current picks. */
+function consOptions(picks) {
+  const pts = picks.filter(r => entKind(r) === 'pt'), lines = picks.filter(r => entKind(r) === 'line'), circs = picks.filter(r => entKind(r) === 'circle');
+  const n = picks.length, out = [], curvePts = pts.filter(r => r.c !== undefined);
+  const only = (np, nl, nc) => pts.length === np && lines.length === nl && circs.length === nc && n === np + nl + nc;
+  if (only(2, 0, 0) && curvePts.length < 2) out.push(['coincident', pts]);
+  if (only(2, 0, 0) && !curvePts.length) out.push(['alignH', pts], ['alignV', pts], ['symmetric', pts]);
+  if (only(1, 0, 0) && !pts[0].o) out.push(['onAxis', pts]);
+  if (only(1, 1, 0) && !pts[0].o) out.push(['onLine', [pts[0], lines[0]]]);
+  if (only(1, 1, 0) && !curvePts.length && !pts[0].o) out.push(['midpoint', [pts[0], lines[0]]]);
+  if (only(1, 0, 1) && !curvePts.length && !pts[0].o) out.push(['onCircle', [pts[0], circs[0]]]);
+  if (only(0, 1, 0)) out.push(['horizontal', lines], ['vertical', lines], ['length', lines]);
+  if (only(0, 2, 0)) out.push(['parallel', lines], ['perpendicular', lines], ['equal', lines]);
+  if (only(0, 1, 1)) out.push(['tangent', [lines[0], circs[0]]]);
+  if (only(0, 0, 2)) out.push(['concentric', circs], ['equalR', circs]);
+  if (n && !curvePts.length && pts.every(r => !r.o)) {
+    const fx = [];
+    for (const r of picks) {
+      if (entKind(r) === 'pt') fx.push(r);
+      else { const g = findGuide(r.g); if (g) allPointRefs().filter(e => e.ref.g === g.id).forEach(e => fx.push(e.ref)); }
+    }
+    if (fx.length) out.push(['fix', fx]);
+  }
+  return out;
+}
+function applyCons(type, refs) {
+  const before = JSON.stringify(S.guides), n0 = (S.cons || []).length;
+  if (type === 'fix') { for (const r of refs) addCons('fix', [r]); }
+  else if (type === 'length') { const g = findGuide(refs[0].g); addCons('length', refs, { value: dist(g.p1, g.p2) }); }
+  else addCons(type, refs);
+  const r = solveSketch();
+  if (!r.ok) { // conflicts with existing relations: undo it instead of leaving a broken sketch
+    S.cons = S.cons.slice(0, n0); S.guides = JSON.parse(before); solveSketch();
+    toast(`Can't add ${CONS[type].label}: it conflicts with the existing relations`);
+    renderPanel(); requestDraw(); return;
+  }
+  UI.picks = [];
+  commit(); renderPanel(); requestDraw();
+  toast(`${CONS[type].label} added`);
+}
+function consText(k) {
+  const nm = r => {
+    if (r.o) return 'origin';
+    if (r.c !== undefined) { const c = findCurve(r.c); return `${c ? c.name : 'curve'} ${r.k}`; }
+    const g = findGuide(r.g); if (!g) return '?';
+    const base = g.name || { line: 'Line', dim: 'Dim', circle: 'Circle', rect: 'Part', point: 'Point' }[g.type] + ' ' + g.id;
+    return r.k ? `${base}.${r.k === 'c' ? 'centre' : r.k[0] === 'r' ? 'corner' + (+r.k[1] + 1) : r.k}` : base;
+  };
+  return `${CONS[k.type].label}: ${k.refs.map(nm).join(' · ')}${k.value !== undefined ? ` = ${fmt(k.value, 4)} ${S.units}` : ''}`;
+}
+
+/* =====================================================================
    Drawing
    ===================================================================== */
 const COL = { guide: '#39c5cf', part: '#f0883e', axis: '#b392f0', curve: '#ffce54', dots: '#4aa3ff', raw: 'rgba(139,152,165,.55)', dim: '#d2dae3', ref: '#9aa7b4' };
@@ -1009,6 +1385,8 @@ function draw() {
     label(`${bad ? 'interference ' : ''}${fmt(Math.abs(fc.clearance), 3)} ${S.units}`, (a[0] + b[0]) / 2 + 6, (a[1] + b[1]) / 2 - 6, ctx.strokeStyle);
   }
   drawHandles();
+  drawConstraints();
+  drawPicksAndHover();
   drawInProgress();
   $('#emptyHint').style.display = S.curves.length || S.guides.length ? 'none' : 'flex';
 }
@@ -1136,6 +1514,63 @@ function drawHandles() {
   }
 }
 let drag = null, pending = null, hover = null, cursorW = [0, 0], spaceDown = false;
+function strokeEntity(g, col, lw) {
+  ctx.strokeStyle = col; ctx.lineWidth = lw;
+  if (g.type === 'line' || g.type === 'dim') { if (g.inf) strokeInfLine(g.p1, g.p2); else { pathPts([g.p1, g.p2]); ctx.stroke(); } }
+  else if (g.type === 'circle') { const c = w2s(g.c); ctx.beginPath(); ctx.arc(c[0], c[1], g.r * UI.view.s, 0, 7); ctx.stroke(); }
+  else if (g.type === 'rect') { const c = rectCorners(g); pathPts([...c, c[0]]); ctx.stroke(); }
+  else if (g.type === 'ref') { pathPts(g.pts); ctx.stroke(); }
+  else if (g.type === 'point') { const p = w2s(g.p); ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, 7); ctx.stroke(); }
+}
+function drawPicksAndHover() {
+  if (UI.tool !== 'select') return;
+  // every pickable point is a small dot, so they're easy to find
+  for (const e of allPointRefs()) {
+    if (e.ref.o) continue;
+    const p = w2s(e.p);
+    ctx.fillStyle = e.ref.c !== undefined ? COL.curve : COL.guide;
+    ctx.beginPath(); ctx.arc(p[0], p[1], 2.6, 0, 7); ctx.fill();
+  }
+  if (UI.hoverEnt && !drag) { if (isCurve(UI.hoverEnt)) { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 6; pathPts(UI.hoverEnt.poly); ctx.stroke(); } else strokeEntity(UI.hoverEnt, 'rgba(255,255,255,.3)', 5); }
+  for (const r of UI.picks) {
+    if (isPtRef(r)) { const q = refPos(r); if (!q) continue; const p = w2s(q); ctx.fillStyle = 'rgba(255,206,84,.25)'; ctx.strokeStyle = COL.curve; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p[0], p[1], 8, 0, 7); ctx.fill(); ctx.stroke(); }
+    else { const g = findGuide(r.g); if (g) strokeEntity(g, 'rgba(255,206,84,.85)', 3); }
+  }
+  if (UI.hoverPt && !drag) {
+    const p = w2s(UI.hoverPt.p);
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p[0], p[1], 7, 0, 7); ctx.stroke();
+    const r = UI.hoverPt.ref, nm = r.o ? 'origin' : r.c !== undefined ? 'curve ' + r.k : r.k === 'c' ? 'centre' : r.k[0] === 'r' ? 'corner' : r.k === 'p' ? 'point' : 'end';
+    label(nm + (UI.picks.length ? '  (Shift-click to add)' : ''), p[0] + 11, p[1] - 13, '#fff');
+  }
+}
+/* Constraint glyphs: small badges beside the constrained geometry. Hovering a row in the list highlights it. */
+function drawConstraints() {
+  const cons = S.cons || [];
+  if (!cons.length) return;
+  const slots = new Map();
+  const badge = (pw, glyph, hl) => {
+    const key = Math.round(pw[0]) + ',' + Math.round(pw[1]), n = slots.get(key) || 0; slots.set(key, n + 1);
+    const x = pw[0] + 9 + n * 17, y = pw[1] + 12;
+    ctx.font = 'bold 10px ui-sans-serif,system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const w = Math.max(14, ctx.measureText(glyph).width + 6);
+    ctx.fillStyle = hl ? COL.curve : 'rgba(22,27,34,.92)'; ctx.strokeStyle = hl ? '#fff' : 'rgba(255,206,84,.7)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - 7, w, 14, 4) : ctx.rect(x - w / 2, y - 7, w, 14); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = hl ? '#15120a' : COL.curve; ctx.fillText(glyph, x, y + 0.5);
+  };
+  const midOf = r => { const g = findGuide(r.g); if (!g) return null; if (g.type === 'circle') return w2s([g.c[0], g.c[1] + g.r]); if (g.type === 'rect') return w2s(g.p1); return w2s(lerp(g.p1, g.p2, 0.5)); };
+  for (const k of cons) {
+    const hl = UI.hlCons === k.id, gl = CONS[k.type] ? CONS[k.type].glyph : '?';
+    if (k.type === 'coincident') {
+      const q = refPos(k.refs[0]); if (!q) continue; const p = w2s(q);
+      ctx.fillStyle = hl ? '#fff' : COL.curve; ctx.fillRect(p[0] - 3, p[1] - 3, 6, 6);
+      if (hl) badge(p, gl, true);
+      continue;
+    }
+    const anchors = k.refs.map(r => (isPtRef(r) ? (refPos(r) ? w2s(refPos(r)) : null) : midOf(r))).filter(Boolean);
+    const onlyFirst = ['onLine', 'midpoint', 'onCircle', 'tangent', 'onAxis', 'fix'].includes(k.type);
+    (onlyFirst ? anchors.slice(0, 1) : anchors).forEach(a => badge(a, gl + (k.type === 'length' ? ' ' + fmt(k.value, 4) : ''), hl));
+  }
+}
 function drawInProgress() {
   if (drag && drag.type === 'stroke') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; pathPts(drag.pts); ctx.stroke(); }
   if (pending) {
@@ -1171,7 +1606,7 @@ function updateHud() {
    Pointer / keyboard interaction on the design canvas
    ===================================================================== */
 const TOOL_HINTS = {
-  select: 'Click to select a guide or curve. Drag handles to edit: ■ joints, ○ Bézier handles (interior joints stay smooth; hold <kbd>Alt</kbd> to break). Drag empty space to pan, wheel to zoom, <kbd>Del</kbd> deletes.',
+  select: 'Click a <b>point</b> (line ends, corners, centres, curve ends light up on hover) or a guide / curve. Drag a point onto another point, line or the axis to make it <b>coincident / on-line / on-axis</b>. <kbd>Shift</kbd>-click to pick several items, then add a relation under Constraints. Drag empty space to pan, wheel to zoom, <kbd>Del</kbd> deletes, <kbd>Esc</kbd> clears.',
   draw: 'Draw the <b>upper half</b> of the silhouette in one stroke. Ends snap to guides, the axis, intersections and other curve ends (they then join smoothly). Draw several curves for nose / body / tail.',
   line: 'Click–click (or drag) to place a guide line. While placing, <b>type a length</b> and press <kbd>Enter</kbd>. <kbd>Shift</kbd> snaps the angle to 15°.',
   dim: 'Click two points to measure a distance. Edit the value in Selection to move the second point.',
@@ -1207,33 +1642,67 @@ cv.addEventListener('pointerdown', e => {
   }
   if (t === 'line' || t === 'rect' || t === 'circle' || t === 'dim') {
     const sn = snap(w);
-    if (pending) { finishCreate(pending.cur); return; }
-    pending = { tool: t, p1: sn.p, cur: sn.p, downSp: sp }; UI.typed = '';
+    if (pending) { finishCreate(pending.cur, pending.sn2); return; }
+    pending = { tool: t, p1: sn.p, sn1: sn, cur: sn.p, sn2: null, downSp: sp }; UI.typed = '';
     drag = { type: 'creating' };
     return;
   }
-  if (t === 'point') { addGuide({ type: 'point', p: snap(w).p }); return; }
-  // select tool
-  const h = hitHandle(sp);
-  if (h) { drag = { type: 'handle', h, it: findItem(UI.sel), moved: false }; return; }
+  if (t === 'point') { const sn = snap(w); const g = { type: 'point', p: sn.p }; addGuide(g, () => autoConstrain({ g: g.id, k: 'p' }, sn)); return; }
+  // select tool: curve control handles (selected curve) > points > guides / curves > empty (pan)
+  let h = null; const selIt = findItem(UI.sel);
+  if (isCurve(selIt)) h = hitHandle(sp);
+  else if (selIt && selIt.type === 'circle') { const rh = handlesOf(selIt)[1]; if (dist(w2s(rh.p), sp) < 10) h = rh; } // radius handle
+  if (h && !e.shiftKey) { drag = { type: 'handle', h, it: findItem(UI.sel), moved: false }; return; }
+  const hp = hitPoint(sp);
+  if (hp) {
+    if (e.shiftKey) { togglePick(hp.ref); return; }
+    UI.picks = [hp.ref];
+    const owner = hp.ref.o ? null : hp.ref.c !== undefined ? hp.ref.c : hp.ref.g;
+    select(owner); renderConstraints();
+    if (!hp.ref.o) drag = { type: 'point', ref: hp.ref, sp, moved: false };
+    return;
+  }
   const hg = hitGuide(w), hc = hitCurve(w);
   const pick = hg && hc ? (hc.d <= hg.d * 1.2 ? hc : hg) : hg || hc;
   if (pick) {
-    select(pick.item.id);
+    const ref = isCurve(pick.item) ? null : { g: pick.item.id };
+    if (e.shiftKey) { if (ref && entKind(ref)) togglePick(ref); return; }
+    UI.picks = ref && entKind(ref) ? [ref] : [];
+    select(pick.item.id); renderConstraints();
     drag = { type: isCurve(pick.item) ? 'moveCurve' : 'moveGuide', it: pick.item, last: w, sp, moved: false };
     return;
   }
-  select(null);
+  if (!e.shiftKey) { UI.picks = []; select(null); renderConstraints(); }
   drag = { type: 'pan', sp, ox: UI.view.ox, oy: UI.view.oy };
 });
+function togglePick(ref) {
+  const i = UI.picks.findIndex(r => sameRef(r, ref));
+  if (i >= 0) UI.picks.splice(i, 1); else UI.picks.push(ref);
+  renderConstraints(); requestDraw();
+}
+function hitPoint(sp, rPx = 11) {
+  let best = null, bd = rPx;
+  for (const e of allPointRefs()) {
+    const d = dist(w2s(e.p), sp) + (e.ref.c !== undefined ? 0.75 : e.ref.o ? 1.5 : 0); // guide points win ties
+    if (d < bd) { bd = d; best = e; }
+  }
+  return best;
+}
 cv.addEventListener('pointermove', e => {
   const sp = evPt(e), w = s2w(sp);
   cursorW = w; UI.altDown = e.altKey;
   if (!drag) {
     if (UI.tool !== 'select') {
-      hover = snap(w, UI.tool === 'draw' ? 14 : 10);
-      if (pending) pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p;
-    } else hover = null;
+      hover = snap(w, UI.tool === 'draw' ? 15 : 13);
+      if (pending) { pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p; pending.sn2 = e.shiftKey ? null : hover; }
+      UI.hoverPt = null; UI.hoverEnt = null;
+    } else {
+      hover = null;
+      const hp = hitPoint(sp);
+      UI.hoverPt = hp; UI.hoverEnt = null;
+      if (!hp) { const hg = hitGuide(w), hc = hitCurve(w); const pk = hg && hc ? (hc.d <= hg.d * 1.2 ? hc : hg) : hg || hc; UI.hoverEnt = pk ? pk.item : null; }
+      cv.style.cursor = spaceDown ? 'grab' : hp ? 'pointer' : UI.hoverEnt ? 'move' : 'default';
+    }
     requestDraw(); updateHud(); return;
   }
   switch (drag.type) {
@@ -1246,12 +1715,31 @@ cv.addEventListener('pointermove', e => {
     }
     case 'creating':
       hover = snap(w);
-      pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p; break;
+      pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p;
+      pending.sn2 = e.shiftKey ? null : hover; break;
+    case 'point': {
+      if (!drag.moved && dist(sp, drag.sp) < 3) break;
+      drag.moved = true;
+      const r = drag.ref, excl = r.c !== undefined ? r.c : r.g;
+      let sn = snap(w, 13, excl);
+      if (sn.ref && sameRef(sn.ref, r)) sn = { p: w, kind: 'free' };
+      hover = sn; drag.sn = sn;
+      if (r.c !== undefined) { // drag a curve end: the stroke bends to follow, then it's re-fitted
+        const c = findCurve(r.c), cur = curveEnd(c, r.k), d = sub(sn.p, cur);
+        shiftCurveEnds(c, r.k === 'start' ? d : [0, 0], r.k === 'end' ? d : [0, 0]);
+      } else {
+        const before = JSON.stringify(S.guides);
+        setPt(r, sn.p);
+        const g = findGuide(r.g), whole = g && g.type === 'rect' && g.lockSize !== false;
+        if (!solveSketch(whole ? { guides: new Set([r.g]) } : { points: new Set([refKey(r)]) }).ok) { S.guides = JSON.parse(before); solveSketch(); } // can't go there
+      }
+      break;
+    }
     case 'handle': {
       const it = drag.it, sn = snap(w, 10, it.id);
       hover = sn; drag.moved = true;
       if (isCurve(it)) dragCurveHandle(it, drag.h, sn.p, e.altKey);
-      else { drag.h.set(sn.p); drag.h.p = sn.p; }
+      else { drag.h.set(sn.p); drag.h.p = sn.p; solveSketch({ guides: new Set([it.id]) }); }
       break;
     }
     case 'moveGuide': case 'moveCurve': {
@@ -1260,7 +1748,22 @@ cv.addEventListener('pointermove', e => {
       let d = sub(w, drag.last);
       if (UI.snapGrid && !e.altKey) { const st = gridStep() / 5; d = [Math.round(d[0] / st) * st, Math.round(d[1] / st) * st]; if (!d[0] && !d[1]) break; }
       drag.last = add(drag.last, d);
-      if (drag.type === 'moveCurve') translateCurve(drag.it, d); else translateGuide(drag.it, d);
+      if (drag.type === 'moveCurve') {
+        translateCurve(drag.it, d);
+        // guide points the curve ends are attached to come along
+        const carried = new Set();
+        for (const k of S.cons || []) {
+          if (k.type !== 'coincident' || !k.refs.some(r => r.c === drag.it.id)) continue;
+          const o = k.refs.find(r => r.c === undefined && !r.o);
+          if (o && !carried.has(refKey(o))) { carried.add(refKey(o)); setPt(o, add(refPos(o), d)); }
+        }
+        if (carried.size) solveSketch({ points: carried });
+      } else if (drag.it.type !== 'ref') {
+        const before = JSON.stringify(S.guides);
+        translateGuide(drag.it, d);
+        if (!solveSketch({ guides: new Set([drag.it.id]) }).ok) { S.guides = JSON.parse(before); drag.it = findGuide(drag.it.id); solveSketch(); }
+      }
+      else translateGuide(drag.it, d);
       break;
     }
   }
@@ -1269,8 +1772,15 @@ cv.addEventListener('pointermove', e => {
 cv.addEventListener('pointerup', e => {
   if (!drag) return;
   const sp = evPt(e), d = drag; drag = null;
-  if (d.type === 'stroke') finishStroke(d, snap(s2w(sp), 14));
-  else if (d.type === 'creating') { if (pending && dist(sp, pending.downSp) > 5) finishCreate(pending.cur); }
+  if (d.type === 'stroke') finishStroke(d, snap(s2w(sp), 15));
+  else if (d.type === 'creating') { if (pending && dist(sp, pending.downSp) > 5) finishCreate(pending.cur, pending.sn2); }
+  else if (d.type === 'point' && d.moved) {
+    const n0 = (S.cons || []).length;
+    autoConstrain(d.ref, d.sn); // dropped on a point / line / the axis → coincident / on-line / on-axis
+    if (!solveSketch({ points: new Set([refKey(d.ref)]) }).ok) { S.cons = S.cons.slice(0, n0); solveSketch(); toast('Not joined: that would conflict with existing relations'); }
+    if (d.ref.c !== undefined) refreshMatches(findCurve(d.ref.c));
+    commit(); renderPanel();
+  }
   else if ((d.type === 'handle' || d.type === 'moveGuide' || d.type === 'moveCurve') && d.moved) {
     if (isCurve(d.it)) refreshMatches(d.it);
     commit(); renderPanel();
@@ -1285,14 +1795,36 @@ cv.addEventListener('wheel', e => {
   requestDraw(); updateHud();
 }, { passive: false });
 
-function finishCreate(p2) {
-  const { tool, p1 } = pending;
+function finishCreate(p2, sn2, typedLen) {
+  const { tool, p1, sn1 } = pending;
   pending = null; UI.typed = ''; drag = null;
   if (dist(p1, p2) < 1e-9) return;
-  if (tool === 'line') addGuide({ type: 'line', p1, p2, inf: false });
-  if (tool === 'dim') addGuide({ type: 'dim', p1, p2 });
-  if (tool === 'circle') addGuide({ type: 'circle', c: p1, r: dist(p1, p2) });
-  if (tool === 'rect') addGuide({ type: 'rect', name: 'Part ' + (S.guides.filter(g => g.type === 'rect').length + 1), p1: [Math.min(p1[0], p2[0]), Math.min(p1[1], p2[1])], p2: [Math.max(p1[0], p2[0]), Math.max(p1[1], p2[1])] });
+  if (tool === 'line' || tool === 'dim') {
+    // near-horizontal / near-vertical lines snap square and get the relation (Alt = free)
+    const d = sub(p2, p1), a = Math.abs(Math.atan2(d[1], d[0]) * 180 / Math.PI);
+    let hv = null;
+    const snapped2 = sn2 && sn2.kind !== 'free' && sn2.kind !== 'grid';
+    if (tool === 'line' && !UI.altDown && !snapped2) {
+      if (a < 2.5 || a > 177.5) { p2 = [p2[0], p1[1]]; hv = 'horizontal'; }
+      else if (Math.abs(a - 90) < 2.5) { p2 = [p1[0], p2[1]]; hv = 'vertical'; }
+    }
+    const g = tool === 'line' ? { type: 'line', p1, p2, inf: false } : { type: 'dim', p1, p2 };
+    addGuide(g, () => {
+      autoConstrain({ g: g.id, k: 'p1' }, sn1); autoConstrain({ g: g.id, k: 'p2' }, sn2);
+      if (hv) addCons(hv, [{ g: g.id }]);
+      if (typedLen) addCons('length', [{ g: g.id }], { value: typedLen });
+    });
+  }
+  if (tool === 'circle') { const g = { type: 'circle', c: p1, r: dist(p1, p2) }; addGuide(g, () => autoConstrain({ g: g.id, k: 'c' }, sn1)); }
+  if (tool === 'rect') {
+    const g = { type: 'rect', name: 'Part ' + (S.guides.filter(q => q.type === 'rect').length + 1), p1: [Math.min(p1[0], p2[0]), Math.min(p1[1], p2[1])], p2: [Math.max(p1[0], p2[0]), Math.max(p1[1], p2[1])], lockSize: true };
+    const cornerOf = q => rectCorners(g).findIndex(c => dist(c, q) < 1e-9);
+    addGuide(g, () => {
+      const i1 = cornerOf(p1), i2 = cornerOf(p2);
+      if (i1 >= 0) autoConstrain({ g: g.id, k: 'r' + i1 }, sn1);
+      if (i2 >= 0 && sn2 && sn2.ref) autoConstrain({ g: g.id, k: 'r' + i2 }, sn2);
+    });
+  }
 }
 function commitTyped() {
   if (!pending || !UI.typed) return;
@@ -1301,11 +1833,19 @@ function commitTyped() {
   const a = pending.p1, d = sub(pending.cur, a);
   if (pending.tool === 'rect') {
     const w = nums[0], h = nums.length > 1 ? nums[1] : nums[0];
-    finishCreate(add(a, [w * (d[0] < 0 ? -1 : 1), h * (d[1] < 0 ? -1 : 1)]));
-  } else if (pending.tool === 'circle') finishCreate(add(a, [Math.abs(nums[0]), 0]));
-  else finishCreate(add(a, mul(len(d) > 1e-12 ? norm(d) : [1, 0], nums[0])));
+    finishCreate(add(a, [w * (d[0] < 0 ? -1 : 1), h * (d[1] < 0 ? -1 : 1)]), null);
+  } else if (pending.tool === 'circle') finishCreate(add(a, [Math.abs(nums[0]), 0]), null);
+  else finishCreate(add(a, mul(len(d) > 1e-12 ? norm(d) : [1, 0], nums[0])), null, Math.abs(nums[0]));
 }
-function addGuide(g) { g.id = S.nextId++; S.guides.push(g); commit(); select(g.id); renderPanel(); }
+function addGuide(g, withCons) {
+  g.id = S.nextId++; S.guides.push(g);
+  if (withCons) {
+    const n0 = (S.cons || []).length;
+    withCons();
+    if (!solveSketch({ guides: new Set([g.id]) }).ok) { S.cons = S.cons.slice(0, n0); solveSketch(); }
+  }
+  commit(); select(g.id); renderPanel();
+}
 function finishStroke(d, endSn) {
   let pts = dedupe(d.pts);
   let L = 0; for (let i = 1; i < pts.length; i++) L += dist(pts[i], pts[i - 1]);
@@ -1322,13 +1862,15 @@ function finishStroke(d, endSn) {
   if (es && es.kind === 'curve-end') c.opts.endTan = 'match';
   S.curves.push(c);
   processCurve(c);
+  autoConstrain({ c: c.id, k: 'start' }, ss); autoConstrain({ c: c.id, k: 'end' }, es);
   commit(); select(c.id); renderPanel();
 }
 function deleteSel() {
   const it = findItem(UI.sel);
   if (!it) return;
-  if (isCurve(it)) S.curves = S.curves.filter(c => c !== it); else S.guides = S.guides.filter(g => g !== it);
-  UI.sel = null; commit(); renderPanel(); requestDraw();
+  if (isCurve(it)) { S.curves = S.curves.filter(c => c !== it); dropConsFor(r => r.c === it.id); }
+  else { S.guides = S.guides.filter(g => g !== it); dropConsFor(r => r.g === it.id); }
+  UI.sel = null; UI.picks = []; commit(); renderPanel(); requestDraw();
 }
 function fitView() {
   const pts = [];
@@ -1357,7 +1899,7 @@ window.addEventListener('keydown', e => {
     if (e.key === 'Backspace') { UI.typed = UI.typed.slice(0, -1); updateHud(); return; }
     if (e.key === 'Enter') { commitTyped(); requestDraw(); updateHud(); return; }
   }
-  if (e.key === 'Escape') { if (pending) { pending = null; UI.typed = ''; } else select(null); drag = null; requestDraw(); updateHud(); return; }
+  if (e.key === 'Escape') { if (pending) { pending = null; UI.typed = ''; } else { UI.picks = []; select(null); renderConstraints(); } drag = null; requestDraw(); updateHud(); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { deleteSel(); return; }
   const map = { v: 'select', f: 'draw', l: 'line', d: 'dim', c: 'circle', r: 'rect', p: 'point' };
   const k = e.key.toLowerCase();
@@ -1375,8 +1917,46 @@ window.addEventListener('keyup', e => {
    Side panel
    ===================================================================== */
 function numRow(label, id, v, extra = '') { return `<div class="row"><label>${label}</label><input type="number" step="any" id="${id}" value="${fmtIn(v)}" ${extra}/></div>`; }
-function bindNum(id, fn) { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { const v = parseFloat(el.value); if (isFinite(v)) { fn(v); commit(); renderPanel(); requestDraw(); } }); }
-function renderPanel() { renderSelection(); renderLists(); renderProfile(); renderEquations(); }
+function bindNum(id, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', () => {
+    const v = parseFloat(el.value);
+    if (!isFinite(v)) return;
+    fn(v);
+    if (UI.sel && findGuide(UI.sel)) solveSketch({ guides: new Set([UI.sel]) }); // the edited guide holds; related geometry follows
+    commit(); renderPanel(); requestDraw();
+  });
+}
+function renderPanel() { renderSelection(); renderConstraints(); renderLists(); renderProfile(); renderEquations(); }
+function renderConstraints() {
+  const el = $('#consPanel'); if (!el) return;
+  const cons = S.cons || [], picks = UI.picks || [];
+  const nm = r => (r.o ? 'origin' : r.c !== undefined ? 'curve end' : isPtRef(r) ? 'point' : entKind(r) || 'item');
+  let h = '';
+  if (picks.length) {
+    const opts = consOptions(picks);
+    h += `<div class="card"><div>${picks.map(r => `<span class="chip">${nm(r)}</span>`).join('')}</div>`
+      + (opts.length ? `<div class="btns">${opts.map(([t], i) => `<button class="cbtn" data-ci="${i}" title="${esc(CONS[t].tip)}"><b>${esc(CONS[t].glyph)}</b>${esc(CONS[t].label)}</button>`).join('')}</div>`
+        : '<div class="hint">No relation fits this combination. Try 2 points, 1–2 lines, a point + a line, or a line + a circle.</div>')
+      + `<div class="hint">Shift-click to add or remove items · <a href="#" id="clearPicks" style="color:var(--accent)">clear</a></div></div>`;
+    el.innerHTML = h + consList(cons);
+    el.querySelectorAll('[data-ci]').forEach(b => b.addEventListener('click', () => { const [t, refs] = opts[+b.dataset.ci]; applyCons(t, refs); }));
+    const cp = $('#clearPicks'); if (cp) cp.onclick = ev => { ev.preventDefault(); UI.picks = []; renderConstraints(); requestDraw(); };
+  } else {
+    el.innerHTML = `<div class="hint">Shift-click points / lines / circles to pick them, then choose a relation. Dropping a point on another point, a line or the axis adds one automatically (hold <kbd>Alt</kbd> to skip).</div>` + consList(cons);
+  }
+  el.querySelectorAll('[data-kdel]').forEach(b => b.addEventListener('click', () => { S.cons = S.cons.filter(k => k.id !== +b.dataset.kdel); UI.hlCons = null; solveSketch(); commit(); renderPanel(); requestDraw(); }));
+  el.querySelectorAll('.consItem').forEach(n => {
+    n.addEventListener('mouseenter', () => { UI.hlCons = +n.dataset.k; requestDraw(); });
+    n.addEventListener('mouseleave', () => { UI.hlCons = null; requestDraw(); });
+  });
+  const sb = $('#solveBadge');
+  if (sb) sb.innerHTML = !cons.length ? '' : UI.solve && !UI.solve.ok ? '<span class="bad" title="Two or more relations disagree. Remove one.">over-constrained</span>' : `<span class="ok">${cons.length} · solved</span>`;
+}
+function consList(cons) {
+  if (!cons.length) return '';
+  return `<div class="list" style="margin-top:6px">${cons.map(k => `<div class="consItem" data-k="${k.id}"><span class="g">${esc(CONS[k.type] ? CONS[k.type].glyph : '?')}</span><span class="t" title="${esc(consText(k))}">${esc(consText(k))}</span><button data-kdel="${k.id}" title="Delete relation">✕</button></div>`).join('')}</div>`;
+}
 function renderSelection() {
   const el = $('#selPanel'), it = findItem(UI.sel);
   if (!it) { el.className = 'hint'; el.innerHTML = 'Nothing selected. Pick the Select tool <kbd>V</kbd> and click a guide or curve.'; return; }
@@ -1389,12 +1969,13 @@ function renderSelection() {
     const d = sub(g.p2, g.p1);
     h += `<b>Guide line</b>${numRow('x₁', 'gx1', g.p1[0])}${numRow('y₁', 'gy1', g.p1[1])}${numRow('x₂', 'gx2', g.p2[0])}${numRow('y₂', 'gy2', g.p2[1])}
       ${numRow('Length', 'glen', len(d))}${numRow('Angle °', 'gang', Math.atan2(d[1], d[0]) * 180 / Math.PI)}
+      <label class="chk"><input type="checkbox" id="glock" ${lenCons(g) ? 'checked' : ''}/> Lock length (driving dimension)</label>
       <label class="chk"><input type="checkbox" id="ginf" ${g.inf ? 'checked' : ''}/> Infinite construction line</label>
       <div class="row"><label>Offset copy</label><input type="number" step="any" id="goff" value="10"/><button id="goffBtn">Copy</button></div>`;
   }
   if (g.type === 'dim') {
     const d = sub(g.p2, g.p1);
-    h += `<b>Dimension</b>${numRow('Distance', 'dlen', len(d))}<div class="kv"><span>Δx</span><span>${fmt(d[0], 5)}</span><span>Δy</span><span>${fmt(d[1], 5)}</span></div>
+    h += `<b>Dimension</b>${numRow('Distance', 'dlen', len(d))}<label class="chk"><input type="checkbox" id="glock" ${lenCons(g) ? 'checked' : ''}/> Driving (lock this distance)</label><div class="kv"><span>Δx</span><span>${fmt(d[0], 5)}</span><span>Δy</span><span>${fmt(d[1], 5)}</span></div>
       ${numRow('x₁', 'gx1', g.p1[0])}${numRow('y₁', 'gy1', g.p1[1])}${numRow('x₂', 'gx2', g.p2[0])}${numRow('y₂', 'gy2', g.p2[1])}`;
   }
   if (g.type === 'circle') h += `<b>Guide circle</b>${numRow('Center x', 'gcx', g.c[0])}${numRow('Center y', 'gcy', g.c[1])}${numRow('Radius', 'gr', g.r)}${numRow('Diameter', 'gd', 2 * g.r)}`;
@@ -1402,6 +1983,7 @@ function renderSelection() {
     const x0 = Math.min(g.p1[0], g.p2[0]), y0 = Math.min(g.p1[1], g.p2[1]);
     h += `<b>Known part</b><div class="row"><label>Name</label><input type="text" id="rname" value="${esc(g.name || '')}"/></div>
       ${numRow('x (left)', 'rx', x0)}${numRow('y (bottom)', 'ry', y0)}${numRow('Width', 'rw', Math.abs(g.p2[0] - g.p1[0]))}${numRow('Height', 'rh', Math.abs(g.p2[1] - g.p1[1]))}
+      <label class="chk"><input type="checkbox" id="rlock" ${g.lockSize !== false ? 'checked' : ''}/> Size locked (known part: dragging a corner moves it)</label>
       <div class="btns"><button id="rcenter">Center on axis</button></div>`;
   }
   if (g.type === 'ref') h += `<b>Reference profile</b><div class="row"><label>Name</label><input type="text" id="rname" value="${esc(g.name || '')}"/></div><label class="chk"><input type="checkbox" id="refMir" ${g.mirror ? 'checked' : ''}/> Show mirrored</label><div class="hint">${g.pts.length} points · locked (drag to move)</div>`;
@@ -1410,8 +1992,8 @@ function renderSelection() {
   const P = (k, i) => v => { const q = g[k].slice(); q[i] = v; g[k] = q; };
   bindNum('gx', P('p', 0)); bindNum('gy', P('p', 1));
   bindNum('gx1', P('p1', 0)); bindNum('gy1', P('p1', 1)); bindNum('gx2', P('p2', 0)); bindNum('gy2', P('p2', 1));
-  bindNum('glen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); });
-  bindNum('dlen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); });
+  bindNum('glen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); const k = lenCons(g); if (k) k.value = Math.abs(v); });
+  bindNum('dlen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); const k = lenCons(g); if (k) k.value = Math.abs(v); });
   bindNum('gang', v => { const L = dist(g.p1, g.p2), a = v * Math.PI / 180; g.p2 = add(g.p1, [L * Math.cos(a), L * Math.sin(a)]); });
   bindNum('gcx', P('c', 0)); bindNum('gcy', P('c', 1)); bindNum('gr', v => (g.r = Math.abs(v))); bindNum('gd', v => (g.r = Math.abs(v) / 2));
   const setRect = (x, y, w, hh) => { g.p1 = [x, y]; g.p2 = [x + Math.abs(w), y + Math.abs(hh)]; };
@@ -1423,12 +2005,19 @@ function renderSelection() {
   on('rcenter', 'click', () => { const r = rv(); setRect(r[0], -r[3] / 2, r[2], r[3]); commit(); renderPanel(); requestDraw(); });
   on('refMir', 'change', e => { g.mirror = e.target.checked; commit(); requestDraw(); });
   on('ginf', 'change', e => { g.inf = e.target.checked; commit(); requestDraw(); });
+  on('glock', 'change', e => {
+    if (e.target.checked) addCons('length', [{ g: g.id }], { value: dist(g.p1, g.p2) });
+    else S.cons = (S.cons || []).filter(k => !(k.type === 'length' && k.refs[0].g === g.id));
+    solveSketch(); commit(); renderPanel(); requestDraw();
+  });
+  on('rlock', 'change', e => { g.lockSize = e.target.checked; commit(); renderPanel(); });
   on('goffBtn', 'click', () => {
     const o = parseFloat($('#goff').value) || 0, n = norm(sub(g.p2, g.p1)), off = [-n[1] * o, n[0] * o];
     addGuide({ type: 'line', p1: add(g.p1, off), p2: add(g.p2, off), inf: g.inf });
   });
   on('gdel', 'click', deleteSel);
 }
+function lenCons(g) { return (S.cons || []).find(k => k.type === 'length' && k.refs[0].g === g.id); }
 function renderCurvePanel(el, c) {
   const o = c.opts, m = o.mode;
   const rng = (label, id, min, max, step, v, unit = '') => `<div class="row"><label>${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${v}"/><span class="v" id="${id}V">${fmt(v, 3)}${unit}</span></div>`;
@@ -1688,6 +2277,175 @@ $('#dlCsv').onclick = () => {
   download('silhouette.csv', `x_${S.units},y_${S.units}\n` + poly.map(p => `${fmt(p[0], 9)},${fmt(p[1], 9)}`).join('\n'), 'text/csv');
 };
 
+/* ---------- DXF (R2000) for CAD: true SPLINE entities, so an Onshape sketch gets real curves ----------
+   Bézier pieces of one curve merge into a single clamped cubic B-spline (exact); a Bernstein polynomial is a
+   degree-n B-spline (exact); CST (ψ^0.5 terms, not polynomial) is re-fitted with cubic Béziers to 1e-4·L;
+   lines stay LINEs. mode 'full' = closed mirrored silhouette, 'half' = upper profile + axis line (a closed
+   region to Revolve about that line). */
+function dxfGeometry(mode, withGuides) {
+  const P = pieces(), U = upperPolyline();
+  if (!P.length || !U) return null;
+  const b0 = bbox(U), scale = Math.max(b0.w, b0.h, 1e-9), eps = 1e-9 * scale, ents = [];
+  const bezSpline = segs => { // consecutive cubic segments → one clamped cubic B-spline, triple interior knots
+    const cps = [segs[0][0]], knots = [0, 0, 0, 0];
+    segs.forEach((sg, i) => { cps.push(sg[1], sg[2], sg[3]); knots.push(...(i < segs.length - 1 ? [i + 1, i + 1, i + 1] : [i + 1, i + 1, i + 1, i + 1])); });
+    return { type: 'spline', degree: 3, cps, knots };
+  };
+  for (let i = 0; i < P.length; i++) {
+    const pc = P[i];
+    if (pc.type === 'bezier') {
+      const segs = [pc.P];
+      while (i + 1 < P.length && P[i + 1].type === 'bezier' && P[i + 1].cid === pc.cid) segs.push(P[++i].P);
+      ents.push(bezSpline(segs));
+    } else if (pc.type === 'bern') {
+      const n = pc.P.length - 1;
+      ents.push({ type: 'spline', degree: n, cps: pc.P, knots: [...Array(n + 1).fill(0), ...Array(n + 1).fill(1)] });
+    } else if (pc.type === 'line') ents.push({ type: 'line', a: pc.P[0], b: pc.P[1] });
+    else if (pc.type === 'cst') {
+      const d = [];
+      for (let k = 0; k <= 400; k++) { const t = (1 - Math.cos(Math.PI * k / 400)) / 2; d.push(cstPoint(pc.f, pc.flip ? 1 - t : t)); }
+      const n = d.length, t1 = norm(sub(d[1], d[0])), t2 = norm(sub(d[n - 2], d[n - 1]));
+      ents.push(bezSpline(fitBezier(d, 1e-4 * Math.abs(pc.f.L), t1, t2)));
+    }
+  }
+  ents.forEach(e => (e.layer = 'PROFILE'));
+  const s0 = U[0], s1 = U[U.length - 1], onAxis = e => (e.type === 'line' ? [e.a, e.b] : e.cps).every(q => Math.abs(q[1]) < eps);
+  if (mode === 'half') {
+    for (const q of [s0, s1]) if (Math.abs(q[1]) > eps) ents.push({ type: 'line', a: q, b: [q[0], 0], layer: 'PROFILE' });
+    if (Math.abs(s1[0] - s0[0]) > eps) ents.push({ type: 'line', a: [Math.min(s0[0], s1[0]), 0], b: [Math.max(s0[0], s1[0]), 0], layer: 'AXIS' });
+  } else if (S.mirror) {
+    const up = ents.slice();
+    for (const e of up) {
+      if (onAxis(e)) continue; // an axis-hugging segment would just duplicate itself
+      const m = q => [q[0], -q[1]];
+      ents.push(e.type === 'line' ? { ...e, a: m(e.a), b: m(e.b) } : { ...e, cps: e.cps.map(m) });
+    }
+    for (const q of [s0, s1]) if (Math.abs(q[1]) > eps) ents.push({ type: 'line', a: q, b: [q[0], -q[1]], layer: 'PROFILE' }); // flat end faces
+  } else if (dist(s0, s1) > eps) ents.push({ type: 'line', a: s1, b: s0, layer: 'PROFILE' });
+  if (withGuides) {
+    const ext = { x0: b0.minx - 0.5 * scale, x1: b0.maxx + 0.5 * scale, y0: -b0.h - 0.5 * scale, y1: b0.maxy + 0.5 * scale };
+    for (const g of S.guides) {
+      if (g.type === 'line' && !g.inf) ents.push({ type: 'line', a: g.p1, b: g.p2, layer: 'GUIDES' });
+      if (g.type === 'line' && g.inf) { // clip the construction line to a box around the profile
+        const d = norm(sub(g.p2, g.p1)), ts = [];
+        if (Math.abs(d[0]) > 1e-12) ts.push((ext.x0 - g.p1[0]) / d[0], (ext.x1 - g.p1[0]) / d[0]);
+        if (Math.abs(d[1]) > 1e-12) ts.push((ext.y0 - g.p1[1]) / d[1], (ext.y1 - g.p1[1]) / d[1]);
+        const inside = ts.map(t => add(g.p1, mul(d, t))).filter(q => q[0] >= ext.x0 - eps && q[0] <= ext.x1 + eps && q[1] >= ext.y0 - eps && q[1] <= ext.y1 + eps);
+        if (inside.length >= 2) ents.push({ type: 'line', a: inside[0], b: inside[inside.length - 1], layer: 'GUIDES' });
+      }
+      if (g.type === 'circle') ents.push({ type: 'circle', c: g.c, r: g.r, layer: 'GUIDES' });
+      if (g.type === 'point') ents.push({ type: 'point', p: g.p, layer: 'GUIDES' });
+      if (g.type === 'rect') { const c = rectCorners(g); for (let k = 0; k < 4; k++) ents.push({ type: 'line', a: c[k], b: c[(k + 1) % 4], layer: 'PARTS' }); }
+    }
+  }
+  return ents;
+}
+function dxfText(ents) {
+  const o = [], g = (c, v) => o.push(String(c), String(v));
+  const num = v => { const r = Number((+v).toPrecision(12)); return Object.is(r, -0) ? '0.0' : Number.isInteger(r) ? r.toFixed(1) : String(r); };
+  let hs = 0x20; const H = () => (hs++).toString(16).toUpperCase();
+  const h = {}; ['vpTab', 'vp', 'ltTab', 'ltBB', 'ltBL', 'ltC', 'layTab', 'stTab', 'st', 'viewTab', 'ucsTab', 'appTab', 'app', 'dimTab', 'dim', 'brTab', 'brMS', 'brPS', 'blkMS', 'endMS', 'blkPS', 'endPS',
+    'root', 'dGroup', 'dLayout', 'dPlot', 'placeholder', 'layModel', 'layPaper'].forEach(k => (h[k] = H()));
+  const LAYERS = [['0', 7], ['PROFILE', 7], ['AXIS', 5], ['GUIDES', 4], ['PARTS', 30]].map(([n, c]) => ({ n, c, h: H() }));
+  const entH = ents.map(() => H());
+  const all = ents.flatMap(e => (e.type === 'spline' ? e.cps : e.type === 'line' ? [e.a, e.b] : e.type === 'circle' ? [[e.c[0] - e.r, e.c[1] - e.r], [e.c[0] + e.r, e.c[1] + e.r]] : [e.p]));
+  const bb = bbox(all.length ? all : [[0, 0]]);
+  const insunits = { mm: 4, cm: 5, m: 6, in: 1 }[S.units] || 4;
+  // HEADER
+  g(0, 'SECTION'); g(2, 'HEADER');
+  g(9, '$ACADVER'); g(1, 'AC1015'); g(9, '$HANDSEED'); g(5, H());
+  g(9, '$INSUNITS'); g(70, insunits); g(9, '$MEASUREMENT'); g(70, S.units === 'in' ? 0 : 1);
+  g(9, '$EXTMIN'); g(10, num(bb.minx)); g(20, num(bb.miny)); g(30, '0.0'); g(9, '$EXTMAX'); g(10, num(bb.maxx)); g(20, num(bb.maxy)); g(30, '0.0');
+  g(0, 'ENDSEC');
+  g(0, 'SECTION'); g(2, 'CLASSES'); g(0, 'ENDSEC');
+  // TABLES
+  g(0, 'SECTION'); g(2, 'TABLES');
+  const table = (name, hd, n, extra) => { g(0, 'TABLE'); g(2, name); g(5, hd); g(330, 0); g(100, 'AcDbSymbolTable'); g(70, n); if (extra) extra(); };
+  const rec = (type, hd, owner, sub, handleCode = 5) => { g(0, type); g(handleCode, hd); g(330, owner); g(100, 'AcDbSymbolTableRecord'); g(100, sub); };
+  table('VPORT', h.vpTab, 1);
+  rec('VPORT', h.vp, h.vpTab, 'AcDbViewportTableRecord'); g(2, '*Active'); g(70, 0);
+  [[10, 0], [20, 0], [11, 1], [21, 1], [12, (bb.minx + bb.maxx) / 2], [22, (bb.miny + bb.maxy) / 2], [13, 0], [23, 0], [14, 0.5], [24, 0.5], [15, 0.5], [25, 0.5], [16, 0], [26, 0], [36, 1], [17, 0], [27, 0], [37, 0],
+    [40, Math.max(bb.h, bb.w / 1.6, 1e-6) * 1.2], [41, 1.6], [42, 50], [43, 0], [44, 0], [50, 0], [51, 0]].forEach(([c, v]) => g(c, num(v)));
+  [[71, 0], [72, 1000], [73, 1], [74, 3], [75, 0], [76, 0], [77, 0], [78, 0], [281, 0], [65, 0]].forEach(([c, v]) => g(c, v)); g(146, '0.0');
+  g(0, 'ENDTAB');
+  table('LTYPE', h.ltTab, 3);
+  [[h.ltBB, 'ByBlock'], [h.ltBL, 'ByLayer'], [h.ltC, 'Continuous']].forEach(([hd, n]) => { rec('LTYPE', hd, h.ltTab, 'AcDbLinetypeTableRecord'); g(2, n); g(70, 0); g(3, n === 'Continuous' ? 'Solid line' : ''); g(72, 65); g(73, 0); g(40, '0.0'); });
+  g(0, 'ENDTAB');
+  table('LAYER', h.layTab, LAYERS.length);
+  for (const L of LAYERS) { rec('LAYER', L.h, h.layTab, 'AcDbLayerTableRecord'); g(2, L.n); g(70, 0); g(62, L.c); g(6, 'Continuous'); g(370, -3); g(390, h.placeholder); }
+  g(0, 'ENDTAB');
+  table('STYLE', h.stTab, 1);
+  rec('STYLE', h.st, h.stTab, 'AcDbTextStyleTableRecord'); g(2, 'Standard'); g(70, 0); g(40, '0.0'); g(41, '1.0'); g(50, '0.0'); g(71, 0); g(42, '2.5'); g(3, 'txt'); g(4, '');
+  g(0, 'ENDTAB');
+  table('VIEW', h.viewTab, 0); g(0, 'ENDTAB');
+  table('UCS', h.ucsTab, 0); g(0, 'ENDTAB');
+  table('APPID', h.appTab, 1);
+  rec('APPID', h.app, h.appTab, 'AcDbRegAppTableRecord'); g(2, 'ACAD'); g(70, 0);
+  g(0, 'ENDTAB');
+  table('DIMSTYLE', h.dimTab, 1, () => g(100, 'AcDbDimStyleTable'));
+  rec('DIMSTYLE', h.dim, h.dimTab, 'AcDbDimStyleTableRecord', 105); g(2, 'Standard'); g(70, 0);
+  g(0, 'ENDTAB');
+  table('BLOCK_RECORD', h.brTab, 2);
+  rec('BLOCK_RECORD', h.brMS, h.brTab, 'AcDbBlockTableRecord'); g(2, '*Model_Space'); g(340, h.layModel);
+  rec('BLOCK_RECORD', h.brPS, h.brTab, 'AcDbBlockTableRecord'); g(2, '*Paper_Space'); g(340, h.layPaper);
+  g(0, 'ENDTAB');
+  g(0, 'ENDSEC');
+  // BLOCKS
+  g(0, 'SECTION'); g(2, 'BLOCKS');
+  for (const [bh, eh, br, n] of [[h.blkMS, h.endMS, h.brMS, '*Model_Space'], [h.blkPS, h.endPS, h.brPS, '*Paper_Space']]) {
+    g(0, 'BLOCK'); g(5, bh); g(330, br); g(100, 'AcDbEntity'); g(8, '0'); g(100, 'AcDbBlockBegin'); g(2, n); g(70, 0); g(10, '0.0'); g(20, '0.0'); g(30, '0.0'); g(3, n); g(1, '');
+    g(0, 'ENDBLK'); g(5, eh); g(330, br); g(100, 'AcDbEntity'); g(8, '0'); g(100, 'AcDbBlockEnd');
+  }
+  g(0, 'ENDSEC');
+  // ENTITIES
+  g(0, 'SECTION'); g(2, 'ENTITIES');
+  ents.forEach((e, i) => {
+    const head = t => { g(0, t); g(5, entH[i]); g(330, h.brMS); g(100, 'AcDbEntity'); g(8, e.layer); };
+    if (e.type === 'spline') {
+      head('SPLINE'); g(100, 'AcDbSpline'); g(210, '0.0'); g(220, '0.0'); g(230, '1.0');
+      g(70, 8); g(71, e.degree); g(72, e.knots.length); g(73, e.cps.length); g(74, 0); g(42, '1e-10'); g(43, '1e-10');
+      e.knots.forEach(k => g(40, num(k)));
+      e.cps.forEach(q => { g(10, num(q[0])); g(20, num(q[1])); g(30, '0.0'); });
+    } else if (e.type === 'line') {
+      head('LINE'); g(100, 'AcDbLine'); g(10, num(e.a[0])); g(20, num(e.a[1])); g(30, '0.0'); g(11, num(e.b[0])); g(21, num(e.b[1])); g(31, '0.0');
+    } else if (e.type === 'circle') {
+      head('CIRCLE'); g(100, 'AcDbCircle'); g(10, num(e.c[0])); g(20, num(e.c[1])); g(30, '0.0'); g(40, num(e.r));
+    } else if (e.type === 'point') {
+      head('POINT'); g(100, 'AcDbPoint'); g(10, num(e.p[0])); g(20, num(e.p[1])); g(30, '0.0');
+    }
+  });
+  g(0, 'ENDSEC');
+  // OBJECTS: root dictionary, groups, layouts, plot-style placeholder
+  g(0, 'SECTION'); g(2, 'OBJECTS');
+  g(0, 'DICTIONARY'); g(5, h.root); g(330, 0); g(100, 'AcDbDictionary'); g(281, 1);
+  g(3, 'ACAD_GROUP'); g(350, h.dGroup); g(3, 'ACAD_LAYOUT'); g(350, h.dLayout); g(3, 'ACAD_PLOTSTYLENAME'); g(350, h.dPlot);
+  g(0, 'DICTIONARY'); g(5, h.dGroup); g(330, h.root); g(100, 'AcDbDictionary'); g(281, 1);
+  g(0, 'DICTIONARY'); g(5, h.dLayout); g(330, h.root); g(100, 'AcDbDictionary'); g(281, 1); g(3, 'Model'); g(350, h.layModel); g(3, 'Layout1'); g(350, h.layPaper);
+  g(0, 'ACDBDICTIONARYWDFLT'); g(5, h.dPlot); g(330, h.root); g(100, 'AcDbDictionary'); g(281, 1); g(3, 'Normal'); g(350, h.placeholder); g(100, 'AcDbDictionaryWithDefault'); g(340, h.placeholder);
+  g(0, 'ACDBPLACEHOLDER'); g(5, h.placeholder); g(330, h.dPlot);
+  for (const [lh, name, flag, tab, br] of [[h.layModel, 'Model', 1024, 0, h.brMS], [h.layPaper, 'Layout1', 0, 1, h.brPS]]) {
+    g(0, 'LAYOUT'); g(5, lh); g(330, h.dLayout); g(100, 'AcDbPlotSettings'); g(1, ''); g(4, 'A3'); g(6, '');
+    [[40, 7.5], [41, 20], [42, 7.5], [43, 20], [44, 420], [45, 297], [46, 0], [47, 0], [48, 0], [49, 0], [140, 0], [141, 0], [142, 1], [143, 1]].forEach(([c, v]) => g(c, num(v)));
+    g(70, flag); g(72, 1); g(73, 0); g(74, 5); g(7, ''); g(75, 16); g(76, 0); g(77, 2); g(78, 300); g(147, '1.0'); g(148, '0.0'); g(149, '0.0');
+    g(100, 'AcDbLayout'); g(1, name); g(70, 1); g(71, tab);
+    [[10, 0], [20, 0], [11, 420], [21, 297], [12, 0], [22, 0], [32, 0], [14, 1e20], [24, 1e20], [34, 1e20], [15, -1e20], [25, -1e20], [35, -1e20], [146, 0], [13, 0], [23, 0], [33, 0], [16, 1], [26, 0], [36, 0], [17, 0], [27, 1], [37, 0]]
+      .forEach(([c, v]) => g(c, Math.abs(v) >= 1e20 ? (v > 0 ? '1e+20' : '-1e+20') : num(v)));
+    g(76, 1); g(330, br);
+  }
+  g(0, 'ENDSEC');
+  g(0, 'EOF');
+  // the handle seed must exceed every handle used
+  const seedAt = o.indexOf('$HANDSEED') + 2; o[seedAt] = (hs + 1).toString(16).toUpperCase();
+  return o.join('\r\n') + '\r\n';
+}
+function dxfExport() {
+  const mode = $('#dxfMode').value, ents = dxfGeometry(mode, $('#dxfGuides').checked);
+  if (!ents) return toast('Nothing to export');
+  download(`silhouette${mode === 'half' ? '-half' : ''}.dxf`, dxfText(ents), 'application/dxf');
+  toast(`DXF saved (${ents.filter(e => e.type === 'spline').length} splines, ${ents.filter(e => e.type === 'line').length} lines, units ${S.units})`);
+}
+$('#dlDxf').onclick = dxfExport;
+
 /* ---------- panel controls ---------- */
 document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
 $('#fitViewBtn').onclick = fitView;
@@ -1700,7 +2458,7 @@ $('#showHandlesChk').onchange = e => { UI.showHandles = e.target.checked; reques
 $('#fillChk').onchange = e => { UI.fill = e.target.checked; requestDraw(); };
 $('#qHBtn').onclick = () => { const y = parseFloat($('#qH').value) || 0; addGuide({ type: 'line', p1: [0, y], p2: [1, y], inf: true }); };
 $('#qVBtn').onclick = () => { const x = parseFloat($('#qV').value) || 0; addGuide({ type: 'line', p1: [x, 0], p2: [x, 1], inf: true }); };
-$('#clearBtn').onclick = () => { if (!confirm('Clear all guides and curves? (Undo still works.)')) return; S.guides = []; S.curves = []; UI.sel = null; commit(); renderPanel(); requestDraw(); };
+$('#clearBtn').onclick = () => { if (!confirm('Clear all guides and curves? (Undo still works.)')) return; S.guides = []; S.curves = []; S.cons = []; UI.sel = null; UI.picks = []; commit(); renderPanel(); requestDraw(); };
 $('#undoBtn').onclick = undo; $('#redoBtn').onclick = redo;
 function syncViewControls() { $('#mirrorChk').checked = S.mirror; $('#unitsSel').value = S.units; }
 
@@ -1888,6 +2646,15 @@ function simBuild() {
   let nSolid = 0, jmin = NY, jmax = -1;
   for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) if (solid[j * NX + i]) { nSolid++; if (j < jmin) jmin = j; if (j > jmax) jmax = j; }
   if (!nSolid) { $('#simMsg').textContent = 'Shape is too thin for this grid. Raise the resolution or body size.'; return; }
+  // Body outline per column, for the test metrics (attached length, base pressure, wake width).
+  let bx0 = NX, bx1 = -1;
+  const topJ = new Int16Array(NX).fill(-1), botJ = new Int16Array(NX).fill(-1);
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) if (solid[j * NX + i]) { if (i < bx0) bx0 = i; bx1 = i; if (botJ[i] < 0) botJ[i] = j; topJ[i] = j; }
+  const baseCells = [], aft = Math.floor(bx1 - 0.15 * (bx1 - bx0));
+  for (let j = 1; j < NY - 1; j++) for (let i = Math.max(1, aft); i < NX - 1; i++) {
+    const id = j * NX + i;
+    if (!solid[id] && (solid[id - 1] || solid[id + 1] || solid[id - NX] || solid[id + NX])) baseCells.push(id);
+  }
   const slow = new Uint8Array(N);
   for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
     const id = j * NX + i;
@@ -1899,6 +2666,8 @@ function simBuild() {
   const u0 = Sim.u0, Lc = b0.w * scale, Lref = Math.max(Lc, b0.h * scale), Re = reVal(), nu = u0 * Lref / Re;
   Object.assign(Sim, {
     NX, NY, N, solid, slow, G, Lc, Lref, Hc: jmax - jmin + 1, Re, nu, tau0: 3 * nu + 0.5,
+    nSolid, bx0, bx1, topJ, botJ, baseCells, wakeX: Math.min(NX - 3, bx1 + Math.round(0.5 * Lc)), series: [],
+    aoa: +$('#simAoa').value, size: frac,
     F: new Float32Array(9 * N), Fb: new Float32Array(9 * N), RHO: new Float32Array(N).fill(1), UX: new Float32Array(N), UY: new Float32Array(N),
     feqIn: WT.map((w, k) => { const eu = EX[k] * u0; return w * (1 + 3 * eu + 4.5 * eu * eu - 1.5 * u0 * u0); }),
     steps: 0, hist: [], fx: 0, fy: 0, avgFx: 0, avgFy: 0, nanned: false,
@@ -1972,6 +2741,51 @@ function lbmStep() {
   Sim.fx = Fx; Sim.fy = Fy; Sim.steps++;
   if (Sim.steps % 5 === 0) Sim.hist.push([Sim.steps, Fx, Fy]);
   if (Sim.hist.length > 1600) Sim.hist.splice(0, Sim.hist.length - 1600);
+  if (Sim.steps % 25 === 0) sampleFlow();
+}
+/* Test metrics, sampled every 25 steps into Sim.series:
+   [step, C_D, C_L, recirculation area / H², attached fraction of length, base Cp, wake width / H] */
+function sampleFlow() {
+  const { NX, NY, UX, RHO, solid, u0, bx0, bx1, topJ, botJ, baseCells, wakeX } = Sim;
+  const q = 0.5 * u0 * u0, thr = -0.002 * u0;
+  // reversed-flow cells from the nose to the outlet = recirculation bubbles + vortex cores
+  let rev = 0;
+  for (let j = 1; j < NY - 1; j++) { const row = j * NX; for (let i = bx0; i < NX - 1; i++) if (UX[row + i] < thr && !solid[row + i]) rev++; }
+  // attached length: the first column after the nose where the flow next to the upper / lower surface reverses
+  const sepAt = (J, dir) => {
+    for (let i = bx0 + 1; i <= bx1; i++) {
+      const j = J[i]; if (j < 0) continue;
+      for (let s = 1; s <= 2; s++) { const jj = j + dir * s; if (jj > 0 && jj < NY - 1 && UX[jj * NX + i] < thr) return i; }
+    }
+    return bx1 + 1;
+  };
+  const span = bx1 - bx0 + 1, att = (sepAt(topJ, 1) - bx0 + sepAt(botJ, -1) - bx0) / (2 * span);
+  let cp = 0;
+  for (const id of baseCells) cp += (RHO[id] - 1) / 3;
+  cp = baseCells.length ? cp / baseCells.length / q : 0;
+  // wake width half a body length behind the tail: cells slower than 95% of that column's edge speed
+  let ue = 0, ww = 0;
+  for (let j = 0; j < NY; j++) ue = Math.max(ue, UX[j * NX + wakeX]);
+  for (let j = 0; j < NY; j++) if (UX[j * NX + wakeX] < 0.95 * ue) ww++;
+  Sim.series.push([Sim.steps, Sim.fx / (q * Sim.Hc), Sim.fy / (q * Sim.Lc), rev / (Sim.Hc * Sim.Hc), Math.min(1, att), cp, ww / Sim.Hc]);
+}
+/* Settled statistics of a test: the second half of the run. */
+function testStats() {
+  const s = Sim.series;
+  if (!s || s.length < 8) return null;
+  const half = s.slice(Math.floor(s.length / 2)), n = half.length;
+  const mean = k => half.reduce((a, e) => a + e[k], 0) / n;
+  const rms = (k, m) => Math.sqrt(half.reduce((a, e) => a + (e[k] - m) ** 2, 0) / n);
+  const cd = mean(1), cl = mean(2), beta = Sim.Hc / Sim.NY, cdc = cd / (1 + 0.9 * cd * beta), clRms = rms(2, cl);
+  let zc = 0;
+  for (let i = 1; i < n; i++) if (half[i - 1][2] - cl < 0 && half[i][2] - cl >= 0) zc++;
+  const dt = half[n - 1][0] - half[0][0];
+  return {
+    ft: Sim.steps * Sim.u0 / Sim.NX, Re: Sim.Re, aoa: Sim.aoa, NY: Sim.NY, size: Sim.size, beta,
+    cd, cdc, cdStd: rms(1, cd), cdArea: cdc * Sim.Hc / Math.sqrt(Sim.nSolid), cl, clRms,
+    St: zc > 1 && clRms > 0.005 ? zc / dt * Sim.Hc / Sim.u0 : 0,
+    recirc: mean(3), attached: mean(4), cpBase: mean(5), wake: mean(6),
+  };
 }
 function sampleU(x, y) { // bilinear velocity at lattice coords (cell centres at i+0.5)
   const { NX, NY, UX, UY } = Sim;
@@ -2107,6 +2921,8 @@ function simLoop() {
       $('#simMsg').textContent = '⚠ Sim went unstable. Lower the Reynolds number or raise the resolution, then Reset.';
     }
     particlesAdvance(n);
+    const ft = Sim.steps * Sim.u0 / Sim.NX;
+    if (Sim.running && $('#autoEnd').checked && ft >= (+$('#autoEndFt').value || 6)) endTest(true);
   }
   simDraw(false);
   if (n) updateSimReadout();
@@ -2127,6 +2943,7 @@ function updateSimReadout() {
   const c = coeffs(), ft = Sim.steps * Sim.u0 / Sim.NX;
   $('#simSteps').textContent = Sim.steps.toLocaleString();
   $('#simFT').textContent = ft.toFixed(2);
+  if (Sim.running) $('#testProgress').textContent = $('#autoEnd').checked ? `Test running: ${ft.toFixed(1)} / ${+$('#autoEndFt').value || 6} flow-throughs, then the report opens.` : `Running: ${ft.toFixed(1)} flow-throughs. Press ■ End test for the report (2+ needed, 6 is standard).`;
   $('#simMl').textContent = `${Sim.lastRate.toFixed(1)} MLUPS`;
   if (c) {
     $('#simCd').innerHTML = ft < 1 ? `<span class="hint">settling… ${(c.cd).toFixed(3)}</span>` : c.cd.toFixed(3);
@@ -2197,21 +3014,278 @@ $('#simStage').addEventListener('mousemove', e => {
 });
 $('#simStage').addEventListener('mouseleave', () => ($('#simProbe').style.display = 'none'));
 
+/* =====================================================================
+   TEST REPORT — "End test" rates a run out of 10 (½-star steps) against the ideal body's benchmark.
+   ===================================================================== */
+/* Benchmark: the ideal CST body (IDEAL_A, L/D 4.8, 11° tail) flown through this solver at the standard
+   conditions, settled statistics over the second half of 6 flow-throughs. Recorded 2026-09-22 with
+   `node validation/benchmark.js ideal '{"Re":…}'` (the app's own simBuild / lbmStep / sampleFlow / testStats).
+   What makes it good: a steady wake (C_L RMS ≈ 1e-4, no vortex shedding), a narrow wake (≈ 1.8 H), the
+   smallest recirculation bubble, the best tail pressure recovery, and the lowest drag per volume. */
+const BENCHMARK = {
+  shape: 'Ideal CST body (L/D 4.8, 11° tail)', recorded: '2026-09-22', NY: 170, size: 0.24, aoa: 0, ft: 6,
+  byRe: {
+    500: { cd: 1.236, cdc: 1.080, cdStd: 0.0001446, clRms: 0.000001853, recirc: 0, attached: 1, cpBase: -0.3058, wake: 2.182, St: 0 },
+    1000: { cd: 0.9025, cdc: 0.8167, cdStd: 0.0002037, clRms: 0.00009498, recirc: 0.6295, attached: 0.6931, cpBase: -0.2916, wake: 1.818, St: 0 },
+    2000: { cd: 0.7233, cdc: 0.6671, cdStd: 0.1404, clRms: 0.06967, recirc: 1.247, attached: 0.5717, cpBase: -0.3405, wake: 5.270, St: 0.6488 },
+  },
+};
+const STD_TEST = { Re: 1000, aoa: 0, NY: 170, size: 0.24, ft: 6 };
+/* Rated metrics. score(yours, ideal) → 0…1; stars = round-to-½ of Σ weight × score (weights sum to 10).
+   Calibrated so the ideal scores 10, a revolved NACA 0025 ≈ 7.5, the packaging hull ≈ 5.5, the flat can ≈ 1. */
+const RATING = [
+  { key: 'cdV', w: 2.5, label: 'Drag per volume (3D, real scale)', better: 'lower', p: 3,
+    what: 'Hoerner C_D on volume^(2/3) at your speed: the drag it costs to carry the enclosed volume.',
+    score: (v, b) => 1 - (v / b - 1) / 1.5, tip: 'Carry the same volume in a longer body (L/D 4–5), put the max diameter about a third back, and avoid flat faces.' },
+  { key: 'clRms', w: 2.0, label: 'Wake steadiness (C_L RMS)', better: 'lower', p: 2,
+    what: 'Side-force oscillation from vortex shedding. Near zero means a calm wake, with no buzzing or vibration.',
+    score: v => 1 - Math.log10(Math.max(v, 0.005) / 0.005) / Math.log10(60), tip: 'The wake is shedding vortices. Taper the tail more gently (under ~15°) or end it in a sharper point.' },
+  { key: 'wake', w: 1.5, label: 'Wake width (÷ frontal height)', better: 'lower', p: 3,
+    what: 'Width of the slowed air half a body length behind the tail. A narrow wake means less energy lost.',
+    score: (v, b) => 1 - (v / b - 1) / 1.5, tip: 'A wide wake means the flow separated early. Lengthen the aft body and reduce the tail angle.' },
+  { key: 'cdc', w: 1.0, label: 'Drag coefficient C_D (2D, corrected)', better: 'lower', p: 3,
+    what: 'Tunnel drag on frontal height, corrected for wall blockage.',
+    score: (v, b) => 1 - (v / b - 1) / 0.5, tip: 'Reduce frontal bluntness: round the nose and the shoulders.' },
+  { key: 'recirc', w: 1.0, label: 'Recirculation area (÷ H²)', better: 'lower', p: 3,
+    what: 'Area of reversed flow (separation bubbles and vortex cores) behind the nose.',
+    score: (v, b) => 1 - (v - b) / 1.0, tip: 'Large reversed-flow regions come from separation. Look for corners or a steep tail in the vorticity view.' },
+  { key: 'cpBase', w: 1.0, label: 'Tail pressure recovery (base C_p)', better: 'higher', p: 3,
+    what: 'Mean pressure on the rear 15% of the body. Closer to 0 means the flow pushes the tail forward again.',
+    score: (v, b) => 1 - (b - v) / 0.4, tip: 'The tail sits in low pressure (suction drag). A longer, gentler taper lets the pressure recover.' },
+  { key: 'attached', w: 0.5, label: 'Attached flow (fraction of length)', better: 'higher', p: 3, pct: true,
+    what: 'How far back the flow hugs the surface before it first reverses.',
+    score: (v, b) => v / Math.max(b, 1e-6), tip: 'The flow detaches early. Remove sharp corners and flat faces near the nose.' },
+  { key: 'tailSlope', w: 0.5, label: 'Max tail slope', better: 'lower', p: 3, unit: '°',
+    what: 'Steepest aft surface angle, from the geometry. Above ~15–20° the flow separates.',
+    score: (v, b) => 1 - (v - Math.max(b, 12)) / 18, tip: 'Keep every aft surface under ~15° to the axis.' },
+];
+function idealUpper(L) {
+  const f = { mode: 'cst', x0: 0, y0: 0, L, N1: 0.5, N2: 1, A: IDEAL_A, zte: 0, rev: false }, out = [];
+  for (let i = 0; i <= 180; i++) out.push(cstPoint(f, (1 - Math.cos(Math.PI * i / 180)) / 2));
+  return out;
+}
+function metricsOfUpper(U) { const saved = S; S = { ...saved, curves: [{ poly: U }] }; try { return profileMetrics(); } finally { S = saved; } }
+function rateTest(st) {
+  const m = profileMetrics();
+  if (!m || !m.rmax) return null;
+  const U = parseFloat($('#estU').value) || 10, fl = $('#estFluid').value, bl = $('#estBL').value;
+  const mi = metricsOfUpper(idealUpper(m.L));
+  const res = Object.keys(BENCHMARK.byRe).map(Number);
+  const nearRe = res.reduce((a, b) => (Math.abs(Math.log(b / st.Re)) < Math.abs(Math.log(a / st.Re)) ? b : a));
+  const yours = { ...st, cdV: hoerner(m, U, fl, bl).cdV, tailSlope: m.tailSlope };
+  const ideal = { ...BENCHMARK.byRe[nearRe], cdV: hoerner(mi, U, fl, bl).cdV, tailSlope: mi.tailSlope };
+  const diffs = [];
+  if (st.Re !== nearRe) diffs.push(`Re ${st.Re.toLocaleString()} (compared with the Re ${nearRe.toLocaleString()} benchmark)`);
+  if (st.NY !== BENCHMARK.NY) diffs.push(`${st.NY} grid rows (benchmark ${BENCHMARK.NY})`);
+  if (Math.abs(st.size - BENCHMARK.size) > 1e-6) diffs.push(`body size ${Math.round(st.size * 100)}% (benchmark ${Math.round(BENCHMARK.size * 100)}%)`);
+  if (st.aoa) diffs.push(`angle of attack ${st.aoa}° (benchmark 0°)`);
+  if (st.ft < 4) diffs.push(`only ${st.ft.toFixed(1)} flow-throughs (4+ needed to settle)`);
+  const items = RATING.map(r => {
+    const s = clamp(r.score(yours[r.key], ideal[r.key]), 0, 1);
+    return { ...r, yours: yours[r.key], ideal: ideal[r.key], s: isFinite(s) ? s : 0, pts: (isFinite(s) ? s : 0) * r.w };
+  });
+  const total = items.reduce((a, i) => a + i.pts, 0);
+  return { items, total, stars: clamp(Math.round(total * 2) / 2, 0, 10), diffs, nearRe, m, mi, U, fl };
+}
+function starsHtml(v) {
+  let h = '';
+  for (let i = 1; i <= 10; i++) h += `<span class="st ${v >= i ? 'f' : v >= i - 0.5 ? 'h' : ''}">★</span>`;
+  return h;
+}
+function verdictOf(v) {
+  return v >= 9 ? ['Excellent', 'Near-ideal flow: attached, steady, narrow wake.'] : v >= 7 ? ['Good', 'Mostly clean flow with small losses.']
+    : v >= 5 ? ['Fair', 'Noticeable separation or wake unsteadiness.'] : v >= 3 ? ['Poor', 'Separated, unsteady wake. A lot of drag goes to churning air.']
+    : ['Very poor', 'Bluff-body flow: separation from the front, a wide shedding wake.'];
+}
+function endTest(auto) {
+  if (!Sim.built || !Sim.series || !Sim.series.length) { toast('Run the sim first, then End test'); return; }
+  Sim.running = false; updateRunBtn();
+  const st = testStats();
+  if (!st || st.ft < 2) { toast(`Too short to rate: ${st ? st.ft.toFixed(1) : '0'} flow-throughs. Run at least 2 (6 is standard).`); return; }
+  const r = rateTest(st);
+  if (!r) { toast('No profile to rate'); return; }
+  Sim.lastReport = { st, r, when: new Date(), series: Sim.series.slice(), snap: fieldSnapshot('vort'), name: profileName() };
+  $('#lastReport').hidden = false;
+  $('#testProgress').textContent = `Test ended at ${st.ft.toFixed(1)} flow-throughs · ${r.stars} / 10`;
+  showReport(Sim.lastReport);
+  if (auto) toast('Test complete: report ready');
+}
+function profileName() {
+  const n = S.example ? { ideal: 'Ideal body (example)', packaging: 'Packaging hull (example)', bad: 'Flat-faced can (example)' }[S.example] : '';
+  return n || S.curves.map(c => c.name).join(' + ') || 'Profile';
+}
+/* Vorticity (or any field) picture of the tunnel with the body outline, independent of the screen size. */
+function fieldSnapshot(mode) {
+  const sel = $('#simField2'), old = sel.value;
+  sel.value = mode; simDraw(true);
+  const k = 2, c = document.createElement('canvas'), g = c.getContext('2d');
+  c.width = Sim.NX * k; c.height = Sim.NY * k;
+  g.imageSmoothingEnabled = true; g.drawImage(off, 0, 0, c.width, c.height);
+  g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1.5; g.beginPath();
+  Sim.G.forEach((p, i) => { const x = p[0] * k, y = (Sim.NY - p[1]) * k; i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.closePath(); g.stroke();
+  sel.value = old; simDraw(true);
+  return c.toDataURL('image/png');
+}
+function drawSeriesChart(cv2, o) {
+  const d = window.devicePixelRatio || 1, w = cv2.clientWidth || 300, h = cv2.clientHeight || 150;
+  cv2.width = Math.round(w * d); cv2.height = Math.round(h * d);
+  const g = cv2.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+  const t = o.t, y = o.y, n = t.length; if (n < 2) return;
+  const settled = y.slice(Math.floor(n / 2)).filter(isFinite).sort((a, b) => a - b);
+  const all = [...settled]; if (isFinite(o.ideal)) all.push(o.ideal);
+  if (o.idealBand) all.push(o.ideal - o.idealBand, o.ideal + o.idealBand);
+  let lo = Math.min(...all), hi = Math.max(...all);
+  const early = y.slice(0, Math.floor(n / 2)).filter(isFinite).sort((a, b) => a - b);
+  if (early.length) { lo = Math.min(lo, early[Math.floor(early.length * 0.1)]); hi = Math.max(hi, early[Math.floor(early.length * 0.9)]); }
+  if (o.min !== undefined) lo = Math.min(lo, o.min);
+  if (o.max !== undefined) hi = Math.max(hi, o.max);
+  const pad = Math.max((hi - lo) * 0.12, Math.abs(hi) * 0.02 + 1e-4); lo -= pad; hi += pad;
+  const L = 38, R = 6, T = 6, B = 18, X = v => L + (w - L - R) * (v - t[0]) / (t[n - 1] - t[0] || 1), Y = v => T + (h - T - B) * (1 - (v - lo) / (hi - lo));
+  g.fillStyle = '#f1f2f4'; g.fillRect(L, T, X(t[Math.floor(n / 2)]) - L, h - T - B);
+  g.fillStyle = '#9aa3ae'; g.font = '10px ui-sans-serif,system-ui,sans-serif'; g.textBaseline = 'top'; g.fillText('settling (not scored)', L + 4, T + 2);
+  g.strokeStyle = '#d6dbe1'; g.lineWidth = 1; g.beginPath(); g.moveTo(L, T); g.lineTo(L, h - B); g.lineTo(w - R, h - B); g.stroke();
+  g.fillStyle = '#6b7684'; g.textAlign = 'right'; g.textBaseline = 'middle';
+  [lo + pad, hi - pad].forEach(v => g.fillText(o.fmt ? o.fmt(v) : fmt(v, 3), L - 4, Y(v)));
+  g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let k = Math.ceil(t[0]); k <= t[n - 1]; k++) g.fillText(k, X(k), h - B + 3);
+  if (isFinite(o.ideal)) {
+    if (o.idealBand) { g.fillStyle = 'rgba(31,138,91,.12)'; g.fillRect(L, Y(o.ideal + o.idealBand), w - L - R, Y(o.ideal - o.idealBand) - Y(o.ideal + o.idealBand)); }
+    g.strokeStyle = '#1f8a5b'; g.setLineDash([5, 4]); g.beginPath(); g.moveTo(L, Y(o.ideal)); g.lineTo(w - R, Y(o.ideal)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#1f8a5b'; g.textAlign = 'right'; g.textBaseline = 'bottom'; g.fillText('ideal', w - R - 2, Y(o.ideal) - 1);
+  }
+  g.strokeStyle = '#d98f00'; g.lineWidth = 1.4; g.beginPath();
+  y.forEach((v, i) => { const yy = clamp(Y(v), T, h - B); i ? g.lineTo(X(t[i]), yy) : g.moveTo(X(t[i]), yy); }); g.stroke();
+  const m = settled.reduce((a, b) => a + b, 0) / (settled.length || 1);
+  g.strokeStyle = '#1b2330'; g.setLineDash([2, 3]); g.beginPath(); g.moveTo(X(t[Math.floor(n / 2)]), Y(m)); g.lineTo(w - R, Y(m)); g.stroke(); g.setLineDash([]);
+}
+function drawShapeCompare(cv2, m) {
+  const d = window.devicePixelRatio || 1, w = cv2.clientWidth || 300, h = cv2.clientHeight || 150;
+  cv2.width = Math.round(w * d); cv2.height = Math.round(h * d);
+  const g = cv2.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+  let U = upperPolyline(); if (!U) return;
+  if (U[0][0] > U[U.length - 1][0]) U = U.slice().reverse();
+  const x0 = U[0][0], I = idealUpper(m.L).map(p => [p[0] + x0, p[1]]);
+  const pts = [...U, ...I], b = bbox(pts.concat(pts.map(p => [p[0], -p[1]])));
+  const sc = Math.min((w - 20) / b.w, (h - 20) / (b.h || 1)), ox = 10 - b.minx * sc + (w - 20 - b.w * sc) / 2, oy = h / 2;
+  const path = (P, mir) => { g.beginPath(); P.forEach((p, i) => { const x = ox + p[0] * sc, y = oy - p[1] * sc; i ? g.lineTo(x, y) : g.moveTo(x, y); }); if (mir) P.slice().reverse().forEach(p => g.lineTo(ox + p[0] * sc, oy + p[1] * sc)); };
+  g.strokeStyle = '#c3c9d1'; g.beginPath(); g.moveTo(0, oy); g.lineTo(w, oy); g.stroke();
+  path(U, S.mirror); g.fillStyle = 'rgba(224,161,0,.25)'; g.fill(); g.strokeStyle = '#d98f00'; g.lineWidth = 1.6; g.stroke();
+  path(I, true); g.setLineDash([5, 4]); g.strokeStyle = '#1f8a5b'; g.lineWidth = 1.4; g.stroke(); g.setLineDash([]);
+}
+function showReport(R) {
+  const { st, r, when, series, snap, name } = R;
+  const ft = series.map(e => e[0] * Sim.u0 / Sim.NX), col = k => series.map(e => e[k]);
+  const bm = BENCHMARK.byRe[r.nearRe], [vt, vd] = verdictOf(r.stars), q = 0.5 * Sim.u0 * Sim.u0;
+  const fv = (it, v) => (it.pct ? (v * 100).toFixed(0) + '%' : fmt(v, it.p) + (it.unit || ''));
+  const barCol = s => (s >= 0.8 ? '#1f8a5b' : s >= 0.5 ? '#d98f00' : '#c62f4d');
+  const weak = r.items.filter(i => i.s < 0.7).sort((a, b) => (b.w * (1 - b.s)) - (a.w * (1 - a.s)));
+  const strong = r.items.filter(i => i.s >= 0.9);
+  $('#sheet').innerHTML = `
+    <div class="bar noprint"><button id="rpDl">Download report (.html)</button><button id="rpPrint" class="alt">Print / PDF</button><button id="rpClose" class="alt">Close</button></div>
+    <h1>Aero test report · ${esc(name)}</h1>
+    <div class="sub">${when.toLocaleString()} · Profile Studio 2D wind tunnel (lattice-Boltzmann) + revolved-body estimate</div>
+    <div class="top">
+      <div>
+        <div class="score"><div class="num">${r.stars.toFixed(1)}<small> / 10</small></div><div><div class="stars">${starsHtml(r.stars)}</div><div class="verdict">${vt}: <span style="font-weight:500">${vd}</span></div></div></div>
+        ${r.diffs.length ? `<div class="banner"><b>Provisional rating.</b> This run differs from the benchmark conditions: ${r.diffs.map(esc).join('; ')}. Use <b>★ Run standard test</b> for a like-for-like rating.</div>`
+          : `<div class="banner ok"><b>Standard conditions.</b> Rated like-for-like against the ideal body's benchmark at Re ${r.nearRe.toLocaleString()}.</div>`}
+      </div>
+      <div class="kvr">
+        <span>Reynolds (longest side)</span><span>${st.Re.toLocaleString()}</span>
+        <span>Angle of attack</span><span>${st.aoa}°</span>
+        <span>Grid · body size</span><span>${Sim.NX}×${Sim.NY} · ${Math.round(st.size * 100)}% (body ${Math.round(Sim.Lc)} cells long)</span>
+        <span>Blockage</span><span>${(st.beta * 100).toFixed(0)}% of tunnel height</span>
+        <span>Run length</span><span>${st.ft.toFixed(1)} flow-throughs (${Sim.steps.toLocaleString()} steps), scored on the second half</span>
+        <span>C<sub>D</sub> raw · corrected</span><span>${st.cd.toFixed(3)} · ${st.cdc.toFixed(3)} (ideal ${bm.cdc.toFixed(3)})</span>
+        <span>Shedding (Strouhal)</span><span>${st.St ? st.St.toFixed(3) : 'none (steady wake)'}</span>
+        <span>Real-scale estimate</span><span>${r.U} m/s ${r.fl}, L/D ${fmt(r.m.fineness, 3)}, tail ${fmt(r.m.tailSlope, 3)}°</span>
+      </div>
+    </div>
+    <h2>Scorecard</h2>
+    <table><tr><th>Metric</th><th>Yours</th><th>Ideal</th><th style="width:22%">Score</th><th>Points</th></tr>
+      ${r.items.map(i => `<tr><td><b>${esc(i.label)}</b><span class="d">${esc(i.what)}</span></td><td>${fv(i, i.yours)}</td><td>${fv(i, i.ideal)}</td>
+        <td><div class="rbar"><i style="width:${(i.s * 100).toFixed(0)}%;background:${barCol(i.s)}"></i></div><span class="d">${(i.s * 100).toFixed(0)}% · ${i.better} is better</span></td>
+        <td>${i.pts.toFixed(2)} / ${i.w}</td></tr>`).join('')}
+      <tr><td><b>Total</b></td><td></td><td></td><td></td><td><b>${r.total.toFixed(2)} / 10</b> → ${r.stars.toFixed(1)} ★</td></tr>
+    </table>
+    <h2>Over time</h2>
+    <div class="charts">
+      <div class="chart"><b>Drag coefficient C<sub>D</sub></b><div class="d">Flat = steady. Dotted = your settled mean, green = ideal.</div><canvas id="ch1"></canvas></div>
+      <div class="chart"><b>Lift / side force C<sub>L</sub></b><div class="d">Oscillation = vortex shedding (the wake flapping).</div><canvas id="ch2"></canvas></div>
+      <div class="chart"><b>Wake width ÷ H</b><div class="d">Slowed air half a body length behind the tail.</div><canvas id="ch3"></canvas></div>
+      <div class="chart"><b>Recirculation area ÷ H²</b><div class="d">Reversed-flow region (separation bubbles).</div><canvas id="ch4"></canvas></div>
+      <div class="chart"><b>Tail pressure C<sub>p</sub></b><div class="d">Higher (closer to 0) = better pressure recovery.</div><canvas id="ch5"></canvas></div>
+      <div class="chart"><b>Attached flow</b><div class="d">Fraction of the length before the flow first reverses.</div><canvas id="ch6"></canvas></div>
+    </div>
+    <h2>Flow &amp; shape</h2>
+    <div class="pics">
+      <figure><img src="${snap}" alt="Vorticity field at the end of the test"/><figcaption>Vorticity at the end of the test (blue clockwise, red counter-clockwise). Clean thin sheets = attached flow, alternating blobs = shedding.</figcaption></figure>
+      <figure><canvas id="chShape" style="height:180px"></canvas><figcaption>Your silhouette (amber) against the ideal body at the same length (green dashed).</figcaption></figure>
+    </div>
+    <h2>What to improve</h2>
+    ${weak.length ? `<ul>${weak.map(i => `<li><b>${esc(i.label)}</b> (${(i.s * 100).toFixed(0)}%): ${esc(i.tip)}</li>`).join('')}</ul>` : '<p>Nothing major: every metric is within 30% of the ideal body.</p>'}
+    ${strong.length ? `<p><b>Strengths:</b> ${strong.map(i => esc(i.label.replace(/ \(.*/, ''))).join(', ')}.</p>` : ''}
+    ${S.guides.some(g => g.type === 'rect') ? `<p class="sub">Packaging: ${fitCheck().map(f => `${esc(f.g.name || 'part')} ${f.clearance < 0 ? 'interferes by' : 'clears by'} ${fmt(Math.abs(f.clearance), 3)} ${S.units}`).join(' · ')}. A packaging constraint often explains a lower score. The report shows what it costs.</p>` : ''}
+    <h2>How the rating works</h2>
+    <p class="sub">Each metric scores 0–100% by how close it gets to the benchmark: the <b>${esc(BENCHMARK.shape)}</b> flown through this same solver at the standard conditions (Re 500 / 1,000 / 2,000 · 0° · ${BENCHMARK.NY} rows · ${Math.round(BENCHMARK.size * 100)}% size · ${BENCHMARK.ft} flow-throughs, recorded ${BENCHMARK.recorded}). The ideal scores 10. Points = weight × score, and the stars round the total to the nearest ½. The weights favour what separates good bodies from bad in this tunnel: drag per volume (2.5), wake steadiness (2), wake width (1.5), C<sub>D</sub>, recirculation and tail pressure (1 each), attached length and tail slope (0.5 each). Reference points: revolved NACA 0025 ≈ 7.5, the packaging hull ≈ 5.5, a flat-faced can ≈ 1. The tunnel is 2D and low-Re, so use the rating to compare designs, not to predict absolute drag.</p>`;
+  $('#report').hidden = false;
+  const ideal = bm;
+  { // charts draw right away (layout is ready once the sheet is shown), so downloads never capture blank canvases
+    drawSeriesChart($('#ch1'), { t: ft, y: col(1), ideal: ideal.cd });
+    drawSeriesChart($('#ch2'), { t: ft, y: col(2), ideal: 0, idealBand: Math.max(ideal.clRms, 0.002), min: -0.05, max: 0.05 });
+    drawSeriesChart($('#ch3'), { t: ft, y: col(6), ideal: ideal.wake, min: 0 });
+    drawSeriesChart($('#ch4'), { t: ft, y: col(3), ideal: ideal.recirc, min: 0 });
+    drawSeriesChart($('#ch5'), { t: ft, y: col(5), ideal: ideal.cpBase });
+    drawSeriesChart($('#ch6'), { t: ft, y: col(4), ideal: ideal.attached, min: 0, max: 1, fmt: v => (v * 100).toFixed(0) + '%' });
+    drawShapeCompare($('#chShape'), r.m);
+  }
+  $('#rpClose').onclick = () => { $('#report').hidden = true; };
+  $('#rpPrint').onclick = () => window.print();
+  $('#rpDl').onclick = downloadReport;
+}
+function downloadReport() {
+  const live = $('#sheet'), clone = live.cloneNode(true);
+  clone.querySelectorAll('.noprint').forEach(n => n.remove());
+  const cs = live.querySelectorAll('canvas');
+  clone.querySelectorAll('canvas').forEach((c, i) => { const img = document.createElement('img'); img.src = cs[i].toDataURL('image/png'); img.style.cssText = c.style.cssText; c.replaceWith(img); });
+  const css = $('#reportCss').textContent;
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  download(`aero-report-${stamp}.html`, `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Aero test report</title><style>${css} body{margin:0;background:#eef0f3;padding:24px 16px}</style></head><body>${clone.outerHTML}</body></html>`, 'text/html');
+}
+$('#simEnd').onclick = () => endTest(false);
+$('#lastReport').onclick = () => { if (Sim.lastReport) showReport(Sim.lastReport); };
+$('#stdTest').onclick = () => {
+  $('#simRe').value = Math.log10(STD_TEST.Re); $('#simAoa').value = STD_TEST.aoa; $('#simSize').value = STD_TEST.size; $('#simRes').value = String(STD_TEST.NY);
+  $('#autoEnd').checked = true; $('#autoEndFt').value = STD_TEST.ft;
+  simLabels(); simBuild();
+  if (!Sim.built) return;
+  Sim.running = true; updateRunBtn();
+  toast('Standard test running. The report opens at 6 flow-throughs.');
+};
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#report').hidden) $('#report').hidden = true; });
+
 /* ---------- revolved-body estimate (Hoerner) ---------- */
-function renderEstimate() {
-  const el = $('#estOut'), m = profileMetrics();
-  if (!m || !m.rmax) { el.innerHTML = '<span class="hint">Draw a profile first.</span>'; return; }
-  const k = UNITS[S.units], U = parseFloat($('#estU').value) || 0;
-  const fl = $('#estFluid').value === 'water' ? { rho: 998, nu: 1.0e-6 } : { rho: 1.204, nu: 1.51e-5 };
+/* Hoerner revolved-body drag for metrics m (profileMetrics) at speed U (m/s). */
+function hoerner(m, U, fluid, bl) {
+  const k = UNITS[S.units];
+  const fl = fluid === 'water' ? { rho: 998, nu: 1.0e-6 } : { rho: 1.204, nu: 1.51e-5 };
   const L = m.L * k, Af = m.Af * k * k, Ab = m.Ab * k * k, An = m.An * k * k, Sw = m.Sw * k * k, V = m.V * k * k * k;
   const Re = U * L / fl.nu;
-  const Cf = $('#estBL').value === 'lam' ? 1.328 / Math.sqrt(Re) : 0.075 / Math.pow(Math.log10(Re) - 2, 2);
+  const Cf = bl === 'lam' ? 1.328 / Math.sqrt(Re) : 0.075 / Math.pow(Math.log10(Re) - 2, 2);
   const dl = 1 / m.fineness;
   const CDwet = Cf * (1 + 1.5 * Math.pow(dl, 1.5) + 7 * Math.pow(dl, 3));
   const cdFore = CDwet * Sw / Af;
   const cdBase = Ab > 0 ? 0.029 / Math.sqrt(cdFore * Af / Ab) * Ab / Af : 0;
   const cdNose = An > 0 ? 0.8 * An / Af : 0; // flat front face ≈ disc stagnation drag
   const cd = cdFore + cdBase + cdNose, q = 0.5 * fl.rho * U * U, D = q * Af * cd;
+  return { L, Af, Ab, An, Sw, V, Re, Cf, cdFore, cdBase, cdNose, cd, q, D, cdV: D / (q * Math.pow(V, 2 / 3)) || 0 };
+}
+function renderEstimate() {
+  const el = $('#estOut'), m = profileMetrics();
+  if (!m || !m.rmax) { el.innerHTML = '<span class="hint">Draw a profile first.</span>'; return; }
+  const U = parseFloat($('#estU').value) || 0;
+  const { Af, V, Re, Cf, cdFore, cdBase, cdNose, cd, q, D } = hoerner(m, U, $('#estFluid').value, $('#estBL').value);
   const simRe = Sim.built ? Sim.Re : reVal();
   el.innerHTML = `<div class="kv">
     <span>Reynolds Re<sub>L</sub> (real)</span><span>${Re.toExponential(2)}</span>
