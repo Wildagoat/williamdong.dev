@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Air Sim Guide</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+    --text:#e6edf3; --dim:#8b98a5; --accent:#ffce54; --accent2:#4aa3ff;
+    --good:#4cc38a; --warn:#f0a020; --bad:#f0506e; --red:#ff8a8a; --blue:#63b3ff;
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f7f9; --panel:#ffffff; --panel2:#eef1f5; --line:#d6dce4;
+    --text:#1b2330; --dim:#5b6776; --accent:#b7860b; --accent2:#1f6fd1;
+    --good:#1f8a5b; --warn:#b36b00; --bad:#c62f4d; --red:#c62f4d; --blue:#1f6fd1;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{display:grid;grid-template-columns:230px minmax(0,1fr);max-width:1180px;margin:0 auto;gap:32px;padding:0 16px}
+  nav.toc{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:28px 0}
+  nav.toc b{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+  nav.toc a{display:block;color:var(--dim);text-decoration:none;padding:3px 0;font-size:13.5px}
+  nav.toc a:hover{color:var(--accent)}
+  main{padding:28px 0 80px;min-width:0}
+  h1{font-size:30px;margin:0 0 4px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--dim);margin:0 0 20px}
+  h2{font-size:21px;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--line)}
+  h2 .n{color:var(--accent);margin-right:8px;font-variant-numeric:tabular-nums}
+  h3{font-size:16px;margin:24px 0 6px}
+  p{margin:8px 0}
+  main a{color:var(--accent2)}
+  code,kbd{font:13px ui-monospace,Consolas,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:14px 0}
+  .tip{border-left:3px solid var(--good)} .warn{border-left:3px solid var(--warn)} .key{border-left:3px solid var(--accent)}
+  .tip b:first-child,.warn b:first-child,.key b:first-child{display:block;margin-bottom:2px}
+  .tip b:first-child{color:var(--good)} .warn b:first-child{color:var(--warn)} .key b:first-child{color:var(--accent)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+  th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  td:first-child{white-space:nowrap;font-weight:600}
+  .tablewrap{overflow-x:auto}
+  ol li,ul li{margin:4px 0}
+  svg{max-width:100%;height:auto;display:block}
+  .fig{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:14px 0}
+  .fig figcaption{color:var(--dim);font-size:13px;margin-top:6px}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .bar{height:12px;border-radius:6px;margin:6px 0 2px}
+  .barl{display:flex;justify-content:space-between;color:var(--dim);font-size:12px}
+  .pill{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:var(--panel2)}
+  .themebtn{position:fixed;right:14px;top:12px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit;font-size:13px}
+  .check li{list-style:none;margin-left:-20px}
+  .check li::before{content:"☐ ";color:var(--accent)}
+  @media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}nav.toc{display:none}.grid2{grid-template-columns:minmax(0,1fr)}}
+  /* SVG theme tokens */
+  .s-tunnel{fill:#0b0e13;stroke:var(--line)}
+  :root[data-theme="light"] .s-tunnel{fill:#e9edf2}
+  .s-body{fill:#c9d1d9;stroke:#fff;stroke-width:1.2}
+  :root[data-theme="light"] .s-body{fill:#8a96a5;stroke:#1b2330}
+  .s-flow{fill:none;stroke:var(--accent2);stroke-width:1.4;opacity:.85}
+  .s-wake{fill:none;stroke:var(--bad);stroke-width:1.4}
+  .s-lbl{fill:var(--text);font:12px ui-sans-serif,system-ui,sans-serif}
+  .s-dim{fill:var(--dim);font:11px ui-sans-serif,system-ui,sans-serif}
+  .s-callout{stroke:var(--accent);stroke-width:1;fill:none}
+  .s-dot{fill:var(--accent)}
+</style>
+</head>
+<body>
+<button class="themebtn" id="themeBtn">◐ Theme</button>
+<div class="wrap">
+  <nav class="toc">
+    <b>Air sim guide</b>
+    <a href="#what">1. What the sim is</a>
+    <a href="#quick">2. Quick start (2 minutes)</a>
+    <a href="#screen">3. Reading the screen</a>
+    <a href="#controls">4. Every control explained</a>
+    <a href="#fields">5. The colour fields</a>
+    <a href="#particles">6. Reading the particles</a>
+    <a href="#numbers">7. The numbers panel</a>
+    <a href="#patterns">8. Flow patterns to recognise</a>
+    <a href="#compare">9. Comparing designs properly</a>
+    <a href="#estimate">10. The revolved-body card</a>
+    <a href="#trouble">11. Troubleshooting</a>
+    <a href="#glossary">12. Symbols &amp; glossary</a>
+    <a href="#cheat">13. Cheat sheet</a>
+  </nav>
+  <main>
+    <h1>The Air Sim: <span>a beginner's guide</span></h1>
+    <p class="sub">For the <b>② Aero sim</b> tab of Profile Studio. It covers how to run the sim, what you're looking at, and how to turn it into better shapes.</p>
+
+    <!-- 1 -->
+    <h2 id="what"><span class="n">1</span>What the sim is</h2>
+    <p>It's a <b>virtual wind tunnel</b>. Air enters on the <b>left</b> at a steady speed and flows <b>right</b> past your silhouette. The computer tracks how the air speeds up, slows down, swirls, and pushes on the shape.</p>
+    <p>Two things are drawn on top of each other:</p>
+    <ul>
+      <li><b>A colour field</b>: every pixel shows a property of the air at that spot (speed, spin, or pressure).</li>
+      <li><b>Air particles</b>: little tracers fired from the left edge that ride along with the air, like smoke in a real wind tunnel.</li>
+    </ul>
+    <p>From the forces on the shape it calculates <b>C<sub>D</sub></b> (how much it drags) and <b>C<sub>L</sub></b> (how much it's pushed sideways, i.e. lift).</p>
+    <div class="card key"><b>The one thing to remember</b>
+      The sim is <b>2D</b> and runs at a <b>low Reynolds number</b>, so its numbers are <i>not</i> the real-world drag of your part. Use it to <b>compare shapes against each other</b> and to <b>see where the flow goes wrong</b>. For a real-scale drag number, use the <a href="#estimate">revolved-body card</a> below it.</div>
+    <details class="card"><summary><b>How it works under the hood (optional)</b></summary>
+      <p>The solver is a <b>lattice-Boltzmann method</b> (D2Q9). The tunnel is a grid of cells. Each cell holds 9 "packets" of air moving in 9 directions (still, 4 straight, 4 diagonal). Every time step, packets <b>stream</b> to the neighbouring cell and then <b>collide</b>, relaxing toward a local equilibrium. Averaged, that behaves like real viscous air. Packets that hit the body bounce straight back (a no-slip wall), and the momentum they hand over is the force on the body. A small turbulence model (Smagorinsky) keeps it stable at higher speeds.</p>
+    </details>
+
+    <!-- 2 -->
+    <h2 id="quick"><span class="n">2</span>Quick start (2 minutes)</h2>
+    <ol>
+      <li>Make a profile in <b>① Design</b> (or pick one from <b>Load example…</b>; <b>Ideal</b> is the best place to start). Keep <b>Mirror about x-axis</b> on for a closed shape.</li>
+      <li>Open <b>② Aero sim</b>. Your shape appears as a light-grey body in the tunnel.</li>
+      <li>Press <b>▶ Run</b> (or <kbd>Space</kbd>).</li>
+      <li>Watch the particles flow around it. Wait until <b>Flow-throughs</b> reaches <b>at least 2–3</b>. Before that, the flow is still "starting up" and the numbers are meaningless.</li>
+      <li>Read <b>C<sub>D</sub></b>. Switch <b>Field</b> to <i>Vorticity</i> and then <i>Pressure</i> to diagnose <i>why</i> it's that value.</li>
+      <li>Change the shape in Design, come back, <b>⟲ Reset</b>, run to the same flow-throughs, and compare.</li>
+    </ol>
+    <div class="card tip"><b>Tip</b>Hover over the tunnel. The top-right readout shows the local air speed <code>|u|/U∞</code> and pressure <code>Cp</code> at the cursor. It's the fastest way to learn what the colours mean.</div>
+
+    <!-- 3 -->
+    <h2 id="screen"><span class="n">3</span>Reading the screen</h2>
+    <figure class="fig">
+      <svg viewBox="0 0 760 330" role="img" aria-label="Annotated wind tunnel diagram">
+        <rect class="s-tunnel" x="40" y="60" width="680" height="200" rx="4"/>
+        <!-- rake -->
+        <g class="s-dot">
+          <circle cx="50" cy="80" r="2.5"/><circle cx="50" cy="100" r="2.5"/><circle cx="50" cy="120" r="2.5"/><circle cx="50" cy="140" r="2.5"/><circle cx="50" cy="160" r="2.5"/><circle cx="50" cy="180" r="2.5"/><circle cx="50" cy="200" r="2.5"/><circle cx="50" cy="220" r="2.5"/><circle cx="50" cy="240" r="2.5"/>
+        </g>
+        <!-- streamlines -->
+        <path class="s-flow" d="M55 80 C200 80 260 78 330 76 S520 80 720 80"/>
+        <path class="s-flow" d="M55 110 C200 110 230 100 300 96 S470 104 720 110"/>
+        <path class="s-flow" d="M55 138 C180 138 200 118 260 114 S440 124 560 146 S650 150 720 150"/>
+        <path class="s-flow" d="M55 182 C180 182 200 202 260 206 S440 196 560 174 S650 170 720 170"/>
+        <path class="s-flow" d="M55 210 C200 210 230 220 300 224 S470 216 720 210"/>
+        <path class="s-flow" d="M55 240 C200 240 260 242 330 244 S520 240 720 240"/>
+        <!-- body -->
+        <path class="s-body" d="M200 160 C200 128 250 112 320 114 C400 116 470 140 520 160 C470 180 400 204 320 206 C250 208 200 192 200 160 Z"/>
+        <!-- stagnation -->
+        <circle cx="200" cy="160" r="5" fill="var(--bad)"/>
+        <!-- wake -->
+        <path class="s-wake" d="M522 160 c20 -10 40 10 60 0 s40 10 60 0 s40 10 70 0" stroke-dasharray="4 3"/>
+        <!-- arrows in -->
+        <g stroke="var(--dim)" stroke-width="1.5" fill="none"><path d="M8 110h24M26 105l6 5-6 5"/><path d="M8 160h24M26 155l6 5-6 5"/><path d="M8 210h24M26 205l6 5-6 5"/></g>
+        <!-- callouts -->
+        <text class="s-lbl" x="4" y="40">Inlet: uniform air at U∞</text>
+        <path class="s-callout" d="M50 44 L50 74"/>
+        <text class="s-lbl" x="96" y="300">Particle rake (tracers fired here)</text>
+        <path class="s-callout" d="M110 288 L54 236"/>
+        <text class="s-lbl" x="150" y="40">Stagnation point (air stops, max pressure)</text>
+        <path class="s-callout" d="M200 46 L200 152"/>
+        <text class="s-lbl" x="300" y="300">Your silhouette (grey) + exact outline (white)</text>
+        <path class="s-callout" d="M340 288 L340 200"/>
+        <text class="s-lbl" x="540" y="300">Wake: slow, swirly air behind</text>
+        <path class="s-callout" d="M600 288 L600 166"/>
+        <text class="s-lbl" x="430" y="40">Top/bottom: slippery (free-slip) walls</text>
+        <path class="s-callout" d="M560 46 L560 60"/>
+        <text class="s-lbl" x="640" y="130" text-anchor="middle">Outlet →</text>
+        <text class="s-dim" x="330" y="96" text-anchor="middle">air speeds up over the shoulder</text>
+      </svg>
+      <figcaption>What's in the tunnel. Air always moves left → right. The body sits about 20% of the way in so the wake has room to develop.</figcaption>
+    </figure>
+    <div class="tablewrap"><table>
+      <tr><th>On screen</th><th>What it is</th></tr>
+      <tr><td>Top-left text</td><td><code>grid 442×170 · body 105 cells long · τ = 0.53</code>: the tunnel size in cells, how many cells long your body is (more = finer detail), and τ, the solver's viscosity setting (see <a href="#glossary">glossary</a>). If τ gets very close to 0.5 the sim is near its stability limit.</td></tr>
+      <tr><td>Top-right text (hover)</td><td>Local <code>|u|/U∞</code> (speed as a fraction of the inlet speed) and <code>Cp</code> (pressure coefficient) under the cursor. It says <i>body</i> over the shape.</td></tr>
+      <tr><td>Grey shape</td><td>The body as the solver sees it (made of cells, so edges look a bit blocky).</td></tr>
+      <tr><td>White outline</td><td>Your exact parametric silhouette, for comparison with the blocky version.</td></tr>
+      <tr><td>White / light-blue streaks</td><td>Air particles, with trails.</td></tr>
+    </table></div>
+
+    <!-- 4 -->
+    <h2 id="controls"><span class="n">4</span>Every control explained</h2>
+    <h3>Wind tunnel</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Control</th><th>What it does</th><th>Beginner setting</th></tr>
+      <tr><td>▶ Run / ❚❚ Pause</td><td>Starts or freezes time. Pausing keeps the current flow so you can inspect it by hovering or switching fields.</td><td><kbd>Space</kbd> toggles</td></tr>
+      <tr><td>⟲ Reset</td><td>Rebuilds the tunnel from your <b>current</b> profile and restarts the flow from rest. Do this after editing the shape.</td><td>Every new test</td></tr>
+      <tr><td>Reynolds (Re, longest side)</td><td>How "fast / big / thin-aired" the flow is relative to viscosity (<a href="#glossary">details</a>). It's based on the body's longest side: the length for slender shapes, the frontal height for bluff or plate-like ones. The note under the forces shows it on both. Low Re is smooth, syrupy flow. High Re is lively, turbulent flow with vortices. It rebuilds the tunnel when changed.</td><td><b>1,000</b> to start. 200–5,000 is the useful range.</td></tr>
+      <tr><td>Angle of attack</td><td>Tilts the body relative to the wind. Positive = nose up. Symmetric bodies make zero lift at 0°, and tilting creates lift (C<sub>L</sub>).</td><td>0°, then try ±5–10°</td></tr>
+      <tr><td>Body size</td><td>How long the body is as a fraction of the tunnel. Bigger = more cells on the body (more detail) but the walls get closer (more <a href="#trouble">blockage</a>). It's capped so the body never fills more than ~22% of the height.</td><td>24% (default)</td></tr>
+      <tr><td>Resolution</td><td>Number of cell rows. More rows = sharper, more accurate, and slower (roughly quadratic cost).</td><td>170 to explore, 230 to confirm</td></tr>
+      <tr><td>Sim speed</td><td>Maximum solver steps per animation frame. Higher = faster progress if your computer keeps up. It doesn't change the physics.</td><td>30</td></tr>
+    </table></div>
+    <h3>Display</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Control</th><th>What it does</th></tr>
+      <tr><td>Field</td><td>Which quantity colours the air: <b>Speed</b>, <b>Vorticity</b> (spin), <b>Pressure Cp</b>, or <b>None</b> (black background, best for watching particles). See <a href="#fields">section 5</a>.</td></tr>
+      <tr><td>Contrast</td><td>Stretches the colour scale (×0.35 … ×2.8). Raise it to reveal faint detail, lower it if everything is saturated. The colour bar labels update to show the new range. Display only, no physics change.</td></tr>
+      <tr><td>Shoot air particles</td><td>Turns the tracer rake on or off. Existing particles keep flowing until they leave.</td></tr>
+      <tr><td>Particle rake</td><td>Number of emission lines across the inlet (8–90). Few = clean, readable streaklines. Many = dense "smoke" that fills the flow.</td></tr>
+      <tr><td>Trail length</td><td>How slowly old particle positions fade. Long trails show <i>paths</i>, and short trails show <i>current motion</i>.</td></tr>
+    </table></div>
+
+    <!-- 5 -->
+    <h2 id="fields"><span class="n">5</span>The colour fields</h2>
+    <h3>Speed <span class="pill">|u| / U∞</span></h3>
+    <div class="bar" style="background:linear-gradient(90deg,#07090d,#132238,#1b4f72,#1f8a8a,#4cc38a,#e7d04f,#fff4cf)"></div>
+    <div class="barl"><span>0 (stopped)</span><span>1 = inlet speed</span><span>1.8 (fast)</span></div>
+    <p>How fast the air is moving compared to the incoming wind. Teal-green ≈ free stream (1.0).</p>
+    <ul>
+      <li><b>Dark spot at the nose</b>: the stagnation point. Air slams into the front and stops. Normal and unavoidable.</li>
+      <li><b>Yellow/white bands over the top and bottom</b>: air accelerating around the widest part (the "shoulder"). Normal. The more abrupt the shoulder, the brighter these get.</li>
+      <li><b>Thin dark layer hugging the surface</b>: the <b>boundary layer</b>, where air is slowed by friction with the wall.</li>
+      <li><b>Dark streak behind the body</b>: the <b>wake</b>, air that has lost energy. <b>A narrow wake means low drag. A wide wake means high drag.</b> This is the single most useful thing to look at.</li>
+    </ul>
+
+    <h3>Vorticity <span class="pill">ω·H / U∞</span></h3>
+    <div class="bar" style="background:linear-gradient(90deg,#63b3ff,#2b5d9a,#162234,#0b0e13,#3a1826,#a8324f,#ff8a8a)"></div>
+    <div class="barl"><span>blue = clockwise spin</span><span>dark = no spin</span><span>red = counter-clockwise</span></div>
+    <p>How much the air is <b>spinning</b> locally. Spin is born at the surface (the boundary layer) and then carried downstream.</p>
+    <ul>
+      <li>A thin <b>blue sheet on top</b> and a <b>red sheet on the bottom</b> of the body are normal: that's the boundary layer.</li>
+      <li>If those sheets <b>peel off the surface early</b> and billow outward, the flow has <b>separated</b> (bad, see <a href="#patterns">patterns</a>).</li>
+      <li><b>Alternating blue and red blobs</b> behind the body are a <b>vortex street</b>: the body is shedding vortices and will shake side to side. You'll see C<sub>L</sub> oscillate.</li>
+      <li>Dark (black) everywhere else is calm, non-spinning air.</li>
+    </ul>
+
+    <h3>Pressure <span class="pill">Cp</span></h3>
+    <div class="bar" style="background:linear-gradient(90deg,#63b3ff,#2b5d9a,#162234,#0b0e13,#3a1826,#a8324f,#ff8a8a)"></div>
+    <div class="barl"><span>−1.2 (suction)</span><span>0 = ambient</span><span>+1.2 (pushing)</span></div>
+    <p>Pressure compared with the undisturbed air. <b>Red pushes</b> on the surface, and <b>blue sucks</b> on it.</p>
+    <ul>
+      <li><b>Red cap on the nose</b> (Cp ≈ +1 at the stagnation point): always there.</li>
+      <li><b>Blue over the shoulders</b>: fast air means low pressure (Bernoulli).</li>
+      <li><b>The key check is the tail.</b> On a good shape the pressure <b>recovers</b> back toward neutral or slightly red at the tail, which pushes the body forward and cancels some of the nose push. If the tail stays <b>blue</b>, the air separated and never recovered. That's <b>pressure drag</b>.</li>
+      <li>At an angle of attack, <b>blue on top and red underneath</b> means lift.</li>
+    </ul>
+    <p class="card tip"><b>Tip</b>Speed and pressure are mirror images (fast ↔ low pressure) outside the wake. Vorticity tells you <i>where the damage started</i>. Look at it first when C<sub>D</sub> is disappointing.</p>
+
+    <!-- 6 -->
+    <h2 id="particles"><span class="n">6</span>Reading the particles</h2>
+    <p>The particles are the "shoot air at it" view. Each one is released at the left edge and carried by the local air velocity.</p>
+    <div class="tablewrap"><table>
+      <tr><th>You see…</th><th>It means…</th></tr>
+      <tr><td>Long, straight streaks</td><td>Fast air. Streak length is proportional to speed.</td></tr>
+      <tr><td>Short streaks / bunched dots</td><td>Slow air, near the nose or in the wake.</td></tr>
+      <tr><td>Lines squeezing together</td><td>Air accelerating (lines crowd around the shoulders).</td></tr>
+      <tr><td>Lines spreading apart</td><td>Air decelerating (at the nose, behind the body).</td></tr>
+      <tr><td>Lines hugging the body all the way to the tail</td><td><b>Attached flow.</b> The goal.</td></tr>
+      <tr><td>Lines leaving the surface before the tail, with a gap behind</td><td><b>Separation.</b> The gap is a <i>recirculation bubble</i> of trapped, churning air.</td></tr>
+      <tr><td>Particles circling / drifting backwards behind the body</td><td>Recirculation: reversed flow inside the wake.</td></tr>
+      <tr><td>Wavy, snaking lines downstream</td><td>Vortex shedding (a von Kármán street).</td></tr>
+      <tr><td>Particles vanishing at the surface</td><td>They got too close to the no-slip wall (where air speed → 0) or touched the body, so they're removed. Normal.</td></tr>
+    </table></div>
+    <div class="card tip"><b>Best particle settings for seeing separation</b>Field = <i>None</i>, rake ≈ 20–30, trail ≈ 0.9. Recirculation shows up as a dark hole behind the body that the clean lines steer around.</div>
+
+    <!-- 7 -->
+    <h2 id="numbers"><span class="n">7</span>The numbers panel</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Readout</th><th>Meaning</th><th>How to use it</th></tr>
+      <tr><td>C<sub>D</sub> (ref. frontal height)</td><td>Drag coefficient: the drag force divided by (½ ρ U∞² × frontal height). It's the <b>running mean over the most recent half of the history</b>. It shows <i>settling…</i> in grey until 1 flow-through.</td><td><b>Lower is better.</b> Only compare values taken at the same Re, resolution, body size and flow-throughs.</td></tr>
+      <tr><td>C<sub>L</sub> (ref. length)</td><td>Lift coefficient: sideways (up/down) force ÷ (½ ρ U∞² × body length). Positive = upward.</td><td>≈ 0 for a symmetric body at 0°. Oscillating C<sub>L</sub> means vortex shedding.</td></tr>
+      <tr><td>Lattice steps</td><td>How many time steps have run.</td><td>Only for reference.</td></tr>
+      <tr><td>Flow-throughs</td><td>How many times the air could have crossed the whole tunnel (steps × U∞ ÷ tunnel length).</td><td><b>Your clock.</b> Wait for ≥ 2–3 before trusting C<sub>D</sub>. Compare designs at the same value.</td></tr>
+      <tr><td>Speed (MLUPS)</td><td>Million lattice-cell updates per second: how fast your computer is running the solver.</td><td>If it's low, drop the resolution.</td></tr>
+      <tr><td>C<sub>D</sub> history plot</td><td>Yellow line = instantaneous drag over time. Blue dashed line = running mean.</td><td>See below.</td></tr>
+    </table></div>
+    <h3>Reading the history plot</h3>
+    <div class="grid2">
+      <figure class="fig"><svg viewBox="0 0 300 110"><rect width="300" height="110" fill="none"/><path d="M5 10 C20 95 35 60 50 70 S90 66 110 64 S200 63 295 63" fill="none" stroke="var(--accent)" stroke-width="1.6"/><path d="M150 63 H295" stroke="var(--accent2)" stroke-dasharray="4 3"/><text class="s-dim" x="8" y="104">spike at start (ignore) → flat line = converged</text></svg><figcaption><b>Steady flow.</b> After the start-up spike it flattens out. Read C<sub>D</sub> once it's flat.</figcaption></figure>
+      <figure class="fig"><svg viewBox="0 0 300 110"><path d="M5 10 C20 95 35 60 50 70 S80 64 95 62 q8 -10 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="var(--accent)" stroke-width="1.6"/><path d="M150 62 H295" stroke="var(--accent2)" stroke-dasharray="4 3"/><text class="s-dim" x="8" y="104">regular wiggle = vortex shedding (use the mean)</text></svg><figcaption><b>Periodic flow.</b> A steady wiggle is normal for blunt shapes. The dashed mean is your C<sub>D</sub>.</figcaption></figure>
+    </div>
+    <p>The plot's vertical scale auto-zooms (the range is printed underneath), so a wiggle that looks huge may be tiny. Check the numbers.</p>
+
+    <h3>Ballpark C<sub>D</sub> values (this 2D sim, Re ~1,000, default size)</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Shape</th><th>Typical C<sub>D</sub> here</th><th>What you'll see</th></tr>
+      <tr><td>Flat plate facing the wind</td><td>~2–3 (rough)</td><td>Huge wake, strong shedding</td></tr>
+      <tr><td>Circle / cylinder</td><td>~1.5–1.9 raw (1.87 at Re 100; published free-air 1.33, corrected readout 1.36)</td><td>Separation at ~90°, vortex street</td></tr>
+      <tr><td>Blunt teardrop (steep tail &gt; 20°)</td><td>~0.6–1.2 (rough)</td><td>Separation near the tail, medium wake</td></tr>
+      <tr><td>Well-streamlined body (gentle tail)</td><td>~0.3–0.7 (rough)</td><td>Attached flow, thin wake. At this low Re most of the drag is skin friction.</td></tr>
+    </table></div>
+    <p class="hint" style="color:var(--dim)">The raw values run 25–50% above free-air textbook numbers, mostly because of the tunnel walls (blockage). The <b>C<sub>D</sub> blockage-corrected</b> readout removes that. It is a Maskell-type correction, C<sub>D</sub> / (1 + 0.9·C<sub>D</sub>·h/H), calibrated against published cylinder, square and flat-plate data at Re 100, and it matches them to within about ±5% (see the README's validation section). It is least reliable for slender bodies, where the leftover error is grid resolution (+10–16% on a NACA 0012 at Re 1,000). The <b>ranking</b> carries over either way.</p>
+
+    <!-- 8 -->
+    <h2 id="patterns"><span class="n">8</span>Flow patterns to recognise</h2>
+    <div class="grid2">
+      <figure class="fig"><svg viewBox="0 0 320 140">
+        <path class="s-flow" d="M5 40 C80 40 110 30 160 30 S260 40 315 40"/><path class="s-flow" d="M5 60 C60 60 80 46 130 46 S230 60 315 68"/><path class="s-flow" d="M5 100 C80 100 110 110 160 110 S260 100 315 100"/><path class="s-flow" d="M5 80 C60 80 80 94 130 94 S230 80 315 72"/>
+        <path class="s-body" d="M60 70 C60 52 90 46 130 47 C180 48 220 60 250 70 C220 80 180 92 130 93 C90 94 60 88 60 70Z"/>
+        <path class="s-wake" d="M252 70 H310" stroke-width="2"/></svg>
+        <figcaption><b>① Attached flow (good).</b> Lines follow the surface to the tail, the wake is a thin line, and the tail pressure recovers. Low C<sub>D</sub>.</figcaption></figure>
+      <figure class="fig"><svg viewBox="0 0 320 140">
+        <path class="s-flow" d="M5 40 C80 40 110 28 150 28 S230 34 315 36"/><path class="s-flow" d="M5 60 C60 60 80 46 130 46 C160 46 175 40 200 38 S260 40 315 44"/><path class="s-flow" d="M5 80 C60 80 80 94 130 94 C160 94 175 100 200 102 S260 100 315 96"/><path class="s-flow" d="M5 100 C80 100 110 112 150 112 S230 106 315 104"/>
+        <path class="s-body" d="M60 70 C60 50 100 44 140 46 C170 48 190 58 210 70 C190 82 170 92 140 94 C100 96 60 90 60 70Z"/>
+        <path class="s-wake" d="M200 52 c30 -4 50 6 50 18 s-20 22 -50 18" /><path class="s-wake" d="M222 60 a10 10 0 1 1 0 20" /><text class="s-dim" x="232" y="128">recirculation bubble</text></svg>
+        <figcaption><b>② Separation (bad).</b> Lines leave the surface early. Behind the body there's a bubble of trapped, reversing air. The tail stays blue in pressure. C<sub>D</sub> jumps. <b>Fix:</b> make the tail taper more gently (&lt; ~15–20°).</figcaption></figure>
+      <figure class="fig"><svg viewBox="0 0 320 140">
+        <circle class="s-body" cx="80" cy="70" r="26"/>
+        <circle cx="140" cy="52" r="11" fill="none" stroke="var(--blue)" stroke-width="2"/><circle cx="185" cy="88" r="12" fill="none" stroke="var(--red)" stroke-width="2"/><circle cx="232" cy="52" r="13" fill="none" stroke="var(--blue)" stroke-width="2"/><circle cx="280" cy="88" r="14" fill="none" stroke="var(--red)" stroke-width="2"/>
+        <path class="s-flow" d="M5 70 C40 70 50 40 80 40 S120 50 140 60 S170 90 190 80 S220 50 240 60 S270 90 315 80"/></svg>
+        <figcaption><b>③ Vortex street.</b> Alternating blue/red blobs (vorticity field), snaking particles, and a wiggling C<sub>L</sub>/C<sub>D</sub>. Typical for blunt shapes above Re ≈ 50–100. In real life it causes vibration and noise.</figcaption></figure>
+      <figure class="fig"><svg viewBox="0 0 320 140">
+        <g transform="rotate(-10 150 70)"><path class="s-body" d="M60 70 C60 52 90 46 130 47 C180 48 220 60 250 70 C220 80 180 92 130 93 C90 94 60 88 60 70Z"/></g>
+        <text x="150" y="30" fill="var(--blue)" font-size="12" text-anchor="middle">low pressure (blue) on top</text>
+        <text x="150" y="130" fill="var(--red)" font-size="12" text-anchor="middle">high pressure (red) below</text>
+        <path d="M250 70 v-40 m-5 7 l5 -7 5 7" stroke="var(--good)" stroke-width="2" fill="none"/><text x="260" y="42" fill="var(--good)" font-size="12">lift</text></svg>
+        <figcaption><b>④ Angle of attack.</b> A nose-up tilt gives blue on top and red below, so C<sub>L</sub> goes positive. Too much tilt separates the upper surface (a stall): C<sub>D</sub> spikes and C<sub>L</sub> gets noisy.</figcaption></figure>
+    </div>
+
+    <!-- 9 -->
+    <h2 id="compare"><span class="n">9</span>Comparing designs properly</h2>
+    <p>The sim is best as an A/B tester. Follow this so the comparison is fair:</p>
+    <ol>
+      <li><b>Lock the settings.</b> Same Reynolds, resolution, body size and angle for every design you compare.</li>
+      <li><b>Change one thing at a time</b> (e.g. only the tail taper).</li>
+      <li><b>⟲ Reset</b>, run to the <b>same flow-through count</b> (e.g. 4.0), and write down C<sub>D</sub>.</li>
+      <li>Check the <b>tail slope</b> in the Design panel. Anything above ~20° is flagged red and almost always separates.</li>
+      <li>When two designs are within ~5% of each other, confirm at a higher <b>resolution</b>. Small differences can be grid noise.</li>
+      <li>Sanity-check with the <a href="#estimate">revolved-body card</a> at your real speed.</li>
+    </ol>
+    <div class="card">
+      <b>Design checklist: what "good" looks like</b>
+      <ul class="check">
+        <li>Particle lines stay attached all the way to the tail</li>
+        <li>Wake (speed field) is narrow, about the width of the tail or less</li>
+        <li>Pressure recovers at the tail (not blue)</li>
+        <li>No big alternating blobs in vorticity (or small ones)</li>
+        <li>C<sub>D</sub> history is flat or gently wiggling</li>
+        <li>Max tail slope under ~15–20°</li>
+        <li>Fit check: all known parts show clearance, none show interference</li>
+      </ul>
+    </div>
+    <div class="card tip"><b>Shape lessons you'll discover quickly</b>
+      A <b>rounded nose</b> costs almost nothing, so the front shape matters surprisingly little. The <b>tail</b> is where drag is won or lost. <b>Long and gentle beats short and steep.</b> A blunt, cut-off tail makes a wide wake. A fineness ratio (L/D) around 3–5 is usually the sweet spot for a body of revolution.</div>
+
+    <!-- 10 -->
+    <h2 id="estimate"><span class="n">10</span>The revolved-body card</h2>
+    <p>The card below the sim ignores the lattice sim. It treats your silhouette as the <b>3D body of revolution</b> you'd get by spinning it about the x-axis, and it uses an engineering correlation (Hoerner) at <b>your real speed and fluid</b>.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Field</th><th>Meaning</th></tr>
+      <tr><td>Speed, Fluid</td><td>Your real operating condition (air or water at 20 °C). Lengths use the units from the Design tab.</td></tr>
+      <tr><td>Boundary layer</td><td><b>Turbulent</b> is the safe, conservative default. <b>Laminar</b> is only realistic for small, very smooth, slow parts (Re below ~5×10⁵).</td></tr>
+      <tr><td>Reynolds Re<sub>L</sub> (real)</td><td>The real-world Reynolds number. Compare it to the sim's Re: it's usually 100–1000× higher.</td></tr>
+      <tr><td>Skin friction C<sub>f</sub></td><td>Friction drag per unit of wetted surface.</td></tr>
+      <tr><td>C<sub>D</sub> frontal</td><td>Total drag coefficient based on frontal (cross-section) area. Use it to compare with published data for cars, projectiles, etc.</td></tr>
+      <tr><td>C<sub>D</sub> volume (V<sup>2/3</sup>)</td><td>Drag relative to the <b>volume enclosed</b>. It's the fairest "efficiency" measure when the job is to carry stuff (battery, motor). Lower = more volume for less drag.</td></tr>
+      <tr><td>friction + form / base / flat nose</td><td>The breakdown. <b>Base</b> appears if the tail is cut off (doesn't return to the axis). <b>Flat nose</b> appears if the nose doesn't start on the axis.</td></tr>
+      <tr><td>Drag force</td><td>The estimated force in newtons at your speed.</td></tr>
+    </table></div>
+    <p>It's accurate to roughly ±20% for <b>attached</b> flow. If the tail-slope warning appears, the real drag will be higher. That's exactly what the lattice sim lets you <i>see</i>.</p>
+
+    <!-- 11 -->
+    <h2 id="trouble"><span class="n">11</span>Troubleshooting</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Problem</th><th>Why</th><th>Fix</th></tr>
+      <tr><td>"⚠ Sim went unstable"</td><td>Reynolds too high for the grid, so the numbers blew up.</td><td>Lower Re or raise the resolution, then Reset.</td></tr>
+      <tr><td>"Grid is coarse for this Re" (orange note)</td><td>Too few cells to resolve the thin boundary layer at this Re.</td><td>Treat it as qualitative, or raise the resolution / body size / lower Re.</td></tr>
+      <tr><td>"No closed profile yet"</td><td>No curves in Design.</td><td>Draw one, or pick one from Load example….</td></tr>
+      <tr><td>"Shape is too thin for this grid"</td><td>The body is thinner than one cell.</td><td>Raise the resolution or body size.</td></tr>
+      <tr><td>C<sub>D</sub> keeps drifting</td><td>Not converged yet.</td><td>Run to 3+ flow-throughs.</td></tr>
+      <tr><td>C<sub>D</sub> seems too high vs. textbooks</td><td>Low Re + 2D + tunnel walls (<b>blockage</b>: the walls squeeze the flow and speed it up).</td><td>Expected for the raw number. Read the <b>blockage-corrected</b> line for a free-air estimate, or compare designs relatively.</td></tr>
+      <tr><td>My edits didn't show up</td><td>The tunnel was built from the old shape.</td><td>Press ⟲ Reset (it also rebuilds automatically when you switch tabs after an edit).</td></tr>
+      <tr><td>Slow / choppy</td><td>Grid too large for your CPU.</td><td>Resolution 120–170, and close other heavy tabs.</td></tr>
+      <tr><td>Flow looks identical top and bottom forever</td><td>A symmetric body at low Re is genuinely steady.</td><td>Normal. Shedding only appears for bluff shapes at higher Re.</td></tr>
+    </table></div>
+    <div class="card warn"><b>Honest limits</b>
+      <ul style="margin:4px 0">
+        <li><b>2D, not 3D.</b> The sim treats your silhouette as an infinitely long extrusion (like a wing section), not the revolved body. Air can't go "around the sides", so wakes and drag are stronger than on the real 3D part.</li>
+        <li><b>Low Reynolds number.</b> Real parts at real speeds have Re around 10⁵–10⁶ with thin, turbulent boundary layers. The sim is laminar-ish and syrupier.</li>
+        <li><b>Blockage.</b> The body takes up to ~22% of the tunnel height.</li>
+        <li>So: <b>trust the patterns and the ranking, not the absolute C<sub>D</sub>.</b></li>
+      </ul>
+    </div>
+
+    <!-- 12 -->
+    <h2 id="glossary"><span class="n">12</span>Symbols &amp; glossary</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Symbol</th><th>Name</th><th>Plain-English meaning</th></tr>
+      <tr><td>U∞</td><td>Free-stream velocity</td><td>The speed of the incoming wind, far from the body. Everything is measured relative to it.</td></tr>
+      <tr><td>|u|</td><td>Local speed</td><td>How fast the air moves at a point. <code>|u|/U∞ = 1</code> means "same as the wind".</td></tr>
+      <tr><td>Re, Re<sub>L</sub>, Re<sub>h</sub></td><td>Reynolds number</td><td>Re = U∞·L/ν. It's the ratio of the air's momentum to its stickiness. Low = smooth and syrupy, high = lively and turbulent. The subscript names the length used: L = body length, h = frontal height. The sim's slider uses whichever is longer.</td></tr>
+      <tr><td>ν (nu)</td><td>Kinematic viscosity</td><td>How "sticky" the fluid is. Air ≈ 1.5×10⁻⁵ m²/s, water ≈ 1.0×10⁻⁶ m²/s.</td></tr>
+      <tr><td>ρ (rho)</td><td>Density</td><td>Mass per volume. Air ≈ 1.2 kg/m³, water ≈ 998 kg/m³.</td></tr>
+      <tr><td>q = ½ρU∞²</td><td>Dynamic pressure</td><td>The pressure you'd feel from the wind hitting a flat hand. It's used to normalise forces.</td></tr>
+      <tr><td>C<sub>D</sub></td><td>Drag coefficient</td><td>Drag ÷ (q × reference size). A size- and speed-independent measure of how "slippery" a shape is. Lower is better.</td></tr>
+      <tr><td>C<sub>L</sub></td><td>Lift coefficient</td><td>Same idea for the force perpendicular to the wind. Positive = up.</td></tr>
+      <tr><td>Cp</td><td>Pressure coefficient</td><td>(p − p∞)/q. +1 = full stagnation push, 0 = ambient, negative = suction.</td></tr>
+      <tr><td>ω (omega)</td><td>Vorticity</td><td>Local spin rate of the air. Shown as ω·H/U∞ (dimensionless). Blue = clockwise, red = counter-clockwise.</td></tr>
+      <tr><td>α (AoA)</td><td>Angle of attack</td><td>Tilt of the body relative to the wind. Positive = nose up.</td></tr>
+      <tr><td>H</td><td>Frontal height</td><td>The body's height across the flow. It's the reference size for C<sub>D</sub> (2D version of "frontal area").</td></tr>
+      <tr><td>L</td><td>Length</td><td>Body length along the flow. It's the reference for Re and C<sub>L</sub>.</td></tr>
+      <tr><td>L/D (fineness)</td><td>Fineness ratio</td><td>Length ÷ max diameter. Around 3–5 is usually lowest-drag per volume. (Not to be confused with lift-to-drag!)</td></tr>
+      <tr><td>τ (tau)</td><td>Relaxation time</td><td>The solver's internal viscosity knob, set automatically from Re. τ = 0.5 is zero viscosity. Close to 0.5 = near the stability limit.</td></tr>
+      <tr><td>MLUPS</td><td>Mega lattice updates / s</td><td>Solver speed. Performance only.</td></tr>
+      <tr><td>Flow-through</td><td>—</td><td>One flow-through = the time for air to cross the whole tunnel once. The sim's natural clock.</td></tr>
+      <tr><td>Boundary layer</td><td>—</td><td>The thin layer of air slowed by friction next to the surface.</td></tr>
+      <tr><td>Separation</td><td>—</td><td>When the boundary layer can't follow the surface any more and lifts off, leaving a recirculating wake. The main cause of extra drag on bodies.</td></tr>
+      <tr><td>Stagnation point</td><td>—</td><td>The spot on the nose where the air comes to a complete stop (Cp = +1).</td></tr>
+      <tr><td>Wake</td><td>—</td><td>The region of slowed, disturbed air behind the body. Its width tracks drag.</td></tr>
+      <tr><td>Vortex street</td><td>von Kármán street</td><td>Alternating vortices shed from each side of a blunt body. Causes oscillating forces.</td></tr>
+      <tr><td>Blockage</td><td>—</td><td>How much of the tunnel's height the body fills. More blockage speeds up the flow around the body and raises C<sub>D</sub>.</td></tr>
+      <tr><td>Free-slip wall</td><td>—</td><td>The tunnel's top and bottom: air can slide along them without friction, so they don't grow their own boundary layer.</td></tr>
+      <tr><td>C<sub>f</sub></td><td>Skin-friction coefficient</td><td>Friction force per wetted area ÷ q (in the revolved card).</td></tr>
+      <tr><td>N1, N2</td><td>CST class exponents</td><td>From the Design tab's CST fit. N1 shapes the nose (0.5 = round), and N2 shapes the tail (1 = sharp, 0 = blunt).</td></tr>
+    </table></div>
+
+    <!-- 13 -->
+    <h2 id="cheat"><span class="n">13</span>Cheat sheet</h2>
+    <div class="grid2">
+      <div class="card key"><b>Default recipe</b>Re 1,000 · AoA 0° · size 24% · 170 rows · run to 3 flow-throughs · read C<sub>D</sub>.</div>
+      <div class="card key"><b>Diagnose high drag</b>Vorticity field → where do the sheets leave the surface? Then pressure → is the tail blue? Fix the tail taper.</div>
+      <div class="card key"><b>Watch separation</b>Field None · rake 25 · trail 0.9 · look for a dark hole behind the tail.</div>
+      <div class="card key"><b>Confirm a winner</b>Same settings, 230 rows, both designs, same flow-throughs. Then check the revolved card at real speed.</div>
+    </div>
+    <div class="tablewrap"><table>
+      <tr><th>Colour / sign</th><th>Speed</th><th>Vorticity</th><th>Pressure</th></tr>
+      <tr><td>Dark</td><td>stopped / slow</td><td>no spin</td><td>ambient</td></tr>
+      <tr><td>Teal-green</td><td>≈ wind speed</td><td>—</td><td>—</td></tr>
+      <tr><td>Yellow → white</td><td>faster than wind</td><td>—</td><td>—</td></tr>
+      <tr><td style="color:var(--blue)">Blue</td><td>—</td><td>clockwise</td><td>suction (Cp &lt; 0)</td></tr>
+      <tr><td style="color:var(--red)">Red</td><td>—</td><td>counter-clockwise</td><td>pushing (Cp &gt; 0)</td></tr>
+    </table></div>
+  </main>
+</div>
+<script>
+  (function () {
+    const root = document.documentElement;
+    let t = null;
+    try { t = localStorage.getItem('sim-guide-theme'); } catch (e) {}
+    if (t) root.dataset.theme = t;
+    else if (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) root.dataset.theme = 'light';
+    document.getElementById('themeBtn').onclick = () => {
+      root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+      try { localStorage.setItem('sim-guide-theme', root.dataset.theme); } catch (e) {}
+    };
+  })();
+</script>
+</body>
+</html>

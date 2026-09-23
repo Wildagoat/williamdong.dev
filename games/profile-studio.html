@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Profile Studio</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+    --text:#e6edf3; --dim:#8b98a5; --accent:#ffce54; --accent2:#4aa3ff;
+    --guide:#39c5cf; --part:#f0883e; --axis:#b392f0;
+    --good:#4cc38a; --warn:#f0a020; --bad:#f0506e;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font:13px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+  header{height:46px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .brand{font-weight:700;letter-spacing:.3px;margin-right:10px;white-space:nowrap}
+  .brand span{color:var(--accent)}
+  .spacer{flex:1}
+  button{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:5px 10px;border-radius:7px;cursor:pointer;font:inherit;white-space:nowrap}
+  button:hover{border-color:#3d4958}
+  button.on{background:#2a2410;border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);color:#15120a;border-color:var(--accent);font-weight:600}
+  button:disabled{opacity:.4;cursor:default}
+  #exampleSel{width:auto;flex:0 0 auto;max-width:280px;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:5px 8px;border-radius:7px;cursor:pointer;font:inherit}
+  #exampleSel:hover{border-color:#3d4958}
+  .tabs{display:flex;gap:4px}
+  .view{display:none;height:calc(100vh - 46px)}
+  .view.on{display:grid}
+  #design{grid-template-columns:52px 1fr 350px}
+  #sim{grid-template-columns:1fr 350px}
+  #toolbar{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;padding:8px 5px;overflow-y:auto}
+  #toolbar button{width:41px;height:41px;padding:0;display:flex;align-items:center;justify-content:center;position:relative}
+  #toolbar button kbd{position:absolute;right:3px;bottom:1px;font:9px ui-monospace,Consolas,monospace;color:var(--dim)}
+  #toolbar button.on kbd{color:var(--accent)}
+  #toolbar svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #toolbar hr{border:0;border-top:1px solid var(--line);margin:4px 2px;width:100%}
+  #stage,#simStage{position:relative;overflow:hidden;min-width:0}
+  #stage canvas,#simStage canvas{position:absolute;left:0;top:0;display:block;touch-action:none}
+  #stage{background:#0b0e13}
+  #simStage{background:#090b0f}
+  #hud{position:absolute;left:10px;bottom:8px;color:var(--dim);font:12px ui-monospace,Consolas,monospace;pointer-events:none;background:rgba(14,17,22,.78);padding:3px 8px;border-radius:6px}
+  #typed{position:absolute;display:none;pointer-events:none;background:#2a2410;border:1px solid var(--accent);color:var(--accent);font:12px ui-monospace,Consolas,monospace;padding:3px 7px;border-radius:6px}
+  #emptyHint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  #emptyHint div{background:rgba(22,27,34,.85);border:1px solid var(--line);border-radius:12px;padding:16px 20px;max-width:430px;color:var(--dim);pointer-events:auto}
+  #emptyHint b{color:var(--text)}
+  #emptyHint ol{margin:6px 0 10px;padding-left:18px}
+  #simMsg{position:absolute;left:12px;top:10px;color:var(--dim);font:12px ui-monospace,Consolas,monospace;background:rgba(14,17,22,.78);padding:4px 8px;border-radius:6px;pointer-events:none}
+  #simProbe{position:absolute;right:12px;top:10px;color:var(--text);font:12px ui-monospace,Consolas,monospace;background:rgba(14,17,22,.78);padding:4px 8px;border-radius:6px;pointer-events:none;display:none}
+  aside{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;padding:4px 12px 40px}
+  aside h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin:16px 0 6px;display:flex;align-items:center;gap:6px}
+  .row{display:flex;align-items:center;gap:6px;margin:5px 0}
+  .row>label{color:var(--dim);min-width:86px;flex-shrink:0}
+  .row>span.v{min-width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+  input[type=number],input[type=text],select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit;width:100%;min-width:0}
+  input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+  input[type=checkbox]{accent-color:var(--accent)}
+  .chk{display:flex;align-items:center;gap:6px;color:var(--text);cursor:pointer;margin:3px 0}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:6px 0}
+  .kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-variant-numeric:tabular-nums}
+  .kv>span:nth-child(odd){color:var(--dim)}
+  pre.eq{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font:11px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-height:340px;overflow:auto;margin:6px 0;color:#cfd8e3}
+  .hint{color:var(--dim);font-size:12px}
+  .hint kbd,.kbdl kbd{font:11px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--text)}
+  .list .item{display:flex;align-items:center;gap:4px;padding:3px 6px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+  .list .item:hover{background:#1f2630}
+  .list .item.sel{background:#2a2410;border-color:#5a4a1a}
+  .list .item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .list .item button{padding:1px 6px;font-size:11px}
+  .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  .ok{color:var(--good)} .bad{color:var(--bad)} .warnc{color:var(--warn)}
+  .btns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .btns button{font-size:12px;padding:4px 8px}
+  .colorbar{height:10px;border-radius:5px;margin:4px 0 2px}
+  .cbl{display:flex;justify-content:space-between;color:var(--dim);font-size:11px}
+  #cdPlot{width:100%;height:110px;display:block;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+  .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#2a2410;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Profile <span>Studio</span></div>
+  <nav class="tabs">
+    <button data-tab="design" class="on">① Design</button>
+    <button data-tab="sim">② Aero sim</button>
+  </nav>
+  <div class="spacer"></div>
+  <button id="undoBtn" title="Ctrl+Z">Undo</button>
+  <button id="redoBtn" title="Ctrl+Y">Redo</button>
+  <select id="exampleSel" title="Load an example profile. It replaces the current project (Undo brings it back).">
+    <option value="" selected>Load example…</option>
+    <option value="packaging">Packaging: hull around battery + motor</option>
+    <option value="ideal" title="Kulfan CST body; coefficients chosen by a validated sweep (see README)">Ideal: low-drag body (CST, L/D 4.8)</option>
+    <option value="bad">Bad: flat-faced can around the same parts</option>
+  </select>
+  <button id="openBtn">Open…</button>
+  <button id="saveBtn">Save project</button>
+  <input type="file" id="fileIn" accept=".json" hidden />
+  <input type="file" id="refImgIn" accept="image/*" hidden />
+  <input type="file" id="refProfIn" accept=".csv,.txt,.json" hidden />
+</header>
+
+<!-- ================= DESIGN ================= -->
+<div id="design" class="view on">
+  <div id="toolbar">
+    <button data-tool="select" title="Select / move / edit (V)"><svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 2-3 6z"/></svg><kbd>V</kbd></button>
+    <button data-tool="draw" title="Freehand curve (F)"><svg viewBox="0 0 24 24"><path d="M3 18c3-8 6-10 8-6s4 3 5-2 3-6 5-5"/></svg><kbd>F</kbd></button>
+    <hr/>
+    <button data-tool="line" title="Guide line (L) — type a length while placing"><svg viewBox="0 0 24 24"><path d="M4 20L20 4"/><circle cx="4" cy="20" r="1.6"/><circle cx="20" cy="4" r="1.6"/></svg><kbd>L</kbd></button>
+    <button data-tool="dim" title="Distance / dimension (D)"><svg viewBox="0 0 24 24"><path d="M4 8v8M20 8v8M4 12h16M7 9.5L4 12l3 2.5M17 9.5l3 2.5-3 2.5"/></svg><kbd>D</kbd></button>
+    <button data-tool="circle" title="Guide circle (C) — type a radius"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 12h8"/></svg><kbd>C</kbd></button>
+    <button data-tool="rect" title="Known part box (R) — type w,h"><svg viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="1"/><path d="M4 12h16" stroke-dasharray="2 2"/></svg><kbd>R</kbd></button>
+    <button data-tool="point" title="Guide point (P)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="2.5"/></svg><kbd>P</kbd></button>
+    <hr/>
+    <button id="fitViewBtn" title="Fit view (Home)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </div>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hud"></div>
+    <div id="typed"></div>
+    <div id="emptyHint"><div>
+      <b>Profile Studio</b> — sketch a silhouette, get a parametric curve, fly it.
+      <ol>
+        <li>Lay out <b>guides</b>: lines <kbd>L</kbd>, distances <kbd>D</kbd>, circles <kbd>C</kbd>, and <b>known-part boxes</b> <kbd>R</kbd> the shape must wrap.</li>
+        <li><b>Draw</b> <kbd>F</kbd> the upper half of the profile. Ends snap to guides, the axis and other curves.</li>
+        <li>The stroke becomes evenly spaced <b>dots</b>, is smoothed, then fitted to a <b>parametric curve</b>.</li>
+        <li>It is mirrored about the x-axis into a closed silhouette → <b>② Aero sim</b>.</li>
+      </ol>
+      <div class="btns"><button class="primary" id="exampleBtn2">Load ideal body</button><button id="exampleBtn3">Load packaging example</button><button id="exampleBtn4">Load bad example</button></div>
+    </div></div>
+  </div>
+  <aside id="panel">
+    <h3>Tool</h3>
+    <div id="toolHint" class="hint"></div>
+
+    <h3>Selection</h3>
+    <div id="selPanel" class="hint">Nothing selected.</div>
+
+    <h3>Profile</h3>
+    <label class="chk"><input type="checkbox" id="mirrorChk" checked /> Mirror about x-axis (closed, symmetric silhouette)</label>
+    <div id="curveList" class="list"></div>
+    <div id="profileWarn"></div>
+    <div id="metrics"></div>
+
+    <h3>Fit check · known parts</h3>
+    <div id="fitCheck" class="hint"></div>
+
+    <h3>Parametric equations</h3>
+    <pre class="eq" id="eqOut">Draw a curve to get its equation.</pre>
+    <div class="btns">
+      <button id="cpEq">Copy text</button>
+      <button id="cpPy">Copy Python</button>
+      <button id="cpDesmos">Copy Desmos</button>
+      <button id="dlSvg">SVG</button>
+      <button id="dlCsv">CSV points</button>
+    </div>
+
+    <h3>Guides</h3>
+    <div class="row"><label>Horiz. at y =</label><input type="number" id="qH" step="any" value="0" /><button id="qHBtn">Add</button></div>
+    <div class="row"><label>Vert. at x =</label><input type="number" id="qV" step="any" value="0" /><button id="qVBtn">Add</button></div>
+    <div id="guideList" class="list"></div>
+    <div class="btns">
+      <button id="refImgBtn">Reference image…</button>
+      <button id="refProfBtn">Import known profile…</button>
+    </div>
+    <div id="refImgPanel"></div>
+
+    <h3>View &amp; units</h3>
+    <div class="row"><label>Units</label><select id="unitsSel"><option value="mm">mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">in</option></select></div>
+    <label class="chk"><input type="checkbox" id="snapGridChk" /> Snap to grid <span class="hint">(<kbd>G</kbd>; hold <kbd>Alt</kbd> = no snapping)</span></label>
+    <label class="chk"><input type="checkbox" id="showRawChk" checked /> Show raw strokes</label>
+    <label class="chk"><input type="checkbox" id="showDotsChk" checked /> Show normalized dots</label>
+    <label class="chk"><input type="checkbox" id="showHandlesChk" checked /> Show control points</label>
+    <label class="chk"><input type="checkbox" id="fillChk" checked /> Fill silhouette</label>
+    <div class="btns"><button id="clearBtn">Clear everything</button></div>
+  </aside>
+</div>
+
+<!-- ================= SIM ================= -->
+<div id="sim" class="view">
+  <div id="simStage">
+    <canvas id="simField"></canvas>
+    <canvas id="simPart"></canvas>
+    <div id="simMsg"></div>
+    <div id="simProbe"></div>
+  </div>
+  <aside>
+    <h3>Wind tunnel · 2D lattice-Boltzmann</h3>
+    <div class="hint" style="margin-bottom:6px">New to this? <a href="profile-studio-guide.html" target="_blank" style="color:var(--accent)">📖 Beginner's guide</a>: controls, colours, particles, symbols.</div>
+    <div class="btns">
+      <button class="primary" id="simRun">▶ Run</button>
+      <button id="simReset">⟲ Reset</button>
+    </div>
+    <div class="row"><label title="Based on the body's longest side: length for slender shapes, frontal height for bluff ones">Reynolds (Re, longest side)</label><input type="range" id="simRe" min="1.7" max="4.3" step="0.01" value="3" /><span class="v" id="simReV"></span></div>
+    <div class="row"><label>Angle of attack</label><input type="range" id="simAoa" min="-30" max="30" step="1" value="0" /><span class="v" id="simAoaV"></span></div>
+    <div class="row"><label>Body size</label><input type="range" id="simSize" min="0.12" max="0.4" step="0.01" value="0.24" /><span class="v" id="simSizeV"></span></div>
+    <div class="row"><label>Resolution</label><select id="simRes"><option value="120">120 rows (fast)</option><option value="170" selected>170 rows</option><option value="230">230 rows</option><option value="300">300 rows (slow)</option></select></div>
+    <div class="row"><label>Sim speed</label><input type="range" id="simSpeed" min="1" max="60" step="1" value="30" /><span class="v" id="simSpeedV"></span></div>
+
+    <h3>Display</h3>
+    <div class="row"><label>Field</label><select id="simField2"><option value="speed">Speed |u| / U∞</option><option value="vort">Vorticity</option><option value="pres">Pressure Cp</option><option value="none">None (particles only)</option></select></div>
+    <div class="row"><label>Contrast</label><input type="range" id="simContrast" min="-1.5" max="1.5" step="0.05" value="0" /><span class="v" id="simContrastV"></span></div>
+    <div class="colorbar" id="cbar"></div><div class="cbl" id="cbarL"></div>
+    <label class="chk"><input type="checkbox" id="simParts" checked /> Shoot air particles</label>
+    <div class="row"><label>Particle rake</label><input type="range" id="simRake" min="8" max="90" step="1" value="36" /><span class="v" id="simRakeV"></span></div>
+    <div class="row"><label>Trail length</label><input type="range" id="simTrail" min="0" max="0.95" step="0.01" value="0.82" /><span class="v" id="simTrailV"></span></div>
+
+    <h3>Forces (2D, per unit span)</h3>
+    <div class="card">
+      <div class="kv">
+        <span>C<sub>D</sub> (ref. frontal height)</span><span class="big" id="simCd">—</span>
+        <span title="Raw C_D divided by (1 + 0.9·C_D·h/H), a Maskell-type wall correction calibrated against published cylinder, square and plate data">C<sub>D</sub> blockage-corrected</span><span id="simCdc">—</span>
+        <span>C<sub>L</sub> (ref. length)</span><span id="simCl">—</span>
+        <span>Lattice steps</span><span id="simSteps">0</span>
+        <span>Flow-throughs</span><span id="simFT">0</span>
+        <span>Speed</span><span id="simMl">—</span>
+      </div>
+      <canvas id="cdPlot"></canvas>
+      <div class="hint" id="simNote"></div>
+    </div>
+
+    <h3>Revolved body estimate (3D)</h3>
+    <div class="hint">Treats the silhouette as a body of revolution about the x-axis, uses Hoerner's form-factor correlation, and reports your real-world Reynolds number.</div>
+    <div class="row"><label>Speed (m/s)</label><input type="number" id="estU" value="10" step="any" /></div>
+    <div class="row"><label>Fluid</label><select id="estFluid"><option value="air">Air, 20 °C</option><option value="water">Water, 20 °C</option></select></div>
+    <div class="row"><label>Boundary layer</label><select id="estBL"><option value="turb">Turbulent (ITTC-57)</option><option value="lam">Laminar (Blasius)</option></select></div>
+    <div id="estOut" class="card"></div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Small math helpers — points are [x, y] arrays everywhere.
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+const mul = (a, s) => [a[0] * s, a[1] * s];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+const len = a => Math.hypot(a[0], a[1]);
+const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const norm = a => { const l = len(a) || 1; return [a[0] / l, a[1] / l]; };
+const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+const binom = (n, k) => { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; };
+const fmt = (v, p = 5) => { if (!isFinite(v)) return '—'; if (Math.abs(v) < 1e-12) return '0'; return String(Number(v.toPrecision(p))); };
+const fmtIn = v => Number((+v).toFixed(4));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const UNITS = { mm: 0.001, cm: 0.01, m: 1, in: 0.0254 };
+
+function segProj(p, a, b, clampT = true) {
+  const ab = sub(b, a), d = dot(ab, ab) || 1e-30;
+  let t = dot(sub(p, a), ab) / d;
+  if (clampT) t = clamp(t, 0, 1);
+  return { q: add(a, mul(ab, t)), t };
+}
+function polyDist(p, pts, closed = false) {
+  let best = Infinity, bq = pts[0];
+  const n = pts.length, m = closed ? n : n - 1;
+  for (let i = 0; i < m; i++) {
+    const { q } = segProj(p, pts[i], pts[(i + 1) % n]);
+    const d = dist(p, q);
+    if (d < best) { best = d; bq = q; }
+  }
+  if (n === 1) { best = dist(p, pts[0]); }
+  return { d: best, q: bq };
+}
+function pointInPoly(p, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+  }
+  return inside;
+}
+function bbox(pts) {
+  let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+  for (const p of pts) { if (p[0] < minx) minx = p[0]; if (p[0] > maxx) maxx = p[0]; if (p[1] < miny) miny = p[1]; if (p[1] > maxy) maxy = p[1]; }
+  return { minx, miny, maxx, maxy, w: maxx - minx, h: maxy - miny };
+}
+function lineIntersect(a1, a2, b1, b2) {
+  const r = sub(a2, a1), s = sub(b2, b1), den = r[0] * s[1] - r[1] * s[0];
+  if (Math.abs(den) < 1e-12) return null;
+  const q = sub(b1, a1);
+  return { t: (q[0] * s[1] - q[1] * s[0]) / den, u: (q[0] * r[1] - q[1] * r[0]) / den };
+}
+/* Solve a small dense system A x = b (Gaussian elimination, partial pivoting). */
+function solve(A, b) {
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    const piv = M[c][c];
+    if (Math.abs(piv) < 1e-300) continue;
+    for (let r = c + 1; r < n; r++) {
+      const f = M[r][c] / piv;
+      if (f) for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+    }
+  }
+  const x = new Array(n).fill(0);
+  for (let r = n - 1; r >= 0; r--) {
+    let s = M[r][n];
+    for (let k = r + 1; k < n; k++) s -= M[r][k] * x[k];
+    x[r] = Math.abs(M[r][r]) < 1e-300 ? 0 : s / M[r][r];
+  }
+  return x;
+}
+/* Least squares via normal equations with a tiny ridge. rows: [{a:[...], b}] */
+function leastSquares(rows, nv, ridge = 1e-10) {
+  const A = Array.from({ length: nv }, () => new Array(nv).fill(0)), B = new Array(nv).fill(0);
+  for (const { a, b } of rows) {
+    for (let i = 0; i < nv; i++) {
+      if (!a[i]) continue;
+      B[i] += a[i] * b;
+      for (let j = 0; j < nv; j++) A[i][j] += a[i] * a[j];
+    }
+  }
+  let tr = 0; for (let i = 0; i < nv; i++) tr += A[i][i];
+  const lam = ridge * (tr / nv || 1);
+  for (let i = 0; i < nv; i++) A[i][i] += lam;
+  return solve(A, B);
+}
+
+/* =====================================================================
+   Bézier / Bernstein evaluation
+   ===================================================================== */
+function bez(P, t) { // de Casteljau, any degree
+  const Q = P.map(p => [p[0], p[1]]);
+  for (let r = Q.length - 1; r > 0; r--) for (let i = 0; i < r; i++) Q[i] = lerp(Q[i], Q[i + 1], t);
+  return Q[0];
+}
+function derivPts(P) { const n = P.length - 1, D = []; for (let i = 0; i < n; i++) D.push(mul(sub(P[i + 1], P[i]), n)); return D; }
+function bernToPower(P) { // returns coefficient arrays ax[k], ay[k] for t^k
+  const n = P.length - 1, ax = [], ay = [];
+  for (let k = 0; k <= n; k++) {
+    let sx = 0, sy = 0;
+    for (let i = 0; i <= k; i++) { const c = binom(k, i) * ((k - i) % 2 ? -1 : 1); sx += c * P[i][0]; sy += c * P[i][1]; }
+    const C = binom(n, k); ax.push(C * sx); ay.push(C * sy);
+  }
+  return [ax, ay];
+}
+function newtonProject(P, D1, D2, p, u) {
+  const Q = bez(P, u), Q1 = D1.length ? bez(D1, u) : [0, 0], Q2 = D2.length ? bez(D2, u) : [0, 0];
+  const d = sub(Q, p), num = dot(d, Q1), den = dot(Q1, Q1) + dot(d, Q2);
+  if (Math.abs(den) < 1e-14) return u;
+  return clamp(u - num / den, 0, 1);
+}
+function chordParam(d) {
+  const u = [0];
+  for (let i = 1; i < d.length; i++) u.push(u[i - 1] + dist(d[i], d[i - 1]));
+  const L = u[u.length - 1] || 1;
+  return u.map(v => v / L);
+}
+
+/* =====================================================================
+   Stroke → dots: dedupe, arc-length resample, endpoint-anchored smoothing
+   ===================================================================== */
+function dedupe(pts) {
+  const out = [pts[0]];
+  for (let i = 1; i < pts.length; i++) if (dist(pts[i], out[out.length - 1]) > 1e-9) out.push(pts[i]);
+  return out;
+}
+function resample(pts, n) {
+  if (pts.length < 2) return pts.slice();
+  const L = [0];
+  for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + dist(pts[i], pts[i - 1]));
+  const total = L[L.length - 1], out = [];
+  let j = 0;
+  for (let k = 0; k < n; k++) {
+    const s = total * k / (n - 1);
+    while (j < pts.length - 2 && L[j + 1] < s) j++;
+    const seg = L[j + 1] - L[j];
+    out.push(lerp(pts[j], pts[j + 1], seg > 0 ? clamp((s - L[j]) / seg, 0, 1) : 0));
+  }
+  return out;
+}
+function smooth(pts, sigma) {
+  if (sigma <= 0 || pts.length < 3) return pts.slice();
+  const n = pts.length, K = Math.ceil(3 * sigma), out = [pts[0]];
+  for (let i = 1; i < n - 1; i++) {
+    const w = Math.min(K, i, n - 1 - i); // symmetric window → no drift near the pinned ends
+    let sx = 0, sy = 0, sw = 0;
+    for (let k = -w; k <= w; k++) { const g = Math.exp(-k * k / (2 * sigma * sigma)); sx += g * pts[i + k][0]; sy += g * pts[i + k][1]; sw += g; }
+    out.push([sx / sw, sy / sw]);
+  }
+  out.push(pts[n - 1]);
+  return out;
+}
+
+/* =====================================================================
+   Fit 1 — piecewise cubic Bézier (Schneider, Graphics Gems 1990)
+   t1: unit tangent at start pointing into the curve; t2: at end pointing back into it
+   ===================================================================== */
+function fitBezier(d, err, t1, t2) {
+  const out = [];
+  fitCubic(d, 0, d.length - 1, t1, t2, err, out, 0);
+  return out;
+}
+function fitCubic(d, first, last, tH1, tH2, error, out, depth) {
+  if (last - first === 1) {
+    const L = dist(d[first], d[last]) / 3;
+    out.push([d[first], add(d[first], mul(tH1, L)), add(d[last], mul(tH2, L)), d[last]]);
+    return;
+  }
+  const pts = d.slice(first, last + 1);
+  let u = chordParam(pts);
+  let bz = genBezier(pts, u, tH1, tH2);
+  let [maxE, split] = maxErr(pts, bz, u);
+  if (maxE < error) { out.push(bz); return; }
+  if (maxE < error * 4) {
+    for (let it = 0; it < 20; it++) {
+      const D1 = derivPts(bz), D2 = derivPts(D1);
+      u = u.map((ui, i) => newtonProject(bz, D1, D2, pts[i], ui));
+      bz = genBezier(pts, u, tH1, tH2);
+      [maxE, split] = maxErr(pts, bz, u);
+      if (maxE < error) { out.push(bz); return; }
+    }
+  }
+  if (depth > 14 || pts.length < 4) { out.push(bz); return; }
+  split = clamp(split, 1, pts.length - 2) + first;
+  const tC = norm(sub(d[split - 1], d[split + 1]));
+  fitCubic(d, first, split, tH1, tC, error, out, depth + 1);
+  fitCubic(d, split, last, mul(tC, -1), tH2, error, out, depth + 1);
+}
+function genBezier(pts, u, tH1, tH2) {
+  const p0 = pts[0], p3 = pts[pts.length - 1];
+  let C00 = 0, C01 = 0, C11 = 0, X0 = 0, X1 = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const t = u[i], mt = 1 - t, b0 = mt * mt * mt, b1 = 3 * t * mt * mt, b2 = 3 * t * t * mt, b3 = t * t * t;
+    const A0 = mul(tH1, b1), A1 = mul(tH2, b2);
+    C00 += dot(A0, A0); C01 += dot(A0, A1); C11 += dot(A1, A1);
+    const tmp = sub(pts[i], add(mul(p0, b0 + b1), mul(p3, b2 + b3)));
+    X0 += dot(A0, tmp); X1 += dot(A1, tmp);
+  }
+  const det = C00 * C11 - C01 * C01;
+  let al = det === 0 ? 0 : (X0 * C11 - C01 * X1) / det;
+  let ar = det === 0 ? 0 : (C00 * X1 - C01 * X0) / det;
+  const segLen = dist(p0, p3), eps = 1e-6 * segLen;
+  if (al < eps || ar < eps) { al = ar = segLen / 3; }
+  return [p0, add(p0, mul(tH1, al)), add(p3, mul(tH2, ar)), p3];
+}
+function maxErr(pts, bz, u) {
+  let m = 0, s = Math.floor(pts.length / 2);
+  for (let i = 1; i < pts.length - 1; i++) { const d = dist(bez(bz, u[i]), pts[i]); if (d > m) { m = d; s = i; } }
+  return [m, s];
+}
+
+/* =====================================================================
+   Fit 2 — single Bernstein polynomial of degree n (least squares,
+   end points pinned, optional end tangents, Newton re-parameterisation)
+   ===================================================================== */
+function fitBernstein(d, n, t1, t2, fix1, fix2) {
+  n = Math.max(fix1 || fix2 ? 3 : 2, n);
+  let u = chordParam(d), P = null;
+  for (let it = 0; it < 5; it++) {
+    P = solveBern(d, u, n, t1, t2, fix1, fix2);
+    const D1 = derivPts(P), D2 = derivPts(D1);
+    u = u.map((ui, j) => (j === 0 ? 0 : j === d.length - 1 ? 1 : newtonProject(P, D1, D2, d[j], ui)));
+  }
+  return P;
+}
+function solveBern(d, u, n, t1, t2, fix1, fix2) {
+  const P0 = d[0], Pn = d[d.length - 1];
+  const base = Array.from({ length: n + 1 }, () => [0, 0]);
+  base[0] = P0; base[n] = Pn;
+  const vars = []; // each var: list of {i, vx, vy}
+  for (let i = 1; i < n; i++) {
+    if (i === 1 && fix1) { base[1] = P0.slice(); vars.push([{ i, vx: t1[0], vy: t1[1] }]); continue; }
+    if (i === n - 1 && fix2) { base[i] = Pn.slice(); vars.push([{ i, vx: t2[0], vy: t2[1] }]); continue; }
+    vars.push([{ i, vx: 1, vy: 0 }]); vars.push([{ i, vx: 0, vy: 1 }]);
+  }
+  const nv = vars.length, rows = [];
+  for (let j = 0; j < d.length; j++) {
+    const t = u[j], B = [];
+    for (let i = 0; i <= n; i++) B.push(binom(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i));
+    let bx = d[j][0], by = d[j][1];
+    for (let i = 0; i <= n; i++) { bx -= B[i] * base[i][0]; by -= B[i] * base[i][1]; }
+    const ax = new Array(nv).fill(0), ay = new Array(nv).fill(0);
+    vars.forEach((v, k) => { for (const e of v) { ax[k] += B[e.i] * e.vx; ay[k] += B[e.i] * e.vy; } });
+    rows.push({ a: ax, b: bx }, { a: ay, b: by });
+  }
+  const z = nv ? leastSquares(rows, nv) : [];
+  const P = base.map(p => p.slice());
+  vars.forEach((v, k) => { for (const e of v) { P[e.i][0] += z[k] * e.vx; P[e.i][1] += z[k] * e.vy; } });
+  return P;
+}
+
+/* =====================================================================
+   Fit 3 — CST (Kulfan class/shape transformation), the aero-standard
+   parameterisation of a body profile:
+     x(ψ) = x0 + L ψ
+     y(ψ) = y0 + L [ ψ^N1 (1-ψ)^N2 Σ A_i K_i(ψ) + ψ ζte ]
+   N1 = 0.5 → round nose, N2 = 1 → sharp tail (0 → blunt / open tail).
+   ===================================================================== */
+function fitCST(d, N1, N2, order) {
+  let pts = d, rev = false;
+  if (pts[pts.length - 1][0] < pts[0][0]) { pts = pts.slice().reverse(); rev = true; }
+  const x0 = pts[0][0], y0 = pts[0][1], L = pts[pts.length - 1][0] - x0;
+  if (!(L > 0)) return { error: 'CST needs the curve to span a length along x.' };
+  let bad = 0;
+  for (let i = 1; i < pts.length; i++) if (pts[i][0] < pts[i - 1][0] - 1e-6 * L) bad++;
+  if (bad > Math.max(1, pts.length * 0.03)) return { error: 'CST needs x to increase steadily from nose to tail (the curve must be a function y(x)). Use Bézier for this curve.' };
+  const zte = (pts[pts.length - 1][1] - y0) / L, n = order, rows = [];
+  for (const p of pts) {
+    const psi = clamp((p[0] - x0) / L, 0, 1);
+    const C = Math.pow(psi, N1) * Math.pow(1 - psi, N2);
+    const a = [];
+    for (let i = 0; i <= n; i++) a.push(C * binom(n, i) * Math.pow(psi, i) * Math.pow(1 - psi, n - i));
+    rows.push({ a, b: (p[1] - y0) / L - psi * zte });
+  }
+  const A = leastSquares(rows, n + 1, 1e-9);
+  return { mode: 'cst', x0, y0, L, N1, N2, A, zte, rev };
+}
+function cstPoint(f, psi) {
+  const n = f.A.length - 1;
+  let S = 0;
+  for (let i = 0; i <= n; i++) S += f.A[i] * binom(n, i) * Math.pow(psi, i) * Math.pow(1 - psi, n - i);
+  const z = Math.pow(psi, f.N1) * Math.pow(1 - psi, f.N2) * S + psi * f.zte;
+  return [f.x0 + f.L * psi, f.y0 + f.L * z];
+}
+
+/* Evaluate any fit to a dense polyline (in the curve's drawn direction). */
+function evalFit(f) {
+  if (!f) return [];
+  if (f.mode === 'bezier') {
+    const out = [];
+    f.segs.forEach((s, k) => { for (let i = k ? 1 : 0; i <= 40; i++) out.push(bez(s, i / 40)); });
+    return out;
+  }
+  if (f.mode === 'poly') { const out = []; for (let i = 0; i <= 220; i++) out.push(bez(f.P, i / 220)); return out; }
+  if (f.mode === 'cst') {
+    const out = [];
+    for (let i = 0; i <= 180; i++) out.push(cstPoint(f, (1 - Math.cos(Math.PI * i / 180)) / 2));
+    return f.rev ? out.reverse() : out;
+  }
+  if (f.mode === 'line') return [f.a, f.b];
+  return [];
+}
+function fitEndTan(c, which) { // unit tangent in the curve's parameter direction
+  const f = c.fit;
+  if (f.mode === 'bezier') {
+    if (which === 'start') { const s = f.segs[0]; return norm(dist(s[1], s[0]) > 1e-12 ? sub(s[1], s[0]) : sub(s[2], s[0])); }
+    const s = f.segs[f.segs.length - 1]; return norm(dist(s[3], s[2]) > 1e-12 ? sub(s[3], s[2]) : sub(s[3], s[1]));
+  }
+  if (f.mode === 'poly') { const P = f.P, n = P.length - 1; return which === 'start' ? norm(sub(P[1], P[0])) : norm(sub(P[n], P[n - 1])); }
+  if (f.mode === 'line') return norm(sub(f.b, f.a));
+  const p = c.poly;
+  return which === 'start' ? norm(sub(p[1], p[0])) : norm(sub(p[p.length - 1], p[p.length - 2]));
+}
+
+/* =====================================================================
+   App state
+   ===================================================================== */
+const DEF_OPTS = { n: 64, smooth: 1.5, mode: 'bezier', tol: 0.7, degree: 7, startTan: 'auto', endTan: 'auto', N1: 0.5, N2: 1.0, cstOrder: 6 };
+let S = { guides: [], curves: [], mirror: true, units: 'mm', nextId: 1 };
+const UI = {
+  tool: 'select', sel: null, view: { s: 4, ox: 200, oy: 300 }, viewInit: false,
+  snapGrid: false, showRaw: true, showDots: true, showHandles: true, fill: true,
+  ref: null, altDown: false, typed: '',
+};
+const findItem = id => S.guides.find(g => g.id === id) || S.curves.find(c => c.id === id);
+const isCurve = it => it && it.raw !== undefined;
+
+function curveTol(c) { const b = bbox(c.samples); return Math.hypot(b.w, b.h) || 1; }
+function endTangents(c) {
+  const pts = c.samples, n = pts.length, k = Math.min(3, n - 1);
+  const a1 = norm(sub(pts[k], pts[0])), a2 = norm(sub(pts[n - 1 - k], pts[n - 1]));
+  return [applyTan(c, c.opts.startTan, a1, 'start'), applyTan(c, c.opts.endTan, a2, 'end')];
+}
+function applyTan(c, mode, auto, which) {
+  const align = t => (dot(t, auto) >= 0 ? t : mul(t, -1));
+  if (mode === 'vertical') return [0, auto[1] >= 0 ? 1 : -1];
+  if (mode === 'horizontal') return [auto[0] >= 0 ? 1 : -1, 0];
+  if (mode === 'guide') { const sn = which === 'start' ? c.snapStart : c.snapEnd; if (sn && sn.dir) return align(norm(sn.dir)); }
+  if (mode === 'match') { const t = neighborTan(c, which); if (t) return align(t); }
+  return auto;
+}
+function curveEnd(c, which) { return which === 'start' ? c.samples[0] : c.samples[c.samples.length - 1]; }
+function neighborTan(c, which) {
+  const p = curveEnd(c, which), tol = 1e-6 * (1 + len(p)) + 1e-9;
+  for (const o of S.curves) {
+    if (o === c || !o.fit || !o.samples) continue;
+    if (dist(curveEnd(o, 'start'), p) < tol * 1e3) return fitEndTan(o, 'start');
+    if (dist(curveEnd(o, 'end'), p) < tol * 1e3) return fitEndTan(o, 'end');
+  }
+  return null;
+}
+function processCurve(c, keepManual = false) {
+  const clean = dedupe(c.raw);
+  c.samples = smooth(resample(clean, Math.max(4, c.opts.n | 0)), c.opts.smooth);
+  if (!(keepManual && c.manual)) refit(c);
+  c.poly = evalFit(c.fit);
+  measureErr(c);
+}
+function refit(c) {
+  const o = c.opts, d = c.samples, [t1, t2] = endTangents(c);
+  c.fitError = null; c.manual = false;
+  if (o.mode === 'poly') c.fit = { mode: 'poly', P: fitBernstein(d, o.degree | 0, t1, t2, o.startTan !== 'auto', o.endTan !== 'auto') };
+  else if (o.mode === 'cst') {
+    const r = fitCST(d, o.N1, o.N2, o.cstOrder | 0);
+    if (r.error) { c.fitError = r.error; c.fit = { mode: 'bezier', segs: fitBezier(d, o.tol / 100 * curveTol(c), t1, t2) }; }
+    else c.fit = r;
+  } else if (o.mode === 'line') c.fit = { mode: 'line', a: d[0].slice(), b: d[d.length - 1].slice() };
+  else c.fit = { mode: 'bezier', segs: fitBezier(d, o.tol / 100 * curveTol(c), t1, t2) };
+}
+function measureErr(c) {
+  let s2 = 0, mx = 0;
+  for (const p of c.samples) { const e = polyDist(p, c.poly).d; s2 += e * e; if (e > mx) mx = e; }
+  c.rms = Math.sqrt(s2 / c.samples.length); c.maxErr = mx;
+}
+/* Re-fit curves whose tangent is set to "match" a neighbour that just changed. */
+function refreshMatches(changed) {
+  for (const o of S.curves) {
+    if (o === changed || o.manual) continue;
+    if (o.opts.startTan !== 'match' && o.opts.endTan !== 'match') continue;
+    const touches = ['start', 'end'].some(w => ['start', 'end'].some(v => dist(curveEnd(o, w), curveEnd(changed, v)) < 1e-6 * (1 + len(curveEnd(o, w)))));
+    if (touches) processCurve(o);
+  }
+}
+
+/* ---------- persistence & undo ---------- */
+function serialize() {
+  return JSON.stringify({
+    v: 1, units: S.units, mirror: S.mirror, nextId: S.nextId, example: S.example || undefined, guides: S.guides,
+    curves: S.curves.map(c => ({ id: c.id, name: c.name, raw: c.raw, opts: c.opts, snapStart: c.snapStart, snapEnd: c.snapEnd, fit: c.fit, manual: c.manual })),
+  });
+}
+function restore(json) {
+  const o = typeof json === 'string' ? JSON.parse(json) : json;
+  S = { guides: o.guides || [], curves: o.curves || [], mirror: o.mirror !== false, units: o.units || 'mm', nextId: o.nextId || 1, example: o.example || '' };
+  for (const c of S.curves) { c.opts = { ...DEF_OPTS, ...c.opts }; processCurve(c, true); }
+  if (UI.sel && !findItem(UI.sel)) UI.sel = null;
+  syncViewControls();
+}
+const hist = []; let hi = -1;
+function commit() {
+  const s = serialize();
+  if (hist[hi] === s) return;
+  hist.splice(hi + 1); hist.push(s);
+  if (hist.length > 150) hist.shift();
+  hi = hist.length - 1;
+  try { localStorage.setItem('profile-studio', s); } catch (e) { /* storage unavailable */ }
+  Sim.dirty = true;
+  updateUndo();
+}
+function undo() { if (hi > 0) { hi--; restore(hist[hi]); afterChange(); } }
+function redo() { if (hi < hist.length - 1) { hi++; restore(hist[hi]); afterChange(); } }
+function updateUndo() { $('#undoBtn').disabled = hi <= 0; $('#redoBtn').disabled = hi >= hist.length - 1; }
+function afterChange() { Sim.dirty = true; renderPanel(); requestDraw(); updateUndo(); try { localStorage.setItem('profile-studio', serialize()); } catch (e) {} }
+
+/* =====================================================================
+   Profile assembly: chain curves end-to-end, mirror about the x-axis
+   ===================================================================== */
+function chainCurves() {
+  const cs = S.curves.filter(c => c.poly && c.poly.length > 1), out = [];
+  for (let k = 0; k < cs.length; k++) {
+    const c = cs[k], a = c.poly[0], b = c.poly[c.poly.length - 1];
+    let rev;
+    if (k === 0) {
+      if (cs.length > 1) {
+        const n = cs[1], na = n.poly[0], nb = n.poly[n.poly.length - 1];
+        rev = Math.min(dist(a, na), dist(a, nb)) < Math.min(dist(b, na), dist(b, nb));
+      } else rev = a[0] > b[0];
+    } else {
+      const pc = out[k - 1], pe = pc.rev ? pc.c.poly[0] : pc.c.poly[pc.c.poly.length - 1];
+      rev = dist(pe, b) < dist(pe, a);
+    }
+    out.push({ c, rev });
+  }
+  return out;
+}
+function upperPolyline() {
+  const ch = chainCurves();
+  if (!ch.length) return null;
+  const out = [];
+  for (const { c, rev } of ch) {
+    const p = rev ? c.poly.slice().reverse() : c.poly;
+    for (let i = 0; i < p.length; i++) {
+      if (i === 0 && out.length && dist(out[out.length - 1], p[0]) < 1e-9) continue;
+      out.push(p[i]);
+    }
+  }
+  return out;
+}
+function chainGaps() {
+  const ch = chainCurves(), gaps = [];
+  for (let k = 1; k < ch.length; k++) {
+    const p = ch[k - 1], c = ch[k];
+    const pe = p.rev ? p.c.poly[0] : p.c.poly[p.c.poly.length - 1], cs = c.rev ? c.c.poly[c.c.poly.length - 1] : c.c.poly[0];
+    const d = dist(pe, cs);
+    if (d > 1e-6 * (1 + len(pe))) gaps.push({ a: p.c.name, b: c.c.name, d });
+  }
+  return gaps;
+}
+function profilePolygon() {
+  const U = upperPolyline();
+  if (!U || U.length < 2) return null;
+  if (S.mirror) return U.concat(U.slice().reverse().map(p => [p[0], -p[1]]));
+  return U.slice();
+}
+/* Canonical parametric pieces (Bézier segments / polynomials / CST / lines),
+   oriented along the chain. Every export and the equation text use this. */
+function pieces() {
+  const out = [];
+  for (const { c, rev } of chainCurves()) {
+    const f = c.fit;
+    if (f.mode === 'bezier') {
+      const segs = rev ? f.segs.slice().reverse().map(s => s.slice().reverse()) : f.segs;
+      segs.forEach((s, i) => out.push({ type: 'bezier', P: s, name: c.name, sub: `seg ${i + 1}/${segs.length}` }));
+    } else if (f.mode === 'poly') out.push({ type: 'bern', P: rev ? f.P.slice().reverse() : f.P, name: c.name });
+    else if (f.mode === 'line') out.push({ type: 'line', P: rev ? [f.b, f.a] : [f.a, f.b], name: c.name });
+    else if (f.mode === 'cst') out.push({ type: 'cst', f, flip: !!f.rev !== rev, name: c.name });
+  }
+  return out;
+}
+
+/* ---------- metrics ---------- */
+function profileMetrics() {
+  let U = upperPolyline();
+  if (!U || U.length < 2) return null;
+  if (U[0][0] > U[U.length - 1][0]) U = U.slice().reverse();
+  const poly = profilePolygon();
+  let A = 0, cx = 0, cy = 0;
+  for (let i = 0, n = poly.length; i < n; i++) {
+    const p = poly[i], q = poly[(i + 1) % n], cr = p[0] * q[1] - q[0] * p[1];
+    A += cr; cx += (p[0] + q[0]) * cr; cy += (p[1] + q[1]) * cr;
+  }
+  A /= 2; cx /= 6 * A || 1; cy /= 6 * A || 1;
+  let perim = 0; for (let i = 0; i < poly.length; i++) perim += dist(poly[i], poly[(i + 1) % poly.length]);
+  const b = bbox(U), L = b.w;
+  let rmax = 0, xAtMax = U[0][0], V = 0, Sw = 0;
+  for (const p of U) if (Math.abs(p[1]) > rmax) { rmax = Math.abs(p[1]); xAtMax = p[0]; }
+  for (let i = 1; i < U.length; i++) {
+    const r0 = Math.abs(U[i - 1][1]), r1 = Math.abs(U[i][1]), dx = U[i][0] - U[i - 1][0];
+    V += Math.PI * (r0 * r0 + r0 * r1 + r1 * r1) / 3 * dx;
+    Sw += Math.PI * (r0 + r1) * Math.hypot(dx, r1 - r0);
+  }
+  let tailSlope = 0;
+  for (let i = 1; i < U.length; i++) {
+    if (U[i][0] <= xAtMax) continue;
+    const dx = U[i][0] - U[i - 1][0], dr = Math.abs(U[i][1]) - Math.abs(U[i - 1][1]);
+    if (dx > 1e-9 || dr < 0) tailSlope = Math.max(tailSlope, Math.atan2(-dr, Math.max(dx, 0)) * 180 / Math.PI); // a vertical drop (flat base) counts as 90°
+  }
+  // Flat end faces: the open end radius, or the rim of a straight run within 2° of vertical at either end.
+  // (A face drawn down to the axis has an end point on y = 0 but is still a flat face.)
+  const flatFace = pts => {
+    let r = Math.abs(pts[0][1]);
+    for (let i = 1; i < pts.length; i++) {
+      const dx = Math.abs(pts[i][0] - pts[i - 1][0]), dy = Math.abs(pts[i][1] - pts[i - 1][1]);
+      if (dy < 1e-12 || dx > dy * 0.0349) break; // tan 2°: a snapped or straight-fit face, not a round nose
+      r = Math.max(r, Math.abs(pts[i][1]));
+    }
+    return r;
+  };
+  const rNoseEnd = Math.abs(U[0][1]), rTailEnd = Math.abs(U[U.length - 1][1]);
+  const rNose = flatFace(U), rTail = flatFace(U.slice().reverse());
+  const crosses = U.some(p => p[1] < -1e-6 * (rmax || 1)) && U.some(p => p[1] > 1e-6 * (rmax || 1));
+  return {
+    L, D: 2 * rmax, rmax, fineness: rmax > 0 ? L / (2 * rmax) : Infinity, V: Math.abs(V), Sw: Sw + Math.PI * (rNoseEnd * rNoseEnd + rTailEnd * rTailEnd),
+    Af: Math.PI * rmax * rmax, Ab: Math.PI * rTail * rTail, An: Math.PI * rNose * rNose, rNose, rTail, rNoseEnd, rTailEnd, tailSlope,
+    area: Math.abs(A), cx, cy, perim, crosses, height: bbox(poly).h,
+  };
+}
+
+/* ---------- known-part clearance ---------- */
+function fitCheck() {
+  const poly = profilePolygon(), out = [];
+  if (!poly || poly.length < 3) return out;
+  const closedPoly = S.mirror ? poly : poly;
+  for (const g of S.guides) {
+    let samples = [];
+    if (g.type === 'rect') {
+      const x0 = Math.min(g.p1[0], g.p2[0]), x1 = Math.max(g.p1[0], g.p2[0]), y0 = Math.min(g.p1[1], g.p2[1]), y1 = Math.max(g.p1[1], g.p2[1]);
+      const cs = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
+      for (let e = 0; e < 4; e++) for (let i = 0; i < 40; i++) samples.push(lerp(cs[e], cs[(e + 1) % 4], i / 40));
+    } else if (g.type === 'circle') {
+      for (let i = 0; i < 120; i++) { const a = i / 120 * Math.PI * 2; samples.push([g.c[0] + g.r * Math.cos(a), g.c[1] + g.r * Math.sin(a)]); }
+    } else continue;
+    let worst = Infinity, wp = null, wq = null;
+    for (const p of samples) {
+      const { d, q } = polyDist(p, closedPoly, true), sd = pointInPoly(p, closedPoly) ? d : -d;
+      if (sd < worst) { worst = sd; wp = p; wq = q; }
+    }
+    out.push({ g, clearance: worst, p: wp, q: wq });
+  }
+  return out;
+}
+
+/* =====================================================================
+   Design canvas: view transform, snapping, hit testing
+   ===================================================================== */
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, drawQueued = false;
+const w2s = p => [UI.view.ox + p[0] * UI.view.s, UI.view.oy - p[1] * UI.view.s];
+const s2w = p => [(p[0] - UI.view.ox) / UI.view.s, (UI.view.oy - p[1]) / UI.view.s];
+function resize() {
+  const r = $('#stage').getBoundingClientRect();
+  if (r.width < 2) return;
+  DPR = window.devicePixelRatio || 1; W = r.width; H = r.height;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  if (!UI.viewInit) { UI.viewInit = true; UI.view.s = W * 0.7 / 200; UI.view.ox = W * 0.15; UI.view.oy = H * 0.55; }
+  requestDraw();
+}
+new ResizeObserver(resize).observe($('#stage'));
+function requestDraw() { if (!drawQueued) { drawQueued = true; requestAnimationFrame(() => { drawQueued = false; draw(); }); } }
+
+function gridStep() {
+  const target = 90 / UI.view.s, p10 = Math.pow(10, Math.floor(Math.log10(target)));
+  for (const m of [1, 2, 5, 10]) if (m * p10 >= target) return m * p10;
+  return 10 * p10;
+}
+function guideLines(excl) { // straight edges usable for snapping/intersection
+  const L = [{ a: [0, 0], b: [1, 0], inf: true, gid: 'axis' }, { a: [0, 0], b: [0, 1], inf: true, gid: 'yaxis' }];
+  for (const g of S.guides) {
+    if (g.id === excl) continue;
+    if (g.type === 'line') L.push({ a: g.p1, b: g.p2, inf: !!g.inf, gid: g.id });
+    if (g.type === 'rect') {
+      const c = rectCorners(g);
+      for (let i = 0; i < 4; i++) L.push({ a: c[i], b: c[(i + 1) % 4], inf: false, gid: g.id });
+    }
+  }
+  return L;
+}
+function rectCorners(g) { return [[g.p1[0], g.p1[1]], [g.p2[0], g.p1[1]], [g.p2[0], g.p2[1]], [g.p1[0], g.p2[1]]]; }
+function snapPoints(excl) {
+  const P = [{ p: [0, 0], kind: 'origin', dir: [1, 0] }];
+  for (const g of S.guides) {
+    if (g.id === excl) continue;
+    if (g.type === 'point') P.push({ p: g.p, kind: 'point' });
+    if (g.type === 'line') {
+      const dir = sub(g.p2, g.p1);
+      if (!g.inf) { P.push({ p: g.p1, kind: 'end', dir, gid: g.id }, { p: g.p2, kind: 'end', dir, gid: g.id }, { p: lerp(g.p1, g.p2, 0.5), kind: 'mid', dir, gid: g.id }); }
+    }
+    if (g.type === 'dim') P.push({ p: g.p1, kind: 'end' }, { p: g.p2, kind: 'end' });
+    if (g.type === 'circle') P.push({ p: g.c, kind: 'center' });
+    if (g.type === 'rect') {
+      const c = rectCorners(g);
+      c.forEach((q, i) => { P.push({ p: q, kind: 'corner' }); P.push({ p: lerp(q, c[(i + 1) % 4], 0.5), kind: 'mid', dir: sub(c[(i + 1) % 4], q) }); });
+    }
+    if (g.type === 'ref' && g.pts.length) P.push({ p: g.pts[0], kind: 'ref end' }, { p: g.pts[g.pts.length - 1], kind: 'ref end' });
+  }
+  for (const c of S.curves) {
+    if (c.id === excl || !c.samples) continue;
+    P.push({ p: curveEnd(c, 'start'), kind: 'curve-end', dir: fitEndTan(c, 'start'), cid: c.id });
+    P.push({ p: curveEnd(c, 'end'), kind: 'curve-end', dir: fitEndTan(c, 'end'), cid: c.id });
+  }
+  const L = guideLines(excl);
+  for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
+    if (L[i].gid === L[j].gid) continue;
+    const r = lineIntersect(L[i].a, L[i].b, L[j].a, L[j].b);
+    if (!r) continue;
+    const e = 1e-9;
+    if (!L[i].inf && (r.t < -e || r.t > 1 + e)) continue;
+    if (!L[j].inf && (r.u < -e || r.u > 1 + e)) continue;
+    const p = add(L[i].a, mul(sub(L[i].b, L[i].a), r.t));
+    if (Math.abs(p[0]) < 1e7 && Math.abs(p[1]) < 1e7) P.push({ p, kind: 'intersection' });
+  }
+  return P;
+}
+function snap(w, rPx = 10, excl = null) {
+  if (UI.altDown) return { p: w, kind: 'free' };
+  const r = rPx / UI.view.s;
+  let best = null, bd = r;
+  for (const c of snapPoints(excl)) {
+    const d = dist(c.p, w) - (c.kind === 'curve-end' ? r * 0.3 : 0); // favour joining curves
+    if (d < bd) { bd = d; best = c; }
+  }
+  if (best) return { p: best.p.slice(), kind: best.kind, dir: best.dir, gid: best.gid, cid: best.cid };
+  let lb = null; bd = r * 0.8;
+  for (const l of guideLines(excl)) {
+    const { q, t } = segProj(w, l.a, l.b, false);
+    if (!l.inf && (t < 0 || t > 1)) continue;
+    const d = dist(q, w);
+    if (d < bd) { bd = d; lb = { p: q, kind: l.gid === 'axis' ? 'on axis' : 'on line', dir: sub(l.b, l.a), gid: l.gid }; }
+  }
+  for (const g of S.guides) {
+    if (g.id === excl || g.type !== 'circle') continue;
+    const v = sub(w, g.c), d = Math.abs(len(v) - g.r);
+    if (d < bd) { bd = d; const q = add(g.c, mul(norm(v), g.r)); lb = { p: q, kind: 'on circle', dir: [-v[1], v[0]], gid: g.id }; }
+  }
+  if (lb) return lb;
+  if (UI.snapGrid) { const st = gridStep() / 5; return { p: [Math.round(w[0] / st) * st, Math.round(w[1] / st) * st], kind: 'grid' }; }
+  return { p: w, kind: 'free' };
+}
+function hitGuide(w) {
+  const r = 7 / UI.view.s; let best = null, bd = r;
+  for (const g of S.guides) {
+    let d = Infinity;
+    if (g.type === 'point') d = dist(w, g.p);
+    else if (g.type === 'line') d = g.inf ? dist(w, segProj(w, g.p1, g.p2, false).q) : dist(w, segProj(w, g.p1, g.p2).q);
+    else if (g.type === 'dim') d = dist(w, segProj(w, g.p1, g.p2).q);
+    else if (g.type === 'circle') d = Math.abs(dist(w, g.c) - g.r);
+    else if (g.type === 'rect') { const c = rectCorners(g); d = polyDist(w, c, true).d; if (pointInPoly(w, c)) d = Math.min(d, r * 0.95); }
+    else if (g.type === 'ref') d = polyDist(w, g.pts).d;
+    if (d < bd) { bd = d; best = g; }
+  }
+  return best ? { item: best, d: bd } : null;
+}
+function hitCurve(w) {
+  const r = 7 / UI.view.s; let best = null, bd = r;
+  for (const c of S.curves) { if (!c.poly) continue; const d = polyDist(w, c.poly).d; if (d < bd) { bd = d; best = c; } }
+  return best ? { item: best, d: bd } : null;
+}
+/* Draggable handles of the selected item. */
+function handlesOf(it) {
+  if (!it) return [];
+  if (isCurve(it)) {
+    const f = it.fit, H = [];
+    if (f.mode === 'bezier') {
+      f.segs.forEach((s, k) => {
+        if (k === 0) H.push({ p: s[0], kind: 'joint', j: 0 });
+        H.push({ p: s[1], kind: 'h', k, i: 1 }, { p: s[2], kind: 'h', k, i: 2 }, { p: s[3], kind: 'joint', j: k + 1 });
+      });
+    } else if (f.mode === 'poly') f.P.forEach((p, i) => H.push({ p, kind: 'cp', i }));
+    else if (f.mode === 'line') H.push({ p: f.a, kind: 'la' }, { p: f.b, kind: 'lb' });
+    return H;
+  }
+  const g = it;
+  if (g.type === 'point') return [{ p: g.p, set: q => (g.p = q) }];
+  if (g.type === 'line' || g.type === 'dim') return [{ p: g.p1, set: q => (g.p1 = q) }, { p: g.p2, set: q => (g.p2 = q) }];
+  if (g.type === 'circle') return [{ p: g.c, set: q => (g.c = q) }, { p: [g.c[0] + g.r, g.c[1]], set: q => (g.r = Math.max(1e-6, dist(q, g.c))) }];
+  if (g.type === 'rect') {
+    const c = rectCorners(g);
+    return [
+      { p: c[0], set: q => (g.p1 = q) },
+      { p: c[1], set: q => { g.p2 = [q[0], g.p2[1]]; g.p1 = [g.p1[0], q[1]]; } },
+      { p: c[2], set: q => (g.p2 = q) },
+      { p: c[3], set: q => { g.p1 = [q[0], g.p1[1]]; g.p2 = [g.p2[0], q[1]]; } },
+    ];
+  }
+  return [];
+}
+function hitHandle(sp) {
+  if (!UI.showHandles && isCurve(findItem(UI.sel))) return null;
+  const it = findItem(UI.sel);
+  let best = null, bd = 9;
+  for (const h of handlesOf(it)) { const d = dist(w2s(h.p), sp); if (d < bd) { bd = d; best = h; } }
+  return best;
+}
+function dragCurveHandle(c, h, q, alt) {
+  const f = c.fit;
+  if (f.mode === 'bezier') {
+    const segs = f.segs;
+    if (h.kind === 'joint') {
+      const j = h.j, old = j < segs.length ? segs[j][0] : segs[j - 1][3], d = sub(q, old);
+      if (j < segs.length) { segs[j][0] = q.slice(); segs[j][1] = add(segs[j][1], d); }
+      if (j > 0) { segs[j - 1][3] = q.slice(); segs[j - 1][2] = add(segs[j - 1][2], d); }
+    } else {
+      const { k, i } = h;
+      segs[k][i] = q.slice();
+      if (!alt) { // keep interior joints G1-smooth
+        if (i === 1 && k > 0) { const J = segs[k][0], L = dist(segs[k - 1][2], J); segs[k - 1][2] = sub(J, mul(norm(sub(q, J)), L)); }
+        if (i === 2 && k < segs.length - 1) { const J = segs[k][3], L = dist(segs[k + 1][1], J); segs[k + 1][1] = sub(J, mul(norm(sub(q, J)), L)); }
+      }
+    }
+  } else if (f.mode === 'poly') f.P[h.i] = q.slice();
+  else if (f.mode === 'line') { if (h.kind === 'la') f.a = q.slice(); else f.b = q.slice(); }
+  c.manual = true;
+  c.poly = evalFit(f);
+  measureErr(c);
+}
+function translateCurve(c, d) {
+  const T = p => [p[0] + d[0], p[1] + d[1]];
+  c.raw = c.raw.map(T); c.samples = c.samples.map(T); c.poly = c.poly.map(T);
+  const f = c.fit;
+  if (f.mode === 'bezier') f.segs = f.segs.map(s => s.map(T));
+  else if (f.mode === 'poly') f.P = f.P.map(T);
+  else if (f.mode === 'line') { f.a = T(f.a); f.b = T(f.b); }
+  else if (f.mode === 'cst') { f.x0 += d[0]; f.y0 += d[1]; }
+}
+function translateGuide(g, d) {
+  const T = p => [p[0] + d[0], p[1] + d[1]];
+  if (g.p) g.p = T(g.p);
+  if (g.p1) { g.p1 = T(g.p1); g.p2 = T(g.p2); }
+  if (g.c) g.c = T(g.c);
+  if (g.pts) g.pts = g.pts.map(T);
+}
+
+/* =====================================================================
+   Drawing
+   ===================================================================== */
+const COL = { guide: '#39c5cf', part: '#f0883e', axis: '#b392f0', curve: '#ffce54', dots: '#4aa3ff', raw: 'rgba(139,152,165,.55)', dim: '#d2dae3', ref: '#9aa7b4' };
+function draw() {
+  if (!W) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  drawGrid();
+  drawRefImage();
+  drawAxes();
+  const poly = profilePolygon();
+  if (poly && UI.fill) {
+    ctx.beginPath(); poly.forEach((p, i) => { const s = w2s(p); i ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); }); ctx.closePath();
+    ctx.fillStyle = 'rgba(255,206,84,.07)'; ctx.fill('evenodd');
+  }
+  for (const g of S.guides) drawGuide(g, g.id === UI.sel);
+  for (const c of S.curves) drawCurve(c, c.id === UI.sel);
+  for (const fc of fitCheck()) {
+    if (!fc.p) continue;
+    const bad = fc.clearance < 0, a = w2s(fc.p), b = w2s(fc.q);
+    ctx.strokeStyle = bad ? '#f0506e' : '#4cc38a'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(a[0], a[1], 3.5, 0, 7); ctx.fill();
+    label(`${bad ? 'interference ' : ''}${fmt(Math.abs(fc.clearance), 3)} ${S.units}`, (a[0] + b[0]) / 2 + 6, (a[1] + b[1]) / 2 - 6, ctx.strokeStyle);
+  }
+  drawHandles();
+  drawInProgress();
+  $('#emptyHint').style.display = S.curves.length || S.guides.length ? 'none' : 'flex';
+}
+function label(t, x, y, col = COL.dim, align = 'left') {
+  ctx.font = '11px ui-monospace,Consolas,monospace'; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  const w = ctx.measureText(t).width, x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+  ctx.fillStyle = 'rgba(11,14,19,.8)'; ctx.fillRect(x0 - 3, y - 8, w + 6, 16);
+  ctx.fillStyle = col; ctx.fillText(t, x, y);
+}
+function drawGrid() {
+  const st = gridStep(), minor = st / 5, s = UI.view.s;
+  const [x0, y1] = s2w([0, 0]), [x1, y0] = s2w([W, H]);
+  const lines = (step, col) => {
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = Math.ceil(x0 / step) * step; x <= x1; x += step) { const sx = Math.round(w2s([x, 0])[0]) + 0.5; ctx.moveTo(sx, 0); ctx.lineTo(sx, H); }
+    for (let y = Math.ceil(y0 / step) * step; y <= y1; y += step) { const sy = Math.round(w2s([0, y])[1]) + 0.5; ctx.moveTo(0, sy); ctx.lineTo(W, sy); }
+    ctx.stroke();
+  };
+  if (minor * s >= 7) lines(minor, 'rgba(255,255,255,.028)');
+  lines(st, 'rgba(255,255,255,.07)');
+  ctx.font = '10px ui-monospace,Consolas,monospace'; ctx.fillStyle = 'rgba(139,152,165,.7)';
+  const ay = clamp(w2s([0, 0])[1], 12, H - 22), ax = clamp(w2s([0, 0])[0], 4, W - 40);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let x = Math.ceil(x0 / st) * st; x <= x1; x += st) if (Math.abs(x) > st / 2) ctx.fillText(fmt(x, 4), w2s([x, 0])[0], ay + 3);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  for (let y = Math.ceil(y0 / st) * st; y <= y1; y += st) if (Math.abs(y) > st / 2) ctx.fillText(fmt(y, 4), ax + 4, w2s([0, y])[1]);
+}
+function drawAxes() {
+  const o = w2s([0, 0]);
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = S.mirror ? COL.axis : 'rgba(179,146,240,.45)'; ctx.setLineDash(S.mirror ? [10, 4, 2, 4] : []);
+  ctx.beginPath(); ctx.moveTo(0, o[1]); ctx.lineTo(W, o[1]); ctx.stroke();
+  ctx.setLineDash([]); ctx.strokeStyle = 'rgba(255,255,255,.18)';
+  ctx.beginPath(); ctx.moveTo(o[0], 0); ctx.lineTo(o[0], H); ctx.stroke();
+  if (S.mirror) label('x-axis · symmetry / revolve axis', W - 10, clamp(o[1] + 14, 10, H - 10), COL.axis, 'right');
+}
+function drawRefImage() {
+  const r = UI.ref;
+  if (!r || !r.img || !r.img.complete) return;
+  const h = r.w * r.img.naturalHeight / r.img.naturalWidth, a = w2s([r.x, r.y]);
+  ctx.globalAlpha = r.opacity; ctx.drawImage(r.img, a[0], a[1], r.w * UI.view.s, h * UI.view.s); ctx.globalAlpha = 1;
+}
+function strokeInfLine(a, b) {
+  const d = norm(sub(b, a)), big = 1e5 / UI.view.s * 10;
+  const p = w2s(sub(a, mul(d, big))), q = w2s(add(a, mul(d, big)));
+  ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+}
+function drawGuide(g, sel) {
+  ctx.lineWidth = sel ? 2 : 1.2;
+  if (g.type === 'point') {
+    const p = w2s(g.p); ctx.strokeStyle = COL.guide;
+    ctx.beginPath(); ctx.moveTo(p[0] - 6, p[1]); ctx.lineTo(p[0] + 6, p[1]); ctx.moveTo(p[0], p[1] - 6); ctx.lineTo(p[0], p[1] + 6); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 7); ctx.stroke();
+  } else if (g.type === 'line') {
+    ctx.strokeStyle = COL.guide;
+    if (g.inf) { ctx.setLineDash([6, 5]); ctx.globalAlpha = 0.75; strokeInfLine(g.p1, g.p2); ctx.globalAlpha = 1; ctx.setLineDash([]); }
+    else {
+      const a = w2s(g.p1), b = w2s(g.p2);
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      ctx.fillStyle = COL.guide; [a, b].forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], 2.5, 0, 7); ctx.fill(); });
+      if (sel || dist(a, b) > 60) label(`${fmt(dist(g.p1, g.p2), 4)}`, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 10, COL.guide, 'center');
+    }
+  } else if (g.type === 'circle') {
+    const c = w2s(g.c); ctx.strokeStyle = COL.guide; ctx.setLineDash([5, 4]);
+    ctx.beginPath(); ctx.arc(c[0], c[1], g.r * UI.view.s, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(c[0] - 4, c[1]); ctx.lineTo(c[0] + 4, c[1]); ctx.moveTo(c[0], c[1] - 4); ctx.lineTo(c[0], c[1] + 4); ctx.stroke();
+    if (sel) label(`R ${fmt(g.r, 4)}`, c[0] + g.r * UI.view.s * 0.7, c[1] - g.r * UI.view.s * 0.7, COL.guide);
+  } else if (g.type === 'rect') {
+    const c = rectCorners(g).map(w2s);
+    ctx.beginPath(); c.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); ctx.closePath();
+    ctx.fillStyle = 'rgba(240,136,62,.10)'; ctx.fill(); ctx.strokeStyle = COL.part; ctx.stroke();
+    ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(240,136,62,.18)'; ctx.lineWidth = 1; ctx.beginPath();
+    const b = bbox(c);
+    for (let x = b.minx - b.h; x < b.maxx; x += 9) { ctx.moveTo(x, b.maxy); ctx.lineTo(x + b.h, b.miny); }
+    ctx.stroke(); ctx.restore();
+    const b2 = bbox(c);
+    label(`${g.name || 'Part'}  ${fmt(Math.abs(g.p2[0] - g.p1[0]), 4)} × ${fmt(Math.abs(g.p2[1] - g.p1[1]), 4)}`, b2.minx + 4, b2.miny - 10, COL.part);
+  } else if (g.type === 'dim') {
+    const a = w2s(g.p1), b = w2s(g.p2), d = norm(sub(b, a)), n = [-d[1] * 16, d[0] * 16];
+    const a2 = add(a, n), b2 = add(b, n);
+    ctx.strokeStyle = COL.dim; ctx.lineWidth = sel ? 1.6 : 1;
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(a2[0] + n[0] * 0.25, a2[1] + n[1] * 0.25); ctx.moveTo(b[0], b[1]); ctx.lineTo(b2[0] + n[0] * 0.25, b2[1] + n[1] * 0.25);
+    ctx.moveTo(a2[0], a2[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke();
+    const arrow = (p, dir) => { const s = mul(dir, 7), q = [-dir[1] * 3, dir[0] * 3]; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p[0] + s[0] + q[0], p[1] + s[1] + q[1]); ctx.lineTo(p[0] + s[0] - q[0], p[1] + s[1] - q[1]); ctx.closePath(); ctx.fillStyle = COL.dim; ctx.fill(); };
+    arrow(a2, d); arrow(b2, mul(d, -1));
+    const m = lerp(a2, b2, 0.5);
+    label(`${fmt(dist(g.p1, g.p2), 4)} ${S.units}`, m[0] + n[0] * 0.6, m[1] + n[1] * 0.6, '#fff', 'center');
+  } else if (g.type === 'ref') {
+    ctx.strokeStyle = COL.ref; ctx.lineWidth = sel ? 2.2 : 1.5; ctx.setLineDash([2, 3]);
+    const path = pts => { ctx.beginPath(); pts.forEach((p, i) => { const s = w2s(p); i ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); }); ctx.stroke(); };
+    path(g.pts); if (g.mirror) path(g.pts.map(p => [p[0], -p[1]]));
+    ctx.setLineDash([]);
+    if (g.pts.length) { const p = w2s(g.pts[Math.floor(g.pts.length / 2)]); label(g.name || 'reference', p[0] + 6, p[1] - 10, COL.ref); }
+  }
+}
+function pathPts(pts) { ctx.beginPath(); pts.forEach((p, i) => { const s = w2s(p); i ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); }); }
+function drawCurve(c, sel) {
+  if (UI.showRaw) { ctx.strokeStyle = COL.raw; ctx.lineWidth = 1; pathPts(c.raw); ctx.stroke(); }
+  if (S.mirror) { ctx.strokeStyle = 'rgba(255,206,84,.38)'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]); pathPts(c.poly.map(p => [p[0], -p[1]])); ctx.stroke(); ctx.setLineDash([]); }
+  ctx.strokeStyle = COL.curve; ctx.lineWidth = sel ? 3 : 2; pathPts(c.poly); ctx.stroke();
+  if (UI.showDots && (sel || S.curves.length < 6)) {
+    ctx.fillStyle = COL.dots;
+    for (const p of c.samples) { const s = w2s(p); ctx.beginPath(); ctx.arc(s[0], s[1], sel ? 2.4 : 1.7, 0, 7); ctx.fill(); }
+  }
+  if (c.fit.mode === 'bezier' && !sel) { // show segment joints
+    ctx.fillStyle = COL.curve;
+    c.fit.segs.forEach((s, k) => { if (k) { const p = w2s(s[0]); ctx.fillRect(p[0] - 2, p[1] - 2, 4, 4); } });
+  }
+}
+function drawHandles() {
+  const it = findItem(UI.sel);
+  if (!it) return;
+  if (isCurve(it)) {
+    if (!UI.showHandles) return;
+    const f = it.fit;
+    ctx.strokeStyle = 'rgba(230,237,243,.45)'; ctx.lineWidth = 1;
+    if (f.mode === 'bezier') for (const s of f.segs) { const p = s.map(w2s); ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); ctx.lineTo(p[1][0], p[1][1]); ctx.moveTo(p[3][0], p[3][1]); ctx.lineTo(p[2][0], p[2][1]); ctx.stroke(); }
+    if (f.mode === 'poly') { pathPts(f.P); ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  for (const h of handlesOf(it)) {
+    const p = w2s(h.p), joint = h.kind === 'joint' || !isCurve(it);
+    ctx.fillStyle = joint ? '#fff' : '#0b0e13'; ctx.strokeStyle = isCurve(it) ? COL.curve : COL.guide; ctx.lineWidth = 1.5;
+    if (joint) { ctx.fillRect(p[0] - 4, p[1] - 4, 8, 8); ctx.strokeRect(p[0] - 4, p[1] - 4, 8, 8); }
+    else { ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, 7); ctx.fill(); ctx.stroke(); }
+  }
+}
+let drag = null, pending = null, hover = null, cursorW = [0, 0], spaceDown = false;
+function drawInProgress() {
+  if (drag && drag.type === 'stroke') { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; pathPts(drag.pts); ctx.stroke(); }
+  if (pending) {
+    const a = pending.p1, b = pending.cur;
+    ctx.strokeStyle = pending.tool === 'rect' ? COL.part : COL.guide; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+    if (pending.tool === 'line' || pending.tool === 'dim') { pathPts([a, b]); ctx.stroke(); }
+    if (pending.tool === 'circle') { const c = w2s(a); ctx.beginPath(); ctx.arc(c[0], c[1], dist(a, b) * UI.view.s, 0, 7); ctx.stroke(); }
+    if (pending.tool === 'rect') { pathPts([a, [b[0], a[1]], b, [a[0], b[1]], a]); ctx.stroke(); }
+    ctx.setLineDash([]);
+    const s = w2s(b), d = sub(b, a);
+    const txt = pending.tool === 'rect' ? `${fmt(Math.abs(d[0]), 4)} × ${fmt(Math.abs(d[1]), 4)}` : pending.tool === 'circle' ? `R ${fmt(len(d), 4)}` : `${fmt(len(d), 4)} @ ${fmt(Math.atan2(d[1], d[0]) * 180 / Math.PI, 3)}°`;
+    label(txt, s[0] + 12, s[1] + 16, '#fff');
+  }
+  if (hover && hover.kind !== 'free') {
+    const s = w2s(hover.p);
+    ctx.strokeStyle = hover.kind === 'grid' ? 'rgba(255,255,255,.5)' : '#fff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(s[0], s[1], 6, 0, 7); ctx.stroke();
+    if (hover.kind !== 'grid') label(hover.kind, s[0] + 10, s[1] - 12, '#fff');
+  }
+}
+function updateHud() {
+  const it = drag && drag.type === 'stroke' ? `drawing · ${drag.pts.length} pts` : '';
+  $('#hud').textContent = `x ${fmt(cursorW[0], 4)}  y ${fmt(cursorW[1], 4)} ${S.units}   ·  ${UI.tool}${it ? '  ·  ' + it : ''}   ·  zoom ${fmt(UI.view.s, 3)} px/${S.units}`;
+  const ty = $('#typed');
+  if (pending && UI.typed) {
+    const s = w2s(pending.cur);
+    ty.style.display = 'block'; ty.style.left = (s[0] + 14) + 'px'; ty.style.top = (s[1] + 30) + 'px';
+    ty.textContent = `${pending.tool === 'rect' ? 'w,h' : pending.tool === 'circle' ? 'radius' : 'length'}: ${UI.typed}▍  ↵`;
+  } else ty.style.display = 'none';
+}
+
+/* =====================================================================
+   Pointer / keyboard interaction on the design canvas
+   ===================================================================== */
+const TOOL_HINTS = {
+  select: 'Click to select a guide or curve. Drag handles to edit: ■ joints, ○ Bézier handles (interior joints stay smooth; hold <kbd>Alt</kbd> to break). Drag empty space to pan, wheel to zoom, <kbd>Del</kbd> deletes.',
+  draw: 'Draw the <b>upper half</b> of the silhouette in one stroke. Ends snap to guides, the axis, intersections and other curve ends (they then join smoothly). Draw several curves for nose / body / tail.',
+  line: 'Click–click (or drag) to place a guide line. While placing, <b>type a length</b> and press <kbd>Enter</kbd>. <kbd>Shift</kbd> snaps the angle to 15°.',
+  dim: 'Click two points to measure a distance. Edit the value in Selection to move the second point.',
+  circle: 'Click the center, then the radius. Or type a radius + <kbd>Enter</kbd>.',
+  rect: 'Drag a <b>known part</b> (motor, battery, sensor…) the silhouette must enclose. Type <kbd>w,h</kbd> + <kbd>Enter</kbd> for an exact size. Clearance shows under Fit check.',
+  point: 'Click to drop a guide point (snaps to intersections).',
+};
+function setTool(t) {
+  UI.tool = t; pending = null; UI.typed = ''; hover = null;
+  document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === t));
+  $('#toolHint').innerHTML = TOOL_HINTS[t] || '';
+  cv.style.cursor = t === 'select' ? 'default' : 'crosshair';
+  requestDraw(); updateHud();
+}
+function select(id) { UI.sel = id; renderSelection(); renderLists(); requestDraw(); }
+function evPt(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+function angleSnap(a, b) {
+  const d = sub(b, a), L = len(d), ang = Math.round(Math.atan2(d[1], d[0]) / (Math.PI / 12)) * (Math.PI / 12);
+  return add(a, [L * Math.cos(ang), L * Math.sin(ang)]);
+}
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId);
+  const sp = evPt(e), w = s2w(sp);
+  UI.altDown = e.altKey;
+  if (e.button === 1 || e.button === 2 || spaceDown) { drag = { type: 'pan', sp, ox: UI.view.ox, oy: UI.view.oy }; return; }
+  if (e.button !== 0) return;
+  const t = UI.tool;
+  if (t === 'draw') {
+    const sn = snap(w, 14);
+    drag = { type: 'stroke', pts: [sn.kind !== 'free' && sn.kind !== 'grid' ? sn.p : w], startSnap: sn.kind !== 'free' && sn.kind !== 'grid' ? sn : null };
+    return;
+  }
+  if (t === 'line' || t === 'rect' || t === 'circle' || t === 'dim') {
+    const sn = snap(w);
+    if (pending) { finishCreate(pending.cur); return; }
+    pending = { tool: t, p1: sn.p, cur: sn.p, downSp: sp }; UI.typed = '';
+    drag = { type: 'creating' };
+    return;
+  }
+  if (t === 'point') { addGuide({ type: 'point', p: snap(w).p }); return; }
+  // select tool
+  const h = hitHandle(sp);
+  if (h) { drag = { type: 'handle', h, it: findItem(UI.sel), moved: false }; return; }
+  const hg = hitGuide(w), hc = hitCurve(w);
+  const pick = hg && hc ? (hc.d <= hg.d * 1.2 ? hc : hg) : hg || hc;
+  if (pick) {
+    select(pick.item.id);
+    drag = { type: isCurve(pick.item) ? 'moveCurve' : 'moveGuide', it: pick.item, last: w, sp, moved: false };
+    return;
+  }
+  select(null);
+  drag = { type: 'pan', sp, ox: UI.view.ox, oy: UI.view.oy };
+});
+cv.addEventListener('pointermove', e => {
+  const sp = evPt(e), w = s2w(sp);
+  cursorW = w; UI.altDown = e.altKey;
+  if (!drag) {
+    if (UI.tool !== 'select') {
+      hover = snap(w, UI.tool === 'draw' ? 14 : 10);
+      if (pending) pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p;
+    } else hover = null;
+    requestDraw(); updateHud(); return;
+  }
+  switch (drag.type) {
+    case 'pan':
+      UI.view.ox = drag.ox + sp[0] - drag.sp[0]; UI.view.oy = drag.oy + sp[1] - drag.sp[1]; break;
+    case 'stroke': {
+      const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+      for (const ev of evs.length ? evs : [e]) drag.pts.push(s2w(evPt(ev)));
+      hover = snap(w, 14); break;
+    }
+    case 'creating':
+      hover = snap(w);
+      pending.cur = pending.tool === 'line' && e.shiftKey ? angleSnap(pending.p1, hover.p) : hover.p; break;
+    case 'handle': {
+      const it = drag.it, sn = snap(w, 10, it.id);
+      hover = sn; drag.moved = true;
+      if (isCurve(it)) dragCurveHandle(it, drag.h, sn.p, e.altKey);
+      else { drag.h.set(sn.p); drag.h.p = sn.p; }
+      break;
+    }
+    case 'moveGuide': case 'moveCurve': {
+      if (!drag.moved && dist(sp, drag.sp) < 4) break;
+      drag.moved = true;
+      let d = sub(w, drag.last);
+      if (UI.snapGrid && !e.altKey) { const st = gridStep() / 5; d = [Math.round(d[0] / st) * st, Math.round(d[1] / st) * st]; if (!d[0] && !d[1]) break; }
+      drag.last = add(drag.last, d);
+      if (drag.type === 'moveCurve') translateCurve(drag.it, d); else translateGuide(drag.it, d);
+      break;
+    }
+  }
+  requestDraw(); updateHud();
+});
+cv.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const sp = evPt(e), d = drag; drag = null;
+  if (d.type === 'stroke') finishStroke(d, snap(s2w(sp), 14));
+  else if (d.type === 'creating') { if (pending && dist(sp, pending.downSp) > 5) finishCreate(pending.cur); }
+  else if ((d.type === 'handle' || d.type === 'moveGuide' || d.type === 'moveCurve') && d.moved) {
+    if (isCurve(d.it)) refreshMatches(d.it);
+    commit(); renderPanel();
+  }
+  hover = null; requestDraw(); updateHud();
+});
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const sp = evPt(e), w = s2w(sp), k = Math.exp(-e.deltaY * 0.0015);
+  UI.view.s = clamp(UI.view.s * k, 0.02, 5000);
+  UI.view.ox = sp[0] - w[0] * UI.view.s; UI.view.oy = sp[1] + w[1] * UI.view.s;
+  requestDraw(); updateHud();
+}, { passive: false });
+
+function finishCreate(p2) {
+  const { tool, p1 } = pending;
+  pending = null; UI.typed = ''; drag = null;
+  if (dist(p1, p2) < 1e-9) return;
+  if (tool === 'line') addGuide({ type: 'line', p1, p2, inf: false });
+  if (tool === 'dim') addGuide({ type: 'dim', p1, p2 });
+  if (tool === 'circle') addGuide({ type: 'circle', c: p1, r: dist(p1, p2) });
+  if (tool === 'rect') addGuide({ type: 'rect', name: 'Part ' + (S.guides.filter(g => g.type === 'rect').length + 1), p1: [Math.min(p1[0], p2[0]), Math.min(p1[1], p2[1])], p2: [Math.max(p1[0], p2[0]), Math.max(p1[1], p2[1])] });
+}
+function commitTyped() {
+  if (!pending || !UI.typed) return;
+  const nums = UI.typed.split(/[,x\s]+/).map(parseFloat).filter(v => isFinite(v));
+  if (!nums.length) return;
+  const a = pending.p1, d = sub(pending.cur, a);
+  if (pending.tool === 'rect') {
+    const w = nums[0], h = nums.length > 1 ? nums[1] : nums[0];
+    finishCreate(add(a, [w * (d[0] < 0 ? -1 : 1), h * (d[1] < 0 ? -1 : 1)]));
+  } else if (pending.tool === 'circle') finishCreate(add(a, [Math.abs(nums[0]), 0]));
+  else finishCreate(add(a, mul(len(d) > 1e-12 ? norm(d) : [1, 0], nums[0])));
+}
+function addGuide(g) { g.id = S.nextId++; S.guides.push(g); commit(); select(g.id); renderPanel(); }
+function finishStroke(d, endSn) {
+  let pts = dedupe(d.pts);
+  let L = 0; for (let i = 1; i < pts.length; i++) L += dist(pts[i], pts[i - 1]);
+  if (pts.length < 4 || L * UI.view.s < 12) return;
+  const es = endSn && endSn.kind !== 'free' && endSn.kind !== 'grid' ? endSn : null, ss = d.startSnap;
+  // Pull the stroke onto its snapped ends with a correction that fades along arc length (no kinks).
+  const ds = ss ? sub(ss.p, pts[0]) : [0, 0], de = es ? sub(es.p, pts[pts.length - 1]) : [0, 0];
+  let acc = 0;
+  const cum = pts.map((p, i) => (i ? (acc += dist(p, pts[i - 1])) : 0));
+  pts = pts.map((p, i) => { const s = cum[i] / (acc || 1); return add(p, add(mul(ds, 1 - s), mul(de, s))); });
+  const keep = sn => (sn ? { kind: sn.kind, dir: sn.dir || null, gid: sn.gid || null } : null);
+  const c = { id: S.nextId++, name: 'Curve ' + (S.curves.length + 1), raw: pts, opts: { ...DEF_OPTS }, snapStart: keep(ss), snapEnd: keep(es), manual: false };
+  if (ss && ss.kind === 'curve-end') c.opts.startTan = 'match';
+  if (es && es.kind === 'curve-end') c.opts.endTan = 'match';
+  S.curves.push(c);
+  processCurve(c);
+  commit(); select(c.id); renderPanel();
+}
+function deleteSel() {
+  const it = findItem(UI.sel);
+  if (!it) return;
+  if (isCurve(it)) S.curves = S.curves.filter(c => c !== it); else S.guides = S.guides.filter(g => g !== it);
+  UI.sel = null; commit(); renderPanel(); requestDraw();
+}
+function fitView() {
+  const pts = [];
+  S.curves.forEach(c => pts.push(...c.poly, ...c.poly.map(p => [p[0], -p[1]])));
+  S.guides.forEach(g => { if (g.p) pts.push(g.p); if (g.p1 && !g.inf) pts.push(g.p1, g.p2); if (g.c) pts.push([g.c[0] - g.r, g.c[1] - g.r], [g.c[0] + g.r, g.c[1] + g.r]); if (g.pts) pts.push(...g.pts); });
+  if (!pts.length) pts.push([0, -50], [200, 50]);
+  const b = bbox(pts), w = Math.max(b.w, 1e-3), h = Math.max(b.h, 1e-3);
+  UI.view.s = Math.min(W * 0.8 / w, H * 0.75 / h);
+  UI.view.ox = W / 2 - (b.minx + w / 2) * UI.view.s; UI.view.oy = H / 2 + (b.miny + h / 2) * UI.view.s;
+  requestDraw(); updateHud();
+}
+window.addEventListener('keydown', e => {
+  const inField = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+  if ((e.ctrlKey || e.metaKey) && !inField) {
+    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+    if (e.key === 'y' || (e.key === 'z' && e.shiftKey) || e.key === 'Z') { e.preventDefault(); redo(); return; }
+    if (e.key === 's') { e.preventDefault(); saveProject(); return; }
+    return;
+  }
+  if (inField) return;
+  if (!$('#design').classList.contains('on')) { if (e.key === ' ') { e.preventDefault(); toggleSim(); } return; }
+  if (e.key === 'Alt') { UI.altDown = true; e.preventDefault(); }
+  if (e.key === ' ') { spaceDown = true; cv.style.cursor = 'grab'; e.preventDefault(); return; }
+  if (pending) {
+    if (/^[0-9.,x\- ]$/.test(e.key)) { UI.typed += e.key; updateHud(); return; }
+    if (e.key === 'Backspace') { UI.typed = UI.typed.slice(0, -1); updateHud(); return; }
+    if (e.key === 'Enter') { commitTyped(); requestDraw(); updateHud(); return; }
+  }
+  if (e.key === 'Escape') { if (pending) { pending = null; UI.typed = ''; } else select(null); drag = null; requestDraw(); updateHud(); return; }
+  if (e.key === 'Delete' || e.key === 'Backspace') { deleteSel(); return; }
+  const map = { v: 'select', f: 'draw', l: 'line', d: 'dim', c: 'circle', r: 'rect', p: 'point' };
+  const k = e.key.toLowerCase();
+  if (map[k]) { setTool(map[k]); return; }
+  if (k === 'g') { UI.snapGrid = !UI.snapGrid; $('#snapGridChk').checked = UI.snapGrid; toast('Grid snap ' + (UI.snapGrid ? 'on' : 'off')); }
+  if (k === 'm') { S.mirror = !S.mirror; $('#mirrorChk').checked = S.mirror; commit(); renderPanel(); requestDraw(); }
+  if (e.key === 'Home' || k === '0') fitView();
+});
+window.addEventListener('keyup', e => {
+  if (e.key === ' ') { spaceDown = false; cv.style.cursor = UI.tool === 'select' ? 'default' : 'crosshair'; }
+  if (e.key === 'Alt') UI.altDown = false;
+});
+
+/* =====================================================================
+   Side panel
+   ===================================================================== */
+function numRow(label, id, v, extra = '') { return `<div class="row"><label>${label}</label><input type="number" step="any" id="${id}" value="${fmtIn(v)}" ${extra}/></div>`; }
+function bindNum(id, fn) { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { const v = parseFloat(el.value); if (isFinite(v)) { fn(v); commit(); renderPanel(); requestDraw(); } }); }
+function renderPanel() { renderSelection(); renderLists(); renderProfile(); renderEquations(); }
+function renderSelection() {
+  const el = $('#selPanel'), it = findItem(UI.sel);
+  if (!it) { el.className = 'hint'; el.innerHTML = 'Nothing selected. Pick the Select tool <kbd>V</kbd> and click a guide or curve.'; return; }
+  el.className = '';
+  if (isCurve(it)) return renderCurvePanel(el, it);
+  const g = it;
+  let h = `<div class="card">`;
+  if (g.type === 'point') h += `<b>Guide point</b>${numRow('x', 'gx', g.p[0])}${numRow('y', 'gy', g.p[1])}`;
+  if (g.type === 'line') {
+    const d = sub(g.p2, g.p1);
+    h += `<b>Guide line</b>${numRow('x₁', 'gx1', g.p1[0])}${numRow('y₁', 'gy1', g.p1[1])}${numRow('x₂', 'gx2', g.p2[0])}${numRow('y₂', 'gy2', g.p2[1])}
+      ${numRow('Length', 'glen', len(d))}${numRow('Angle °', 'gang', Math.atan2(d[1], d[0]) * 180 / Math.PI)}
+      <label class="chk"><input type="checkbox" id="ginf" ${g.inf ? 'checked' : ''}/> Infinite construction line</label>
+      <div class="row"><label>Offset copy</label><input type="number" step="any" id="goff" value="10"/><button id="goffBtn">Copy</button></div>`;
+  }
+  if (g.type === 'dim') {
+    const d = sub(g.p2, g.p1);
+    h += `<b>Dimension</b>${numRow('Distance', 'dlen', len(d))}<div class="kv"><span>Δx</span><span>${fmt(d[0], 5)}</span><span>Δy</span><span>${fmt(d[1], 5)}</span></div>
+      ${numRow('x₁', 'gx1', g.p1[0])}${numRow('y₁', 'gy1', g.p1[1])}${numRow('x₂', 'gx2', g.p2[0])}${numRow('y₂', 'gy2', g.p2[1])}`;
+  }
+  if (g.type === 'circle') h += `<b>Guide circle</b>${numRow('Center x', 'gcx', g.c[0])}${numRow('Center y', 'gcy', g.c[1])}${numRow('Radius', 'gr', g.r)}${numRow('Diameter', 'gd', 2 * g.r)}`;
+  if (g.type === 'rect') {
+    const x0 = Math.min(g.p1[0], g.p2[0]), y0 = Math.min(g.p1[1], g.p2[1]);
+    h += `<b>Known part</b><div class="row"><label>Name</label><input type="text" id="rname" value="${esc(g.name || '')}"/></div>
+      ${numRow('x (left)', 'rx', x0)}${numRow('y (bottom)', 'ry', y0)}${numRow('Width', 'rw', Math.abs(g.p2[0] - g.p1[0]))}${numRow('Height', 'rh', Math.abs(g.p2[1] - g.p1[1]))}
+      <div class="btns"><button id="rcenter">Center on axis</button></div>`;
+  }
+  if (g.type === 'ref') h += `<b>Reference profile</b><div class="row"><label>Name</label><input type="text" id="rname" value="${esc(g.name || '')}"/></div><label class="chk"><input type="checkbox" id="refMir" ${g.mirror ? 'checked' : ''}/> Show mirrored</label><div class="hint">${g.pts.length} points · locked (drag to move)</div>`;
+  h += `<div class="btns"><button id="gdel">Delete</button></div></div>`;
+  el.innerHTML = h;
+  const P = (k, i) => v => { const q = g[k].slice(); q[i] = v; g[k] = q; };
+  bindNum('gx', P('p', 0)); bindNum('gy', P('p', 1));
+  bindNum('gx1', P('p1', 0)); bindNum('gy1', P('p1', 1)); bindNum('gx2', P('p2', 0)); bindNum('gy2', P('p2', 1));
+  bindNum('glen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); });
+  bindNum('dlen', v => { g.p2 = add(g.p1, mul(norm(sub(g.p2, g.p1)), v)); });
+  bindNum('gang', v => { const L = dist(g.p1, g.p2), a = v * Math.PI / 180; g.p2 = add(g.p1, [L * Math.cos(a), L * Math.sin(a)]); });
+  bindNum('gcx', P('c', 0)); bindNum('gcy', P('c', 1)); bindNum('gr', v => (g.r = Math.abs(v))); bindNum('gd', v => (g.r = Math.abs(v) / 2));
+  const setRect = (x, y, w, hh) => { g.p1 = [x, y]; g.p2 = [x + Math.abs(w), y + Math.abs(hh)]; };
+  const rv = () => [Math.min(g.p1[0], g.p2[0]), Math.min(g.p1[1], g.p2[1]), Math.abs(g.p2[0] - g.p1[0]), Math.abs(g.p2[1] - g.p1[1])];
+  bindNum('rx', v => { const r = rv(); setRect(v, r[1], r[2], r[3]); }); bindNum('ry', v => { const r = rv(); setRect(r[0], v, r[2], r[3]); });
+  bindNum('rw', v => { const r = rv(); setRect(r[0], r[1], v, r[3]); }); bindNum('rh', v => { const r = rv(); setRect(r[0], r[1], r[2], v); });
+  const on = (id, ev, fn) => { const x = document.getElementById(id); if (x) x.addEventListener(ev, fn); };
+  on('rname', 'change', e => { g.name = e.target.value; commit(); renderLists(); requestDraw(); });
+  on('rcenter', 'click', () => { const r = rv(); setRect(r[0], -r[3] / 2, r[2], r[3]); commit(); renderPanel(); requestDraw(); });
+  on('refMir', 'change', e => { g.mirror = e.target.checked; commit(); requestDraw(); });
+  on('ginf', 'change', e => { g.inf = e.target.checked; commit(); requestDraw(); });
+  on('goffBtn', 'click', () => {
+    const o = parseFloat($('#goff').value) || 0, n = norm(sub(g.p2, g.p1)), off = [-n[1] * o, n[0] * o];
+    addGuide({ type: 'line', p1: add(g.p1, off), p2: add(g.p2, off), inf: g.inf });
+  });
+  on('gdel', 'click', deleteSel);
+}
+function renderCurvePanel(el, c) {
+  const o = c.opts, m = o.mode;
+  const rng = (label, id, min, max, step, v, unit = '') => `<div class="row"><label>${label}</label><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${v}"/><span class="v" id="${id}V">${fmt(v, 3)}${unit}</span></div>`;
+  const tanSel = (id, v) => `<select id="${id}">${[['auto', 'Free (from stroke)'], ['vertical', 'Vertical ⟂ axis (round nose/tail)'], ['horizontal', 'Horizontal ∥ axis'], ['guide', 'Along snapped guide'], ['match', 'Match joined curve (G1)']].map(([k, t]) => `<option value="${k}" ${k === v ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+  el.innerHTML = `<div class="card">
+    <div class="row"><label>Name</label><input type="text" id="cName" value="${esc(c.name)}"/></div>
+    <div class="row"><label>Fit type</label><select id="cMode">
+      <option value="bezier" ${m === 'bezier' ? 'selected' : ''}>Bézier spline (piecewise cubic)</option>
+      <option value="poly" ${m === 'poly' ? 'selected' : ''}>Single polynomial (Bernstein)</option>
+      <option value="cst" ${m === 'cst' ? 'selected' : ''}>CST aero body (Kulfan)</option>
+      <option value="line" ${m === 'line' ? 'selected' : ''}>Straight line</option></select></div>
+    ${rng('Dots', 'cN', 8, 240, 1, o.n)}
+    ${rng('Smoothing σ', 'cSm', 0, 8, 0.25, o.smooth)}
+    ${m === 'bezier' || (m === 'cst' && c.fitError) ? rng('Tolerance', 'cTol', 0.05, 4, 0.05, o.tol, '%') : ''}
+    ${m === 'poly' ? rng('Degree', 'cDeg', 2, 16, 1, o.degree) : ''}
+    ${m === 'cst' ? rng('N1 (nose)', 'cN1', 0, 1.5, 0.05, o.N1) + rng('N2 (tail)', 'cN2', 0, 1.5, 0.05, o.N2) + rng('Shape order', 'cOrd', 1, 12, 1, o.cstOrder) : ''}
+    ${m !== 'line' && m !== 'cst' ? `<div class="row"><label>Start tangent</label>${tanSel('cT1', o.startTan)}</div><div class="row"><label>End tangent</label>${tanSel('cT2', o.endTan)}</div>` : ''}
+    ${m === 'cst' ? '<div class="hint">N1 = 0.5 round nose, 1 = pointed · N2 = 1 sharp tail, 0 = blunt / open. The class function sets the end tangents.</div>' : ''}
+    <div class="kv" id="cStats" style="margin-top:6px"></div>
+    <div class="btns"><button id="cRefit">Refit from dots</button><button id="cRev">Reverse</button><button id="cDel">Delete</button></div>
+  </div>`;
+  updateCurveStats(c);
+  const live = (id, key, isInt) => {
+    const x = document.getElementById(id); if (!x) return;
+    x.addEventListener('input', () => {
+      o[key] = isInt ? parseInt(x.value, 10) : parseFloat(x.value);
+      document.getElementById(id + 'V').textContent = fmt(o[key], 3) + (id === 'cTol' ? '%' : '');
+      processCurve(c); refreshMatches(c); updateCurveStats(c); requestDraw();
+    });
+    x.addEventListener('change', () => { commit(); renderProfile(); renderEquations(); });
+  };
+  live('cN', 'n', true); live('cSm', 'smooth'); live('cTol', 'tol'); live('cDeg', 'degree', true); live('cN1', 'N1'); live('cN2', 'N2'); live('cOrd', 'cstOrder', true);
+  const sel = (id, key) => { const x = document.getElementById(id); if (x) x.addEventListener('change', () => { o[key] = x.value; processCurve(c); refreshMatches(c); commit(); renderPanel(); requestDraw(); }); };
+  sel('cMode', 'mode'); sel('cT1', 'startTan'); sel('cT2', 'endTan');
+  $('#cName').addEventListener('change', e => { c.name = e.target.value; commit(); renderLists(); renderEquations(); });
+  $('#cRefit').addEventListener('click', () => { processCurve(c); refreshMatches(c); commit(); renderPanel(); requestDraw(); });
+  $('#cRev').addEventListener('click', () => {
+    c.raw.reverse(); [c.snapStart, c.snapEnd] = [c.snapEnd, c.snapStart]; [o.startTan, o.endTan] = [o.endTan, o.startTan];
+    processCurve(c); commit(); renderPanel(); requestDraw();
+  });
+  $('#cDel').addEventListener('click', deleteSel);
+}
+function updateCurveStats(c) {
+  const el = $('#cStats'); if (!el) return;
+  const f = c.fit, diag = curveTol(c);
+  const what = f.mode === 'bezier' ? `${f.segs.length} cubic segment${f.segs.length > 1 ? 's' : ''}` : f.mode === 'poly' ? `degree ${f.P.length - 1}` : f.mode === 'cst' ? `${f.A.length} shape coeffs` : 'line';
+  el.innerHTML = `<span>Parametric form</span><span>${what}</span>
+    <span>RMS deviation</span><span>${fmt(c.rms, 3)} ${S.units} (${fmt(100 * c.rms / diag, 2)}%)</span>
+    <span>Max deviation</span><span>${fmt(c.maxErr, 3)} ${S.units}</span>
+    ${c.manual ? '<span class="warnc">Hand-edited</span><span class="warnc">Refit discards edits</span>' : ''}
+    ${c.fitError ? `<span class="bad" style="grid-column:1/3">${esc(c.fitError)} (showing Bézier)</span>` : ''}`;
+}
+function renderLists() {
+  const cl = $('#curveList');
+  cl.innerHTML = S.curves.length ? S.curves.map((c, i) => `<div class="item ${c.id === UI.sel ? 'sel' : ''}" data-id="${c.id}"><span class="sw" style="background:${COL.curve}"></span><span class="nm">${esc(c.name)} <span class="hint">· ${c.fit.mode === 'poly' ? 'poly' : c.fit.mode}</span></span>
+    <button data-up="${i}" ${i ? '' : 'disabled'} title="Earlier in chain">↑</button><button data-dn="${i}" ${i < S.curves.length - 1 ? '' : 'disabled'} title="Later in chain">↓</button></div>`).join('')
+    : '<div class="hint">No curves yet. Draw with <kbd>F</kbd>. Curves chain in this order (nose → tail).</div>';
+  cl.querySelectorAll('.item').forEach(n => n.addEventListener('click', ev => {
+    const up = ev.target.dataset.up, dn = ev.target.dataset.dn;
+    if (up !== undefined || dn !== undefined) {
+      const i = +(up ?? dn), j = up !== undefined ? i - 1 : i + 1;
+      [S.curves[i], S.curves[j]] = [S.curves[j], S.curves[i]]; commit(); renderPanel(); requestDraw(); return;
+    }
+    select(+n.dataset.id);
+  }));
+  const gl = $('#guideList'), names = { point: 'Point', line: 'Line', dim: 'Dimension', circle: 'Circle', rect: 'Part', ref: 'Reference' };
+  gl.innerHTML = S.guides.map(g => {
+    let d = '';
+    if (g.type === 'line') d = g.inf ? 'construction' : fmt(dist(g.p1, g.p2), 4);
+    if (g.type === 'dim') d = fmt(dist(g.p1, g.p2), 4) + ' ' + S.units;
+    if (g.type === 'circle') d = 'R ' + fmt(g.r, 4);
+    if (g.type === 'rect') d = `${fmt(Math.abs(g.p2[0] - g.p1[0]), 4)}×${fmt(Math.abs(g.p2[1] - g.p1[1]), 4)}`;
+    const col = g.type === 'rect' ? COL.part : g.type === 'ref' ? COL.ref : g.type === 'dim' ? COL.dim : COL.guide;
+    return `<div class="item ${g.id === UI.sel ? 'sel' : ''}" data-id="${g.id}"><span class="sw" style="background:${col}"></span><span class="nm">${esc(g.name || names[g.type])} <span class="hint">${d}</span></span><button data-del="${g.id}">✕</button></div>`;
+  }).join('');
+  gl.querySelectorAll('.item').forEach(n => n.addEventListener('click', ev => {
+    if (ev.target.dataset.del) { S.guides = S.guides.filter(g => g.id !== +ev.target.dataset.del); if (UI.sel === +ev.target.dataset.del) UI.sel = null; commit(); renderPanel(); requestDraw(); return; }
+    select(+n.dataset.id);
+  }));
+}
+function renderProfile() {
+  const gaps = chainGaps(), m = profileMetrics(), u = S.units;
+  let w = Object.hasOwn(EXAMPLE_NOTES, S.example || "") ? `<div class="hint" style="margin-bottom:6px">${EXAMPLE_NOTES[S.example]}</div>` : '';
+  for (const g of gaps) w += `<div class="hint warnc">Gap of ${fmt(g.d, 3)} ${u} between ${esc(g.a)} and ${esc(g.b)}: closed with a straight line. Redraw with the end snapped.</div>`;
+  if (m && S.mirror && m.crosses) w += `<div class="hint bad">The upper profile crosses the axis. The mirrored silhouette will overlap itself.</div>`;
+  if (m && S.mirror && m.rNoseEnd > 0.02 * m.rmax) w += `<div class="hint warnc">Nose isn't on the axis (r = ${fmt(m.rNoseEnd, 3)}), so it's a flat front face. Snap the first point to the axis for a closed nose.</div>`;
+  $('#profileWarn').innerHTML = w;
+  if (!m) { $('#metrics').innerHTML = ''; }
+  else {
+    $('#metrics').innerHTML = `<div class="card"><div class="kv">
+      <span>Length L</span><span>${fmt(m.L, 4)} ${u}</span>
+      <span>${S.mirror ? 'Max diameter D' : 'Height'}</span><span>${fmt(S.mirror ? m.D : m.height, 4)} ${u}</span>
+      ${S.mirror ? `<span>Fineness L/D</span><span>${fmt(m.fineness, 3)}</span>
+      <span>Revolved volume</span><span>${fmt(m.V, 4)} ${u}³</span>
+      <span>Wetted area</span><span>${fmt(m.Sw, 4)} ${u}²</span>
+      <span>Max tail slope</span><span class="${m.tailSlope > 20 ? 'bad' : m.tailSlope > 15 ? 'warnc' : ''}">${fmt(m.tailSlope, 3)}°</span>` : ''}
+      <span>Silhouette area</span><span>${fmt(m.area, 4)} ${u}²</span>
+      <span>Area centroid</span><span>(${fmt(m.cx, 4)}, ${fmt(m.cy, 3)})</span>
+    </div>${S.mirror && m.tailSlope > 20 ? '<div class="hint bad" style="margin-top:4px">Aft slope above ~20° will separate the flow and add pressure drag.</div>' : ''}</div>`;
+  }
+  const fc = fitCheck();
+  $('#fitCheck').innerHTML = !S.guides.some(g => g.type === 'rect' || g.type === 'circle')
+    ? 'Add a known part with <kbd>R</kbd> (or a circle) to check that the silhouette encloses it.'
+    : !fc.length ? 'Draw a profile to check clearance.'
+    : fc.map(r => `<div class="row"><span class="sw" style="background:${r.clearance < 0 ? 'var(--bad)' : 'var(--good)'}"></span><span style="flex:1">${esc(r.g.name || (r.g.type === 'circle' ? 'Circle' : 'Part'))}</span><span class="${r.clearance < 0 ? 'bad' : 'ok'}">${r.clearance < 0 ? 'interferes by ' : 'clearance '}${fmt(Math.abs(r.clearance), 3)} ${u}</span></div>`).join('');
+}
+
+/* ---------- equations & exports ---------- */
+const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+function polyStr(a, v = 't', desmos = false) {
+  let s = '';
+  a.forEach((c, k) => {
+    if (Math.abs(c) < 1e-12 && a.length > 1) return;
+    const mag = fmt(Math.abs(c), 6), sign = c < 0 ? '-' : '+';
+    const pw = k === 0 ? '' : k === 1 ? v : desmos ? `${v}^{${k}}` : v + String(k).split('').map(d => SUP[d]).join('');
+    const term = k === 0 ? mag : (mag === '1' ? pw : `${mag}${desmos ? '' : ''}${pw}`);
+    s += s ? ` ${sign} ${term}` : (c < 0 ? '-' : '') + term;
+  });
+  return s || '0';
+}
+function cstStr(f, flip, desmos) {
+  const psi = flip ? '(1-t)' : 't', n = f.A.length - 1;
+  const pw = (b, e) => (desmos ? `${b}^{${fmt(e, 6)}}` : `${b}^${fmt(e, 6)}`);
+  const terms = f.A.map((a, i) => `${fmt(a * binom(n, i), 6)}${i ? pw(psi, i) : ''}${n - i ? pw(flip ? 't' : '(1-t)', n - i) : ''}`).join(' + ').replace(/\+ -/g, '- ');
+  const x = `${fmt(f.x0, 6)} + ${fmt(f.L, 6)}${psi}`;
+  const y = `${fmt(f.y0, 6)} + ${fmt(f.L, 6)}(${pw(psi, f.N1)}${pw(flip ? 't' : '(1-t)', f.N2)}(${terms}) + ${fmt(f.zte, 6)}${psi})`;
+  return [x, y];
+}
+function renderEquations() {
+  const P = pieces(), u = S.units;
+  if (!P.length) { $('#eqOut').textContent = 'Draw a curve to get its equation.'; return; }
+  let s = `UPPER PROFILE U(s): ${P.length} piece${P.length > 1 ? 's' : ''} joined end to end.\nPiece k runs on s ∈ [k−1, k] with local t = s − (k−1) ∈ [0,1].  Units: ${u}\n`;
+  P.forEach((p, k) => {
+    s += `\n[${k + 1}] ${p.name}${p.sub ? ' · ' + p.sub : ''} — `;
+    if (p.type === 'cst') {
+      const [x, y] = cstStr(p.f, p.flip, false);
+      s += `CST body (N1=${fmt(p.f.N1, 3)}, N2=${fmt(p.f.N2, 3)}, ψ=${p.flip ? '1−t' : 't'})\n  x(t) = ${x}\n  y(t) = ${y}\n  A = [${p.f.A.map(a => fmt(a, 5)).join(', ')}]\n`;
+    } else {
+      const [ax, ay] = bernToPower(p.P), deg = p.P.length - 1;
+      s += p.type === 'bezier' ? 'cubic Bézier\n' : p.type === 'line' ? 'line\n' : `Bernstein polynomial, degree ${deg}\n`;
+      s += `  x(t) = ${polyStr(ax)}\n  y(t) = ${polyStr(ay)}\n`;
+      s += `  control pts: ${p.P.map(q => `(${fmt(q[0], 5)}, ${fmt(q[1], 5)})`).join(' ')}\n`;
+    }
+  });
+  if (S.mirror) {
+    const K = P.length;
+    s += `\nCLOSED SILHOUETTE P(s), s ∈ [0, ${2 * K}], mirrored about the x-axis:\n  P(s) = U(s)                          for 0 ≤ s ≤ ${K}\n  P(s) = ( Uₓ(${2 * K}−s), −U_y(${2 * K}−s) )    for ${K} ≤ s ≤ ${2 * K}\n  (the reflection R = diag(1, −1) runs the upper profile back tail → nose)\n`;
+  }
+  $('#eqOut').textContent = s;
+}
+function pythonExport() {
+  const P = pieces();
+  const arr = a => '[' + a.map(q => `[${fmt(q[0], 10)}, ${fmt(q[1], 10)}]`).join(', ') + ']';
+  const rows = P.map(p => p.type === 'cst'
+    ? `    ("cst", dict(x0=${fmt(p.f.x0, 10)}, y0=${fmt(p.f.y0, 10)}, L=${fmt(p.f.L, 10)}, N1=${fmt(p.f.N1, 6)}, N2=${fmt(p.f.N2, 6)}, zte=${fmt(p.f.zte, 10)}, A=[${p.f.A.map(a => fmt(a, 10)).join(', ')}], flip=${p.flip ? 'True' : 'False'})),  # ${p.name}`
+    : `    ("${p.type}", ${arr(p.P)}),  # ${p.name}${p.sub ? ' ' + p.sub : ''}`).join('\n');
+  return `"""Profile Studio export — ${new Date().toISOString().slice(0, 10)}
+Upper profile U(s), s in [0, K]: piece k is evaluated with local t = s - k.
+${S.mirror ? 'Closed silhouette P(s), s in [0, 2K]: U then its mirror about the x-axis.' : 'Open / unmirrored profile.'}
+Units: ${S.units}
+"""
+import numpy as np
+from math import comb
+
+PIECES = [
+${rows}
+]
+MIRROR = ${S.mirror ? 'True' : 'False'}
+K = len(PIECES)
+
+
+def _bern(P, t):
+    P = np.asarray(P, float)
+    n = len(P) - 1
+    t = np.asarray(t, float)[..., None]
+    return sum(comb(n, i) * t**i * (1 - t)**(n - i) * P[i] for i in range(n + 1))
+
+
+def _piece(kind, data, t):
+    t = np.asarray(t, float)
+    if kind != "cst":                      # bezier / bern / line are all Bernstein forms
+        return _bern(data, t)
+    d = data
+    psi = 1 - t if d["flip"] else t
+    n = len(d["A"]) - 1
+    S = sum(a * comb(n, i) * psi**i * (1 - psi)**(n - i) for i, a in enumerate(d["A"]))
+    z = psi**d["N1"] * (1 - psi)**d["N2"] * S + psi * d["zte"]
+    return np.stack([d["x0"] + d["L"] * psi, d["y0"] + d["L"] * z], axis=-1)
+
+
+def U(s):
+    """Upper profile, s in [0, K]."""
+    s = np.atleast_1d(np.asarray(s, float))
+    k = np.clip(np.floor(s).astype(int), 0, K - 1)
+    out = np.empty(s.shape + (2,))
+    for i, (kind, data) in enumerate(PIECES):
+        m = k == i
+        if m.any():
+            out[m] = _piece(kind, data, s[m] - i)
+    return out
+
+
+def P(s):
+    """Closed silhouette, s in [0, 2K]: upper profile, then reflected by R = diag(1, -1)."""
+    s = np.atleast_1d(np.asarray(s, float))
+    out = U(np.where(s <= K, s, 2 * K - s))
+    out[s > K, 1] *= -1
+    return out
+
+
+def sample(n_per_piece=100):
+    if MIRROR:
+        return P(np.linspace(0, 2 * K, 2 * K * n_per_piece + 1))
+    return U(np.linspace(0, K, K * n_per_piece + 1))
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    xy = sample()
+    plt.fill(xy[:, 0], xy[:, 1], alpha=0.25)
+    plt.plot(xy[:, 0], xy[:, 1])
+    plt.axis("equal"); plt.show()
+`;
+}
+function desmosExport() {
+  const lines = [];
+  for (const p of pieces()) {
+    let x, y;
+    if (p.type === 'cst') [x, y] = cstStr(p.f, p.flip, true);
+    else { const [ax, ay] = bernToPower(p.P); x = polyStr(ax, 't', true); y = polyStr(ay, 't', true); }
+    lines.push(`(${x}, ${y})`);
+    if (S.mirror) lines.push(`(${x}, -(${y}))`);
+  }
+  return lines.join('\n');
+}
+async function copyText(t, what) {
+  try { await navigator.clipboard.writeText(t); toast(what + ' copied'); }
+  catch (e) { download(what.replace(/\s+/g, '_') + '.txt', t, 'text/plain'); }
+}
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1600); }
+$('#cpEq').onclick = () => copyText($('#eqOut').textContent, 'Equations');
+$('#cpPy').onclick = () => { if (!pieces().length) return toast('Nothing to export'); copyText(pythonExport(), 'Python'); };
+$('#cpDesmos').onclick = () => { if (!pieces().length) return toast('Nothing to export'); copyText(desmosExport(), 'Desmos expressions'); };
+$('#dlSvg').onclick = () => {
+  const poly = profilePolygon(); if (!poly) return toast('Nothing to export');
+  const b = bbox(poly), pad = Math.max(b.w, b.h) * 0.05;
+  const d = poly.map((p, i) => `${i ? 'L' : 'M'}${fmt(p[0], 8)} ${fmt(-p[1], 8)}`).join(' ') + ' Z';
+  download('silhouette.svg', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmt(b.minx - pad, 8)} ${fmt(-b.maxy - pad, 8)} ${fmt(b.w + 2 * pad, 8)} ${fmt(b.h + 2 * pad, 8)}" width="${fmt(b.w + 2 * pad, 8)}${S.units}" height="${fmt(b.h + 2 * pad, 8)}${S.units}"><path d="${d}" fill="none" stroke="black" stroke-width="${fmt(Math.max(b.w, b.h) / 400, 4)}"/></svg>`, 'image/svg+xml');
+};
+$('#dlCsv').onclick = () => {
+  const poly = profilePolygon(); if (!poly) return toast('Nothing to export');
+  download('silhouette.csv', `x_${S.units},y_${S.units}\n` + poly.map(p => `${fmt(p[0], 9)},${fmt(p[1], 9)}`).join('\n'), 'text/csv');
+};
+
+/* ---------- panel controls ---------- */
+document.querySelectorAll('#toolbar [data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool)));
+$('#fitViewBtn').onclick = fitView;
+$('#mirrorChk').onchange = e => { S.mirror = e.target.checked; commit(); renderPanel(); requestDraw(); };
+$('#unitsSel').onchange = e => { S.units = e.target.value; commit(); renderPanel(); requestDraw(); updateHud(); };
+$('#snapGridChk').onchange = e => { UI.snapGrid = e.target.checked; };
+$('#showRawChk').onchange = e => { UI.showRaw = e.target.checked; requestDraw(); };
+$('#showDotsChk').onchange = e => { UI.showDots = e.target.checked; requestDraw(); };
+$('#showHandlesChk').onchange = e => { UI.showHandles = e.target.checked; requestDraw(); };
+$('#fillChk').onchange = e => { UI.fill = e.target.checked; requestDraw(); };
+$('#qHBtn').onclick = () => { const y = parseFloat($('#qH').value) || 0; addGuide({ type: 'line', p1: [0, y], p2: [1, y], inf: true }); };
+$('#qVBtn').onclick = () => { const x = parseFloat($('#qV').value) || 0; addGuide({ type: 'line', p1: [x, 0], p2: [x, 1], inf: true }); };
+$('#clearBtn').onclick = () => { if (!confirm('Clear all guides and curves? (Undo still works.)')) return; S.guides = []; S.curves = []; UI.sel = null; commit(); renderPanel(); requestDraw(); };
+$('#undoBtn').onclick = undo; $('#redoBtn').onclick = redo;
+function syncViewControls() { $('#mirrorChk').checked = S.mirror; $('#unitsSel').value = S.units; }
+
+$('#refImgBtn').onclick = () => $('#refImgIn').click();
+$('#refImgIn').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => { const [x0, y1] = s2w([W * 0.15, H * 0.15]), [x1] = s2w([W * 0.85, 0]); UI.ref = { img, x: x0, y: y1, w: x1 - x0, opacity: 0.45 }; renderRefPanel(); requestDraw(); };
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(file); e.target.value = '';
+};
+function renderRefPanel() {
+  const r = UI.ref, el = $('#refImgPanel');
+  if (!r) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="card"><b>Reference image</b> <span class="hint">(trace over a photo or sketch)</span>
+    ${numRow('Left x', 'riX', r.x)}${numRow('Top y', 'riY', r.y)}${numRow('Width', 'riW', r.w)}
+    <div class="row"><label>Opacity</label><input type="range" id="riO" min="0.05" max="1" step="0.05" value="${r.opacity}"/></div>
+    <div class="btns"><button id="riDel">Remove image</button></div></div>`;
+  const b = (id, k) => $('#' + id).addEventListener('change', e => { const v = parseFloat(e.target.value); if (isFinite(v)) { r[k] = v; requestDraw(); } });
+  b('riX', 'x'); b('riY', 'y'); b('riW', 'w');
+  $('#riO').addEventListener('input', e => { r.opacity = +e.target.value; requestDraw(); });
+  $('#riDel').onclick = () => { UI.ref = null; renderRefPanel(); requestDraw(); };
+}
+$('#refProfBtn').onclick = () => $('#refProfIn').click();
+$('#refProfIn').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  file.text().then(txt => {
+    let pts = [];
+    try {
+      if (/\.json$/i.test(file.name)) {
+        const o = JSON.parse(txt);
+        const tmp = { ...S }; restore(o); pts = upperPolyline() || []; const mir = S.mirror; S = tmp; syncViewControls();
+        if (!pts.length) throw new Error('no curves in project');
+        addGuide({ type: 'ref', name: file.name.replace(/\.\w+$/, ''), pts, mirror: mir });
+        return;
+      }
+      for (const line of txt.split(/\r?\n/)) { const n = line.split(/[,;\s]+/).map(parseFloat).filter(isFinite); if (n.length >= 2) pts.push([n[0], n[1]]); }
+      if (pts.length < 2) throw new Error('need at least two x,y rows');
+      addGuide({ type: 'ref', name: file.name.replace(/\.\w+$/, ''), pts, mirror: false });
+    } catch (err) { toast('Could not import: ' + err.message); }
+    requestDraw();
+  });
+  e.target.value = '';
+};
+function saveProject() { download('profile.json', serialize(), 'application/json'); }
+$('#saveBtn').onclick = saveProject;
+$('#openBtn').onclick = () => $('#fileIn').click();
+$('#fileIn').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  file.text().then(t => { try { restore(t); UI.sel = null; commit(); renderPanel(); fitView(); } catch (err) { toast('Not a Profile Studio project'); } });
+  e.target.value = '';
+};
+
+/* ---------- example ---------- */
+function loadPackagingExample() {
+  S = { guides: [], curves: [], mirror: true, units: 'mm', nextId: 1 };
+  const G = g => { g.id = S.nextId++; S.guides.push(g); };
+  G({ type: 'line', p1: [0, 0], p2: [160, 0], inf: false });
+  G({ type: 'dim', p1: [0, 0], p2: [160, 0] });
+  G({ type: 'line', p1: [0, 26], p2: [1, 26], inf: true });
+  G({ type: 'rect', name: 'Battery', p1: [38, -15], p2: [98, 15] });
+  G({ type: 'rect', name: 'Motor', p1: [104, -9], p2: [128, 9] });
+  // A deliberately wobbly hand-drawn upper half: round nose at (0,0), tail back to (160,0).
+  const raw = [];
+  let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5);
+  for (let i = 0; i <= 150; i++) {
+    const psi = i / 150, x = 160 * (1 - Math.cos(Math.PI * psi)) / 2 * 0.5 + 160 * psi * 0.5;
+    const q = x / 160, r = 66 * Math.sqrt(q) * Math.pow(1 - q, 1.05) * (1 + 0.35 * q);
+    raw.push([x + rnd() * 0.9 + Math.sin(i * 0.4) * 0.5, r + rnd() * 1.1 + Math.sin(i * 0.23) * 0.7]);
+  }
+  raw[0] = [0, 0]; raw[raw.length - 1] = [160, 0];
+  const c = { id: S.nextId++, name: 'Hull', raw, opts: { ...DEF_OPTS, startTan: 'vertical' }, snapStart: { kind: 'origin', dir: [1, 0] }, snapEnd: { kind: 'on axis', dir: [1, 0] }, manual: false };
+  S.curves.push(c); processCurve(c);
+  UI.sel = c.id; commit(); syncViewControls(); renderPanel(); fitView(); setTool('select');
+}
+/* Ideal low-drag body: a Kulfan CST body of revolution, y = L·ψ^0.5·(1−ψ)·Σ A_i B_i,5(ψ).
+   Round nose (N1 = 0.5), sharp tail (N2 = 1), L/D 4.8, max diameter at 27% of length, max aft slope 11°.
+   Chosen from a sweep of CST/NACA bodies (validation/design.js): at the default Re 1,000 its wake is steady
+   (lift RMS ≈ 1e-4 vs 0.27 for the packaging hull, whose 25° tail sheds vortices), and it has the lowest
+   Hoerner C_D per volume^(2/3) of the set. Tail slope stays below the ~15° where turbulent flow separates. */
+const EXAMPLE_NOTES = { ideal:
+    '<b>Where this shape comes from:</b> a Kulfan CST body (the standard airfoil and fuselage shape equation, Kulfan 2008). '
+    + 'Its coefficients won a seven-shape sweep through this app’s solver, which was first checked against published drag data. '
+    + 'It was the only shape with a steady wake at Re 1,000 and had the lowest drag per volume, and its 11° tail stays under the ~15° angle where flow separates.' };
+const IDEAL_A = [0.27, 0.30, 0.28, 0.20, 0.13, 0.08];
+function loadIdealExample() {
+  S = { guides: [], curves: [], mirror: true, units: 'mm', nextId: 1 };
+  const G = g => { g.id = S.nextId++; S.guides.push(g); };
+  const L = 160, cst = { mode: 'cst', x0: 0, y0: 0, L, N1: 0.5, N2: 1, A: IDEAL_A, zte: 0, rev: false };
+  const raw = [];
+  for (let i = 0; i <= 180; i++) { const psi = (1 - Math.cos(Math.PI * i / 180)) / 2; raw.push(cstPoint(cst, psi)); }
+  raw[0] = [0, 0]; raw[raw.length - 1] = [L, 0];
+  let im = 0; raw.forEach((p, i) => { if (p[1] > raw[im][1]) im = i; });
+  const [xm, rm] = raw[im];
+  G({ type: 'line', p1: [0, 0], p2: [L, 0], inf: false });
+  G({ type: 'dim', p1: [0, 0], p2: [L, 0] });
+  G({ type: 'dim', p1: [xm, -rm], p2: [xm, rm] });
+  const c = { id: S.nextId++, name: 'Ideal hull', raw, opts: { ...DEF_OPTS, mode: 'cst', N1: 0.5, N2: 1, cstOrder: 5, n: 96, smooth: 0, startTan: 'vertical' },
+    snapStart: { kind: 'origin', dir: [1, 0] }, snapEnd: { kind: 'on axis', dir: [1, 0] }, manual: false };
+  S.example = 'ideal';
+  S.curves.push(c); processCurve(c);
+  UI.sel = c.id; commit(); syncViewControls(); renderPanel(); fitView(); setTool('select');
+  toast('Ideal body: CST, L/D 4.8, 11° tail. Steady wake at the default Re 1,000');
+}
+/* Bad example: the naive enclosure, a flat-faced can (r = 18 mm, 3 mm over the battery) around the same
+   battery + motor as the packaging example. Flat nose face, straight sides and a flat base: the flow
+   separates at the front corners and again at the base, so the 2D tunnel sheds hard (lift RMS ≈ 0.28 at
+   Re 1,000) and the revolved card reads C_D ≈ 1.07 (Hoerner, flat-faced axial cylinder: ≈ 0.8–0.9),
+   about 4× the packaging hull's drag and 10× the ideal body's at 10 m/s. */
+function loadBadExample() {
+  S = { guides: [], curves: [], mirror: true, units: 'mm', nextId: 1 };
+  const G = g => { g.id = S.nextId++; S.guides.push(g); };
+  const L = 160, R = 18;
+  G({ type: 'line', p1: [0, 0], p2: [L, 0], inf: false });
+  G({ type: 'dim', p1: [0, 0], p2: [L, 0] });
+  G({ type: 'rect', name: 'Battery', p1: [38, -15], p2: [98, 15] });
+  G({ type: 'rect', name: 'Motor', p1: [104, -9], p2: [128, 9] });
+  const seg = (name, a, b) => {
+    const raw = []; for (let i = 0; i <= 20; i++) raw.push([a[0] + (b[0] - a[0]) * i / 20, a[1] + (b[1] - a[1]) * i / 20]);
+    const c = { id: S.nextId++, name, raw, opts: { ...DEF_OPTS, mode: 'line', smooth: 0 }, snapStart: null, snapEnd: null, manual: false };
+    S.curves.push(c); processCurve(c); return c;
+  };
+  seg('Nose face', [0, 0], [0, R]);
+  const side = seg('Side', [0, R], [L, R]);
+  seg('Base', [L, R], [L, 0]);
+  UI.sel = side.id; commit(); syncViewControls(); renderPanel(); fitView(); setTool('select');
+  toast('Bad body: flat-faced can. Flow separates at the nose corners and the base');
+}
+const EXAMPLES = { packaging: loadPackagingExample, ideal: loadIdealExample, bad: loadBadExample };
+$('#exampleSel').onchange = e => { const f = EXAMPLES[e.target.value]; e.target.value = ''; if (f) f(); };
+$('#exampleBtn2').onclick = loadIdealExample; $('#exampleBtn3').onclick = loadPackagingExample; $('#exampleBtn4').onclick = loadBadExample;
+
+/* =====================================================================
+   AERO SIM — D2Q9 lattice-Boltzmann (BGK + Smagorinsky), tracer particles
+   ===================================================================== */
+const EX = [0, 1, 0, -1, 0, 1, -1, -1, 1], EY = [0, 0, 1, 0, -1, 1, 1, -1, -1];
+const WT = [4 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 36, 1 / 36, 1 / 36, 1 / 36];
+const OPP = [0, 3, 4, 1, 2, 7, 8, 5, 6], MIRY = [0, 1, 4, 3, 2, 8, 7, 6, 5];
+const Sim = { built: false, running: false, dirty: true, u0: 0.1, steps: 0, hist: [], pcap: 24000 };
+const fCv = $('#simField'), fCtx = fCv.getContext('2d'), pCv = $('#simPart'), pCtx = pCv.getContext('2d');
+const off = document.createElement('canvas'), offCtx = off.getContext('2d');
+let SW = 0, SH = 0, SDPR = 1, simView = { sc: 1, ox: 0, oy: 0 };
+function simResize() {
+  const r = $('#simStage').getBoundingClientRect();
+  if (r.width < 2) return;
+  SDPR = window.devicePixelRatio || 1; SW = r.width; SH = r.height;
+  for (const c of [fCv, pCv]) { c.width = Math.round(SW * SDPR); c.height = Math.round(SH * SDPR); c.style.width = SW + 'px'; c.style.height = SH + 'px'; }
+  simLayout(); simDraw(true);
+}
+new ResizeObserver(simResize).observe($('#simStage'));
+function simLayout() {
+  if (!Sim.built) return;
+  const sc = Math.min(SW / Sim.NX, SH / Sim.NY);
+  simView = { sc, ox: (SW - Sim.NX * sc) / 2, oy: (SH - Sim.NY * sc) / 2 };
+}
+const reVal = () => Math.round(Math.pow(10, +$('#simRe').value));
+function simBuild() {
+  Sim.built = false; Sim.running = false; updateRunBtn();
+  const poly = profilePolygon();
+  if (!poly || poly.length < 3) { $('#simMsg').textContent = 'No closed profile yet. Draw one in ① Design.'; simDraw(true); return; }
+  const NY = +$('#simRes').value, NX = Math.round(NY * 2.6), N = NX * NY;
+  const aoa = -(+$('#simAoa').value) * Math.PI / 180, b0 = bbox(poly);
+  const cx = (b0.minx + b0.maxx) / 2, cy = (b0.miny + b0.maxy) / 2, ca = Math.cos(aoa), sa = Math.sin(aoa);
+  const rot = poly.map(p => { const x = p[0] - cx, y = p[1] - cy; return [x * ca - y * sa, x * sa + y * ca]; });
+  const b = bbox(rot), frac = +$('#simSize').value;
+  const scale = Math.min(frac * NX / b.w, 0.22 * NY / b.h); // keep blockage ≲ 22%
+  const x0 = Math.round(NX * 0.2);
+  const G = rot.map(p => [x0 + (p[0] - b.minx) * scale, NY / 2 + (p[1] - (b.miny + b.maxy) / 2) * scale]);
+  const solid = new Uint8Array(N);
+  for (let j = 0; j < NY; j++) {
+    const yc = j + 0.5, xs = [];
+    for (let i = 0, n = G.length; i < n; i++) {
+      const a = G[i], c = G[(i + 1) % n];
+      if ((a[1] <= yc && c[1] > yc) || (c[1] <= yc && a[1] > yc)) xs.push(a[0] + (yc - a[1]) / (c[1] - a[1]) * (c[0] - a[0]));
+    }
+    xs.sort((p, q) => p - q);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const i0 = Math.max(2, Math.ceil(xs[k] - 0.5)), i1 = Math.min(NX - 3, Math.floor(xs[k + 1] - 0.5));
+      for (let i = i0; i <= i1; i++) solid[j * NX + i] = 1;
+    }
+  }
+  let nSolid = 0, jmin = NY, jmax = -1;
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) if (solid[j * NX + i]) { nSolid++; if (j < jmin) jmin = j; if (j > jmax) jmax = j; }
+  if (!nSolid) { $('#simMsg').textContent = 'Shape is too thin for this grid. Raise the resolution or body size.'; return; }
+  const slow = new Uint8Array(N);
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const id = j * NX + i;
+    if (i === 0 || j === 0 || i === NX - 1 || j === NY - 1) { slow[id] = 1; continue; }
+    for (let k = 1; k < 9; k++) if (solid[(j - EY[k]) * NX + (i - EX[k])]) { slow[id] = 1; break; }
+  }
+  // Re uses the body's longest side: the chord for slender shapes, the height for bluff or plate-like ones
+  // (a plate normal to the flow would otherwise get Re from its thickness and a far too small viscosity).
+  const u0 = Sim.u0, Lc = b0.w * scale, Lref = Math.max(Lc, b0.h * scale), Re = reVal(), nu = u0 * Lref / Re;
+  Object.assign(Sim, {
+    NX, NY, N, solid, slow, G, Lc, Lref, Hc: jmax - jmin + 1, Re, nu, tau0: 3 * nu + 0.5,
+    F: new Float32Array(9 * N), Fb: new Float32Array(9 * N), RHO: new Float32Array(N).fill(1), UX: new Float32Array(N), UY: new Float32Array(N),
+    feqIn: WT.map((w, k) => { const eu = EX[k] * u0; return w * (1 + 3 * eu + 4.5 * eu * eu - 1.5 * u0 * u0); }),
+    steps: 0, hist: [], fx: 0, fy: 0, avgFx: 0, avgFy: 0, nanned: false,
+    lastRate: 0, built: true, dirty: false,
+  });
+  resetParticles();
+  for (let i = 0; i < N; i++) {
+    // tiny random cross-flow so a symmetric body can still start shedding vortices
+    const ux = solid[i] ? 0 : u0, uy = solid[i] ? 0 : (Math.random() - 0.5) * 0.02 * u0, uu = 1.5 * (ux * ux + uy * uy);
+    Sim.UX[i] = ux; Sim.UY[i] = uy;
+    for (let k = 0; k < 9; k++) { const eu = EX[k] * ux + EY[k] * uy; Sim.F[k * N + i] = WT[k] * (1 + 3 * eu + 4.5 * eu * eu - uu); }
+  }
+  off.width = NX; off.height = NY;
+  Sim.img = offCtx.createImageData(NX, NY); Sim.buf = new Uint32Array(Sim.img.data.buffer);
+  pCtx.setTransform(1, 0, 0, 1, 0, 0); pCtx.clearRect(0, 0, pCv.width, pCv.height);
+  simLayout();
+  $('#simMsg').textContent = `grid ${NX}×${NY} · body ${Math.round(Lc)} cells long · τ = ${Sim.tau0.toFixed(4)}`;
+  updateSimNote(); simDraw(true);
+}
+function lbmStep() {
+  const { NX, NY, N, F, Fb, solid, slow, RHO, UX, UY, feqIn, tau0 } = Sim;
+  const CS = 18 * Math.SQRT2 * 0.14 * 0.14, t2 = tau0 * tau0;
+  const fk = new Float64Array(9);
+  let Fx = 0, Fy = 0;
+  for (let y = 0; y < NY; y++) {
+    const row = y * NX;
+    for (let x = 0; x < NX; x++) {
+      const i = row + x;
+      if (solid[i]) continue;
+      let f0, f1, f2, f3, f4, f5, f6, f7, f8;
+      if (!slow[i]) { // interior fast path: pull from neighbours
+        f0 = F[i]; f1 = F[N + i - 1]; f2 = F[2 * N + i - NX]; f3 = F[3 * N + i + 1]; f4 = F[4 * N + i + NX];
+        f5 = F[5 * N + i - 1 - NX]; f6 = F[6 * N + i + 1 - NX]; f7 = F[7 * N + i + 1 + NX]; f8 = F[8 * N + i - 1 + NX];
+      } else {
+        fk[0] = F[i];
+        for (let k = 1; k < 9; k++) {
+          let sx = x - EX[k], sy = y - EY[k];
+          if (sx < 0) { fk[k] = feqIn[k]; continue; }                    // inlet: uniform free stream
+          if (sy < 0 || sy >= NY) {                                        // top/bottom: free-slip (specular)
+            let mx = sx; if (mx >= NX) mx = NX - 1;
+            fk[k] = F[MIRY[k] * N + row + mx]; continue;
+          }
+          if (sx >= NX) { fk[k] = F[k * N + sy * NX + NX - 2]; continue; } // outlet: zero-gradient copy
+          const j = sy * NX + sx;
+          if (solid[j]) {                                                  // half-way bounce-back + momentum exchange
+            const fo = F[OPP[k] * N + i];
+            fk[k] = fo; Fx -= 2 * fo * EX[k]; Fy -= 2 * fo * EY[k];
+          } else fk[k] = F[k * N + j];
+        }
+        f0 = fk[0]; f1 = fk[1]; f2 = fk[2]; f3 = fk[3]; f4 = fk[4]; f5 = fk[5]; f6 = fk[6]; f7 = fk[7]; f8 = fk[8];
+      }
+      const r = f0 + f1 + f2 + f3 + f4 + f5 + f6 + f7 + f8, ir = 1 / r;
+      const ux = (f1 - f3 + f5 - f6 - f7 + f8) * ir, uy = (f2 - f4 + f5 + f6 - f7 - f8) * ir;
+      const uxx = ux * ux, uyy = uy * uy, u2 = 1.5 * (uxx + uyy);
+      const w1 = r / 9, w2 = r / 36, s5 = ux + uy, s6 = uy - ux, q5 = 4.5 * s5 * s5, q6 = 4.5 * s6 * s6;
+      const e0 = 4 / 9 * r * (1 - u2);
+      const e1 = w1 * (1 + 3 * ux + 4.5 * uxx - u2), e3 = w1 * (1 - 3 * ux + 4.5 * uxx - u2);
+      const e2 = w1 * (1 + 3 * uy + 4.5 * uyy - u2), e4 = w1 * (1 - 3 * uy + 4.5 * uyy - u2);
+      const e5 = w2 * (1 + 3 * s5 + q5 - u2), e7 = w2 * (1 - 3 * s5 + q5 - u2);
+      const e6 = w2 * (1 + 3 * s6 + q6 - u2), e8 = w2 * (1 - 3 * s6 + q6 - u2);
+      const n1 = f1 - e1, n2 = f2 - e2, n3 = f3 - e3, n4 = f4 - e4, n5 = f5 - e5, n6 = f6 - e6, n7 = f7 - e7, n8 = f8 - e8;
+      const pxx = n1 + n3 + n5 + n6 + n7 + n8, pyy = n2 + n4 + n5 + n6 + n7 + n8, pxy = n5 - n6 + n7 - n8;
+      const Q = Math.sqrt(pxx * pxx + pyy * pyy + 2 * pxy * pxy);
+      const om = 2 / (tau0 + Math.sqrt(t2 + CS * Q * ir)); // Smagorinsky eddy viscosity
+      Fb[i] = f0 - om * (f0 - e0); Fb[N + i] = f1 - om * n1; Fb[2 * N + i] = f2 - om * n2; Fb[3 * N + i] = f3 - om * n3; Fb[4 * N + i] = f4 - om * n4;
+      Fb[5 * N + i] = f5 - om * n5; Fb[6 * N + i] = f6 - om * n6; Fb[7 * N + i] = f7 - om * n7; Fb[8 * N + i] = f8 - om * n8;
+      RHO[i] = r; UX[i] = ux; UY[i] = uy;
+    }
+  }
+  Sim.F = Fb; Sim.Fb = F;
+  Sim.fx = Fx; Sim.fy = Fy; Sim.steps++;
+  if (Sim.steps % 5 === 0) Sim.hist.push([Sim.steps, Fx, Fy]);
+  if (Sim.hist.length > 1600) Sim.hist.splice(0, Sim.hist.length - 1600);
+}
+function sampleU(x, y) { // bilinear velocity at lattice coords (cell centres at i+0.5)
+  const { NX, NY, UX, UY } = Sim;
+  const fx = clamp(x - 0.5, 0, NX - 1.001), fy = clamp(y - 0.5, 0, NY - 1.001);
+  const i = fx | 0, j = fy | 0, tx = fx - i, ty = fy - j, a = j * NX + i;
+  const ux = (UX[a] * (1 - tx) + UX[a + 1] * tx) * (1 - ty) + (UX[a + NX] * (1 - tx) + UX[a + NX + 1] * tx) * ty;
+  const uy = (UY[a] * (1 - tx) + UY[a + 1] * tx) * (1 - ty) + (UY[a + NX] * (1 - tx) + UY[a + NX + 1] * tx) * ty;
+  return [ux, uy];
+}
+function particlesAdvance(nSteps) {
+  const { px, py, qx, qy, age, pAlive, pcap, NX, NY, solid, free } = Sim;
+  const crossSteps = NX / Sim.u0, maxAge = 3 * crossSteps;
+  const kill = p => { pAlive[p] = 0; free[Sim.freeTop++] = p; };
+  if ($('#simParts').checked) { // emit from a rake at the inlet ("shooting" air particles)
+    const lines = +$('#simRake').value;
+    // Space emissions so a full tunnel's worth of streaks fits in the pool (with margin for slow wake air).
+    const every = Math.max(5, lines * crossSteps * 1.4 / pcap);
+    Sim.emitAcc += nSteps / every;
+    while (Sim.emitAcc >= 1) {
+      Sim.emitAcc -= 1;
+      for (let l = 0; l < lines && Sim.freeTop > 0; l++) { // never overwrite a live particle
+        const h = free[--Sim.freeTop];
+        px[h] = qx[h] = 1 + Math.random() * 0.8; py[h] = qy[h] = NY * (0.03 + 0.94 * (l + 0.5 + (Math.random() - 0.5) * 0.25) / lines);
+        age[h] = 0; pAlive[h] = 1;
+      }
+    }
+  }
+  for (let p = 0; p < pcap; p++) {
+    if (!pAlive[p]) continue;
+    qx[p] = px[p]; qy[p] = py[p];
+    let x = px[p], y = py[p];
+    for (let s = 0; s < nSteps; s += 2) { // midpoint (RK2) advection, ≤ 2 lattice steps per substep
+      const dt = Math.min(2, nSteps - s), u = sampleU(x, y), m = sampleU(x + u[0] * dt * 0.5, y + u[1] * dt * 0.5);
+      x += m[0] * dt; y += m[1] * dt;
+    }
+    age[p] += nSteps;
+    // retire particles that leave, hit the body, or get trapped in slow recirculation
+    if (x >= NX - 1 || x < 0 || y < 0 || y >= NY || solid[(y | 0) * NX + (x | 0)] || age[p] > maxAge) { kill(p); continue; }
+    px[p] = x; py[p] = y;
+  }
+}
+function resetParticles() {
+  const n = Sim.pcap;
+  Object.assign(Sim, { px: new Float32Array(n), py: new Float32Array(n), qx: new Float32Array(n), qy: new Float32Array(n), age: new Float32Array(n), pAlive: new Uint8Array(n), free: new Int32Array(n), freeTop: n, emitAcc: 0 });
+  for (let i = 0; i < n; i++) Sim.free[i] = n - 1 - i;
+}
+/* ---------- colour maps ---------- */
+function makeLut(stops) {
+  const lut = new Uint32Array(256);
+  const cs = stops.map(s => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)]);
+  for (let i = 0; i < 256; i++) {
+    const t = i / 255 * (cs.length - 1), k = Math.min(cs.length - 2, Math.floor(t)), f = t - k;
+    const c = [0, 1, 2].map(j => Math.round(cs[k][j] + (cs[k + 1][j] - cs[k][j]) * f));
+    lut[i] = (255 << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+  }
+  return lut;
+}
+const LUTS = {
+  speed: makeLut(['#07090d', '#132238', '#1b4f72', '#1f8a8a', '#4cc38a', '#e7d04f', '#fff4cf']),
+  div: makeLut(['#63b3ff', '#2b5d9a', '#162234', '#0b0e13', '#3a1826', '#a8324f', '#ff8a8a']),
+};
+const CB = { speed: ['#07090d', '#132238', '#1b4f72', '#1f8a8a', '#4cc38a', '#e7d04f', '#fff4cf'], div: ['#63b3ff', '#2b5d9a', '#162234', '#0b0e13', '#3a1826', '#a8324f', '#ff8a8a'] };
+function updateColorbar() {
+  const f = $('#simField2').value, k = Math.pow(2, +$('#simContrast').value);
+  const cb = $('#cbar'), l = $('#cbarL');
+  if (f === 'none') { cb.style.display = 'none'; l.innerHTML = ''; return; }
+  cb.style.display = 'block';
+  cb.style.background = `linear-gradient(90deg, ${(f === 'speed' ? CB.speed : CB.div).join(',')})`;
+  if (f === 'speed') l.innerHTML = `<span>0</span><span>|u| / U∞</span><span>${fmt(1.8 / k, 2)}</span>`;
+  if (f === 'vort') l.innerHTML = `<span>−${fmt(8 / k, 2)} (cw)</span><span>ω·H/U∞</span><span>+${fmt(8 / k, 2)} (ccw)</span>`;
+  if (f === 'pres') l.innerHTML = `<span>${fmt(-1.2 / k, 2)}</span><span>C<sub>p</sub></span><span>+${fmt(1.2 / k, 2)}</span>`;
+}
+function simDraw(full) {
+  fCtx.setTransform(SDPR, 0, 0, SDPR, 0, 0);
+  if (!Sim.built) { fCtx.clearRect(0, 0, SW, SH); pCtx.setTransform(1, 0, 0, 1, 0, 0); pCtx.clearRect(0, 0, pCv.width, pCv.height); return; }
+  const { NX, NY, N, solid, UX, UY, RHO, buf, u0, Hc } = Sim;
+  const mode = $('#simField2').value, k = Math.pow(2, +$('#simContrast').value);
+  const BODY = (255 << 24) | (0xd9 << 16) | (0xd1 << 8) | 0xc9, BG = (255 << 24) | (0x0f << 16) | (0x0b << 8) | 0x09;
+  const lut = mode === 'speed' ? LUTS.speed : LUTS.div;
+  for (let j = 0; j < NY; j++) {
+    const drow = (NY - 1 - j) * NX, row = j * NX;
+    for (let i = 0; i < NX; i++) {
+      const id = row + i;
+      if (solid[id]) { buf[drow + i] = BODY; continue; }
+      let v;
+      if (mode === 'none') { buf[drow + i] = BG; continue; }
+      if (mode === 'speed') v = Math.hypot(UX[id], UY[id]) / u0 / 1.8 * k;
+      else if (mode === 'vort') {
+        if (i === 0 || j === 0 || i === NX - 1 || j === NY - 1) v = 0.5;
+        else { const w = (UY[id + 1] - UY[id - 1] - UX[id + NX] + UX[id - NX]) * 0.5; v = 0.5 + w * Hc / u0 / 16 * k; }
+      } else v = 0.5 + ((RHO[id] - 1) / 3 / (0.5 * u0 * u0)) / 2.4 * k;
+      buf[drow + i] = lut[(clamp(v, 0, 1) * 255) | 0];
+    }
+  }
+  offCtx.putImageData(Sim.img, 0, 0);
+  const { sc, ox, oy } = simView;
+  fCtx.clearRect(0, 0, SW, SH);
+  fCtx.imageSmoothingEnabled = true;
+  fCtx.drawImage(off, ox, oy, NX * sc, NY * sc);
+  // crisp outline of the true (sub-cell) shape
+  fCtx.strokeStyle = 'rgba(255,255,255,.85)'; fCtx.lineWidth = 1.2; fCtx.beginPath();
+  Sim.G.forEach((p, i) => { const x = ox + p[0] * sc, y = oy + (NY - p[1]) * sc; i ? fCtx.lineTo(x, y) : fCtx.moveTo(x, y); });
+  fCtx.closePath(); fCtx.stroke();
+  // particles: fading trails
+  pCtx.setTransform(SDPR, 0, 0, SDPR, 0, 0);
+  if (full) pCtx.clearRect(0, 0, SW, SH);
+  const fade = 1 - +$('#simTrail').value;
+  pCtx.globalCompositeOperation = 'destination-out'; pCtx.fillStyle = `rgba(0,0,0,${Math.max(0.03, fade)})`; pCtx.fillRect(0, 0, SW, SH);
+  pCtx.globalCompositeOperation = 'source-over';
+  if ($('#simParts').checked || Sim.freeTop < Sim.pcap) {
+    pCtx.strokeStyle = mode === 'none' ? 'rgba(160,220,255,.95)' : 'rgba(255,255,255,.85)'; pCtx.lineWidth = mode === 'none' ? 1.4 : 1.1; pCtx.beginPath();
+    const { px, py, qx, qy, pAlive, pcap } = Sim;
+    for (let p = 0; p < pcap; p++) {
+      if (!pAlive[p]) continue;
+      const x0 = ox + qx[p] * sc, y0 = oy + (NY - qy[p]) * sc, x1 = ox + px[p] * sc, y1 = oy + (NY - py[p]) * sc;
+      pCtx.moveTo(x0, y0); pCtx.lineTo(x1 + (x1 === x0 ? 0.6 : 0), y1);
+    }
+    pCtx.stroke();
+  }
+}
+/* ---------- run loop ---------- */
+function simLoop() {
+  requestAnimationFrame(simLoop);
+  if (!$('#sim').classList.contains('on') || !Sim.built) return;
+  let n = 0;
+  if (Sim.running) {
+    const t0 = performance.now(), maxN = +$('#simSpeed').value;
+    while (n < maxN && performance.now() - t0 < 22) { lbmStep(); n++; }
+    const dt = performance.now() - t0;
+    if (n) Sim.lastRate = Sim.N * n / (dt / 1000) / 1e6;
+    if (!isFinite(Sim.fx) || !isFinite(Sim.UX[(Sim.NY >> 1) * Sim.NX + Sim.NX - 3])) {
+      Sim.running = false; Sim.nanned = true; updateRunBtn();
+      $('#simMsg').textContent = '⚠ Sim went unstable. Lower the Reynolds number or raise the resolution, then Reset.';
+    }
+    particlesAdvance(n);
+  }
+  simDraw(false);
+  if (n) updateSimReadout();
+}
+requestAnimationFrame(simLoop);
+function coeffs() {
+  const h = Sim.hist; if (!h.length) return null;
+  const win = Math.min(h.length, Math.max(40, Math.floor(h.length * 0.5)));
+  let fx = 0, fy = 0; for (let i = h.length - win; i < h.length; i++) { fx += h[i][1]; fy += h[i][2]; }
+  fx /= win; fy /= win;
+  const q = 0.5 * Sim.u0 * Sim.u0;
+  const cd = fx / (q * Sim.Hc), beta = Sim.Hc / Sim.NY;
+  // Maskell-type blockage correction, cd / (1 + θ·cd·β). θ = 0.9 fits this tunnel (free-slip walls, uniform inlet):
+  // it brings the cylinder, square and normal plate at Re 100 to within ±5% of published free-stream values at 10–22% blockage.
+  return { cd, cdc: cd / (1 + 0.9 * cd * beta), beta, cl: fy / (q * Sim.Lc), win: win * 5 };
+}
+function updateSimReadout() {
+  const c = coeffs(), ft = Sim.steps * Sim.u0 / Sim.NX;
+  $('#simSteps').textContent = Sim.steps.toLocaleString();
+  $('#simFT').textContent = ft.toFixed(2);
+  $('#simMl').textContent = `${Sim.lastRate.toFixed(1)} MLUPS`;
+  if (c) {
+    $('#simCd').innerHTML = ft < 1 ? `<span class="hint">settling… ${(c.cd).toFixed(3)}</span>` : c.cd.toFixed(3);
+    $('#simCdc').innerHTML = `${c.cdc.toFixed(3)} <span class="hint">(${(c.beta * 100).toFixed(0)}% blockage)</span>`;
+    $('#simCl').textContent = c.cl.toFixed(3);
+  }
+  drawCdPlot();
+}
+function drawCdPlot() {
+  const cv2 = $('#cdPlot'), r = cv2.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  if (!r.width) return;
+  if (cv2.width !== Math.round(r.width * d)) { cv2.width = Math.round(r.width * d); cv2.height = Math.round(r.height * d); }
+  const g = cv2.getContext('2d'), w = r.width, h = r.height, q = 0.5 * Sim.u0 * Sim.u0;
+  g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+  const H0 = Sim.hist; if (H0.length < 2) return;
+  const cd = H0.map(e => e[1] / (q * Sim.Hc));
+  const tail = cd.slice(Math.floor(cd.length * 0.3)).sort((a, b) => a - b);
+  let lo = tail[Math.floor(tail.length * 0.02)], hi = tail[Math.floor(tail.length * 0.98)];
+  const pad = Math.max((hi - lo) * 0.25, 0.02); lo -= pad; hi += pad;
+  const X = i => 4 + (w - 8) * i / (cd.length - 1), Y = v => h - 14 - (h - 22) * (v - lo) / (hi - lo);
+  g.strokeStyle = '#2a323d'; g.beginPath(); g.moveTo(0, h - 14); g.lineTo(w, h - 14); g.stroke();
+  g.strokeStyle = '#ffce54'; g.lineWidth = 1.3; g.beginPath();
+  cd.forEach((v, i) => { const y = clamp(Y(v), 2, h - 14); i ? g.lineTo(X(i), y) : g.moveTo(X(i), y); }); g.stroke();
+  const c = coeffs();
+  if (c) { g.strokeStyle = 'rgba(74,163,255,.8)'; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(X(Math.floor(cd.length * 0.5)), Y(c.cd)); g.lineTo(w, Y(c.cd)); g.stroke(); g.setLineDash([]); }
+  g.fillStyle = '#8b98a5'; g.font = '10px ui-monospace,Consolas,monospace';
+  g.fillText(`C_D history  [${lo.toFixed(2)} … ${hi.toFixed(2)}]   dashed = running mean`, 6, h - 3);
+}
+function updateSimNote() {
+  if (!Sim.built) return;
+  const cellRe = Sim.u0 / Sim.nu;
+  const reL = Math.round(Sim.u0 * Sim.Lc / Sim.nu), reH = Math.round(Sim.u0 * Sim.Hc / Sim.nu);
+  $('#simNote').innerHTML = `2D planar flow (an extruded shape, not the revolved body) at Re = ${Sim.Re.toLocaleString()} on the longest side `
+    + `(Re<sub>L</sub> ${reL.toLocaleString()} on length, Re<sub>h</sub> ${reH.toLocaleString()} on frontal height). `
+    + (cellRe > 25 ? `<span class="warnc">Grid is coarse for this Re (cell Re ${cellRe.toFixed(0)}); treat the flow pattern as qualitative.</span> ` : '')
+    + 'Use it to compare shapes: separation, wake width, and relative C<sub>D</sub>.';
+}
+function updateRunBtn() { $('#simRun').textContent = Sim.running ? '❚❚ Pause' : '▶ Run'; }
+function toggleSim() {
+  if (!Sim.built || Sim.nanned) simBuild();
+  if (!Sim.built) return;
+  Sim.running = !Sim.running; updateRunBtn();
+}
+$('#simRun').onclick = toggleSim;
+$('#simReset').onclick = () => { const was = Sim.running; simBuild(); if (Sim.built && was) { Sim.running = true; updateRunBtn(); } };
+const simLabels = () => {
+  $('#simReV').textContent = reVal().toLocaleString();
+  $('#simAoaV').textContent = $('#simAoa').value + '°';
+  $('#simSizeV').textContent = Math.round(+$('#simSize').value * 100) + '%';
+  $('#simSpeedV').textContent = $('#simSpeed').value;
+  $('#simContrastV').textContent = '×' + fmt(Math.pow(2, +$('#simContrast').value), 2);
+  $('#simRakeV').textContent = $('#simRake').value;
+  $('#simTrailV').textContent = $('#simTrail').value;
+};
+['simRe', 'simAoa', 'simSize', 'simSpeed', 'simContrast', 'simRake', 'simTrail'].forEach(id => $('#' + id).addEventListener('input', () => { simLabels(); updateColorbar(); if (!Sim.running) simDraw(false); }));
+['simRe', 'simAoa', 'simSize', 'simRes'].forEach(id => $('#' + id).addEventListener('change', () => { const was = Sim.running; simBuild(); if (Sim.built && was) { Sim.running = true; updateRunBtn(); } }));
+$('#simField2').addEventListener('change', () => { updateColorbar(); simDraw(true); });
+$('#simStage').addEventListener('mousemove', e => {
+  const el = $('#simProbe');
+  if (!Sim.built) { el.style.display = 'none'; return; }
+  const r = $('#simStage').getBoundingClientRect(), { sc, ox, oy } = simView;
+  const x = (e.clientX - r.left - ox) / sc, y = Sim.NY - (e.clientY - r.top - oy) / sc;
+  if (x < 0 || y < 0 || x >= Sim.NX || y >= Sim.NY) { el.style.display = 'none'; return; }
+  const id = (y | 0) * Sim.NX + (x | 0);
+  if (Sim.solid[id]) { el.style.display = 'block'; el.textContent = 'body'; return; }
+  const u = Math.hypot(Sim.UX[id], Sim.UY[id]) / Sim.u0, cp = (Sim.RHO[id] - 1) / 3 / (0.5 * Sim.u0 * Sim.u0);
+  el.style.display = 'block'; el.textContent = `|u|/U∞ ${u.toFixed(2)}   Cp ${cp.toFixed(2)}`;
+});
+$('#simStage').addEventListener('mouseleave', () => ($('#simProbe').style.display = 'none'));
+
+/* ---------- revolved-body estimate (Hoerner) ---------- */
+function renderEstimate() {
+  const el = $('#estOut'), m = profileMetrics();
+  if (!m || !m.rmax) { el.innerHTML = '<span class="hint">Draw a profile first.</span>'; return; }
+  const k = UNITS[S.units], U = parseFloat($('#estU').value) || 0;
+  const fl = $('#estFluid').value === 'water' ? { rho: 998, nu: 1.0e-6 } : { rho: 1.204, nu: 1.51e-5 };
+  const L = m.L * k, Af = m.Af * k * k, Ab = m.Ab * k * k, An = m.An * k * k, Sw = m.Sw * k * k, V = m.V * k * k * k;
+  const Re = U * L / fl.nu;
+  const Cf = $('#estBL').value === 'lam' ? 1.328 / Math.sqrt(Re) : 0.075 / Math.pow(Math.log10(Re) - 2, 2);
+  const dl = 1 / m.fineness;
+  const CDwet = Cf * (1 + 1.5 * Math.pow(dl, 1.5) + 7 * Math.pow(dl, 3));
+  const cdFore = CDwet * Sw / Af;
+  const cdBase = Ab > 0 ? 0.029 / Math.sqrt(cdFore * Af / Ab) * Ab / Af : 0;
+  const cdNose = An > 0 ? 0.8 * An / Af : 0; // flat front face ≈ disc stagnation drag
+  const cd = cdFore + cdBase + cdNose, q = 0.5 * fl.rho * U * U, D = q * Af * cd;
+  const simRe = Sim.built ? Sim.Re : reVal();
+  el.innerHTML = `<div class="kv">
+    <span>Reynolds Re<sub>L</sub> (real)</span><span>${Re.toExponential(2)}</span>
+    <span>Skin friction C<sub>f</sub></span><span>${Cf.toFixed(5)}</span>
+    <span>Fineness L/D</span><span>${fmt(m.fineness, 3)}</span>
+    <span>C<sub>D</sub> frontal</span><span class="big">${cd.toFixed(4)}</span>
+    <span>C<sub>D</sub> volume (V<sup>2/3</sup>)</span><span>${(D / (q * Math.pow(V, 2 / 3)) || 0).toFixed(4)}</span>
+    <span>&nbsp;· friction + form</span><span>${cdFore.toFixed(4)}</span>
+    ${cdBase ? `<span>&nbsp;· base (blunt tail)</span><span>${cdBase.toFixed(4)}</span>` : ''}
+    ${cdNose ? `<span>&nbsp;· flat nose face</span><span>${cdNose.toFixed(4)}</span>` : ''}
+    <span>Drag force</span><span>${D < 0.1 ? (D * 1000).toFixed(2) + ' mN' : D.toFixed(3) + ' N'}</span>
+    <span>Frontal area</span><span>${(Af * 1e4).toFixed(3)} cm²</span>
+  </div>
+  ${m.fineness < 2 ? `<div class="hint bad" style="margin-top:6px">Fineness ${fmt(m.fineness, 3)} is below 2, outside the range of Hoerner's correlation, so this number is unreliable. For reference, measured bluff-body C<sub>D</sub>: sphere ≈ 0.47, hemisphere ≈ 0.42, 60° cone ≈ 0.5, axial cylinder L/D 1 ≈ 1.15, disc ≈ 1.17.</div>` : ''}
+  ${m.tailSlope > 20 && !(cdBase && m.tailSlope >= 85) ? `<div class="hint bad" style="margin-top:6px">Tail slope ${fmt(m.tailSlope, 3)}° likely separates, so the real drag will be higher than this.</div>` : ''}
+  ${cdBase && m.tailSlope >= 85 ? `<div class="hint warnc" style="margin-top:6px">Flat base (r = ${fmt(m.rTail, 3)}): the flow separates there. The base term above covers it, but it's a rough estimate.</div>` : ''}
+  ${!S.mirror ? '<div class="hint warnc" style="margin-top:6px">Mirror is off. This estimate still treats the curve as the radius of a revolved body.</div>' : ''}
+  <div class="hint" style="margin-top:6px">The lattice sim runs at Re ${simRe.toLocaleString()}, far below the real ${Re.toExponential(1)}. The sim shows the flow <i>pattern</i>; this card gives the real-scale number (about ±20% for attached flow).</div>`;
+}
+['estU', 'estFluid', 'estBL'].forEach(id => $('#' + id).addEventListener('input', renderEstimate));
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === b.dataset.tab));
+  if (b.dataset.tab === 'sim') {
+    simResize();
+    if (Sim.dirty || !Sim.built) simBuild();
+    renderEstimate(); updateColorbar();
+  } else { Sim.running = false; updateRunBtn(); resize(); }
+}));
+
+/* ---------- boot ---------- */
+(function boot() {
+  let saved = null;
+  try { saved = localStorage.getItem('profile-studio'); } catch (e) {}
+  if (saved) { try { restore(saved); } catch (e) { S = { guides: [], curves: [], mirror: true, units: 'mm', nextId: 1 }; } }
+  commit();
+  setTool('select'); syncViewControls(); renderPanel(); renderRefPanel(); simLabels(); updateColorbar(); updateUndo();
+  requestAnimationFrame(() => { resize(); if (S.curves.length || S.guides.length) fitView(); });
+})();
+</script>
+</body>
+</html>

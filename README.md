@@ -31,6 +31,9 @@ flagship, in-browser **CV Punch Trainer** that grades boxing form in real time.
 - **Engineering work, too** — the project modals also cover hardware: SCORPION (a UGV I
   led at Raptor Defense), the FTAD chassis, and an open-circuit **wind tunnel** I designed
   and CFD-validated in SimScale as a study of the Venturi effect.
+- **Tools you can open** — [Profile Studio](https://github.com/Wildagoat/profile-studio) (sketch a
+  silhouette, fit it to a parametric curve, fly it through a lattice-Boltzmann wind tunnel validated
+  against published drag data) and the Miller Indices Visualizer run live under `games/`.
 
 ## 🥊 CV Punch Trainer (the flagship)
 
@@ -85,6 +88,9 @@ games/
   punch-trainer.html  The CV Punch Trainer page
   punch-trainer.js    Real-time control + HUD
   engine/             Vendored analyzer (pose · biomech · detect · scoring · live)
+  profile-studio.html Profile Studio (copy of Wildagoat/profile-studio index.html)
+  profile-studio-guide.html  Its beginner's guide (sim-guide.html, links rewritten)
+  miller-indices.html Miller Indices Visualizer
 vercel.json           cleanUrls + camera permissions-policy
 assets/               Renders, 3D models, and résumé PDF
 ```
