@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260917a" />
+  <link rel="stylesheet" href="./styles.css?v=20261008a" />
 </head>
 <body class="home">
   <!-- Ambient monochrome CAD backdrop: a PRE-RENDERED spin of the SCORPION as a
@@ -63,122 +63,145 @@
         <div class="section-head reveal">
           <div class="kicker">Selected work</div>
           <h2>Projects</h2>
-          <p>A mix of browser software, computer vision, and mechanical design.</p>
+          <p>Hardware I built, the tools and analysis behind it, and a few things made for fun.</p>
         </div>
 
-        <div class="projects-layout">
-          <div class="grid">
-          <a class="proj reveal" href="#projects" data-project="scorpion">
-            <div class="p-top"><span class="p-status">Defense · lead ME</span></div>
-            <h3>SCORPION</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Drones can't carry heavy payloads for long periods of time.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Create an attritable ground vehicle.</p>
+        <!-- Three categories, one column each on desktop. Research has its own section below. -->
+        <div class="proj-groups">
+          <section class="proj-group" aria-labelledby="pg-hardware">
+            <div class="pg-head reveal">
+              <h3 id="pg-hardware">Hardware</h3>
+              <p>Machines I designed and built.</p>
             </div>
-            <div class="p-tags"><span>Onshape</span><span>UGV</span><span>Prototype</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <div class="pg-cards">
+            <a class="proj reveal" href="#projects" data-project="scorpion">
+              <div class="p-top"><span class="p-status">Defense · lead ME</span></div>
+              <h4>SCORPION</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Drones can't carry heavy payloads for long periods of time.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Create an attritable ground vehicle.</p>
+              </div>
+              <div class="p-tags"><span>Onshape</span><span>UGV</span><span>Prototype</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="ftad">
-            <div class="p-top"><span class="p-status">Vehicle design</span></div>
-            <h3>FTAD Chassis</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Commercial RC cars aren't designed for modular aero components or custom optimization.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Build one myself.</p>
-            </div>
-            <div class="p-tags"><span>Onshape</span><span>CFD</span><span>Topology</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <a class="proj reveal" href="#projects" data-project="ftad">
+              <div class="p-top"><span class="p-status">Vehicle design</span></div>
+              <h4>FTAD Chassis</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Commercial RC cars aren't designed for modular aero components or custom optimization.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Build one myself.</p>
+              </div>
+              <div class="p-tags"><span>Onshape</span><span>CFD</span><span>Topology</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="vex">
-            <div class="p-top"><span class="p-status">World-qualified</span></div>
-            <h3>VEX Robotics</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>The Push Back game rewards tall bots with confident collision capabilities.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Build for a low center of gravity, durable design, and speed.</p>
-            </div>
-            <div class="p-tags"><span>VEX</span><span>CAD</span><span>Drivetrain</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <a class="proj reveal" href="#projects" data-project="vex">
+              <div class="p-top"><span class="p-status">World-qualified</span></div>
+              <h4>VEX Robotics</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>The Push Back game rewards tall bots with confident collision capabilities.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Build for a low center of gravity, durable design, and speed.</p>
+              </div>
+              <div class="p-tags"><span>VEX</span><span>CAD</span><span>Drivetrain</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="cycloidal-gearbox">
-            <div class="p-top"><span class="p-status">Reducer · 20:1</span></div>
-            <h3>Cycloidal Gearbox</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>A NEMA 24 stepper makes modest torque at speed; an actuator wants high torque, low speed, low backlash.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Wrap the motor in a compact 20:1 cycloidal reducer.</p>
+            <a class="proj reveal" href="#projects" data-project="cycloidal-gearbox">
+              <div class="p-top"><span class="p-status">Reducer · 20:1</span></div>
+              <h4>Cycloidal Gearbox</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>A NEMA 24 stepper makes modest torque at speed; an actuator wants high torque, low speed, low backlash.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Wrap the motor in a compact 20:1 cycloidal reducer.</p>
+              </div>
+              <div class="p-tags"><span>Onshape</span><span>Cycloidal</span><span>FeatureScript</span></div>
+              <span class="p-arrow">→</span>
+            </a>
             </div>
-            <div class="p-tags"><span>Onshape</span><span>Cycloidal</span><span>FeatureScript</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+          </section>
 
-          <a class="proj reveal" href="#projects" data-project="windtunnel">
-            <div class="p-top"><span class="p-status">CFD · aero rig</span></div>
-            <h3>Wind Tunnel</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Simulation only gets you so far. FTAD needed to validate aero on real hardware.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Design an open-circuit wind tunnel and CFD-validate it first.</p>
+          <section class="proj-group" aria-labelledby="pg-tools">
+            <div class="pg-head reveal">
+              <h3 id="pg-tools">Tools &amp; analysis</h3>
+              <p>Software and simulation behind the hardware.</p>
             </div>
-            <div class="p-tags"><span>SimScale</span><span>CFD</span><span>Venturi</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <div class="pg-cards">
+            <a class="proj reveal" href="#projects" data-project="windtunnel">
+              <div class="p-top"><span class="p-status">CFD · aero rig</span></div>
+              <h4>Wind Tunnel</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Simulation only gets you so far. FTAD needed to validate aero on real hardware.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Design an open-circuit wind tunnel and CFD-validate it first.</p>
+              </div>
+              <div class="p-tags"><span>SimScale</span><span>CFD</span><span>Venturi</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="profile-studio">
-            <div class="p-top"><span class="p-status">Tool · aero sim</span></div>
-            <h3>Profile Studio</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Hulls have to wrap real parts, but I had no quick way to tell whether a shape would drag well.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Build a sketch-to-curve tool with its own wind tunnel, then check it against published drag data.</p>
-            </div>
-            <div class="p-tags"><span>LBM CFD</span><span>Kulfan CST</span><span>Validated</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <a class="proj reveal" href="#projects" data-project="profile-studio">
+              <div class="p-top"><span class="p-status">Tool · aero sim</span></div>
+              <h4>Profile Studio</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Hulls have to wrap real parts, but I had no quick way to tell whether a shape would drag well.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Build a sketch-to-curve tool with its own wind tunnel, then check it against published drag data.</p>
+              </div>
+              <div class="p-tags"><span>LBM CFD</span><span>Kulfan CST</span><span>Validated</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="cycloidal">
-            <div class="p-top"><span class="p-status">FeatureScript · parametric</span></div>
-            <h3>Cycloidal Drive FS</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Cycloidal disk profiles are punishing to model by hand and don't rebuild cleanly when you change a drive parameter.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Write a FeatureScript that generates the whole disk from the drive geometry.</p>
-            </div>
-            <div class="p-tags"><span>FeatureScript</span><span>Onshape</span><span>Cycloidal drive</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+            <a class="proj reveal" href="#projects" data-project="cycloidal">
+              <div class="p-top"><span class="p-status">FeatureScript · parametric</span></div>
+              <h4>Cycloidal Drive FS</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Cycloidal disk profiles are punishing to model by hand and don't rebuild cleanly when you change a drive parameter.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Write a FeatureScript that generates the whole disk from the drive geometry.</p>
+              </div>
+              <div class="p-tags"><span>FeatureScript</span><span>Onshape</span><span>Cycloidal drive</span></div>
+              <span class="p-arrow">→</span>
+            </a>
 
-          <a class="proj reveal" href="#projects" data-project="miller">
-            <div class="p-top"><span class="p-status">Tool</span></div>
-            <h3>Miller Indices Visualizer</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>I was doing my materials science homework and wanted to check my work.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>So I built my own visualizer to see the planes in 3D.</p>
+            <a class="proj reveal" href="#projects" data-project="miller">
+              <div class="p-top"><span class="p-status">Tool</span></div>
+              <h4>Miller Indices Visualizer</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>I was doing my materials science homework and wanted to check my work.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>So I built my own visualizer to see the planes in 3D.</p>
+              </div>
+              <div class="p-tags"><span>Three.js</span><span>WebGL</span><span>Crystallography</span></div>
+              <span class="p-arrow">→</span>
+            </a>
             </div>
-            <div class="p-tags"><span>Three.js</span><span>WebGL</span><span>Crystallography</span></div>
-            <span class="p-arrow">→</span>
-          </a>
+          </section>
 
-          <a class="proj reveal" href="#projects" data-project="fight-diagram">
-            <div class="p-top"><span class="p-status">Tool</span></div>
-            <h3>Fight Diagram</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Teaching spatial concepts is hard. Younger fighters can't process descriptions as fast as speech.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Build a simple program that models positioning.</p>
+          <section class="proj-group" aria-labelledby="pg-fun">
+            <div class="pg-head reveal">
+              <h3 id="pg-fun">For fun</h3>
+              <p>Boxing software I wanted to exist.</p>
             </div>
-            <div class="p-tags"><span>SVG</span><span>SingleFile</span><span>VanillaJS</span></div>
-            <span class="p-arrow">→</span>
-          </a>
-          </div><!-- .grid -->
+            <div class="pg-cards">
+            <a class="proj proj-feature reveal" href="./games/punch-trainer.html">
+              <div class="p-top"><span class="p-status live">● Live demo · interactive</span></div>
+              <h4>CV Punch Trainer</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Power, speed, and accuracy come from consistent punching form, but inspecting every rep is time-consuming.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Build an app that does it automatically.</p>
+              </div>
+              <div class="p-tags"><span>MediaPipe</span><span>RealtimeCV</span><span>Canvas</span></div>
+              <span class="pf-cta">Try it live →</span>
+            </a>
 
-          <a class="proj proj-feature reveal" href="./games/punch-trainer.html">
-            <div class="p-top"><span class="p-status live">● Live demo · interactive</span></div>
-            <h3>CV Punch Trainer</h3>
-            <div class="p-ps">
-              <p class="ps-line"><span class="ps-k">Problem</span>Power, speed, and accuracy come from consistent punching form, but inspecting every rep is time-consuming.</p>
-              <p class="ps-line sol"><span class="ps-k">Solution</span>Build an app that does it automatically.</p>
+            <a class="proj reveal" href="#projects" data-project="fight-diagram">
+              <div class="p-top"><span class="p-status">Tool</span></div>
+              <h4>Fight Diagram</h4>
+              <div class="p-ps">
+                <p class="ps-line"><span class="ps-k">Problem</span>Teaching spatial concepts is hard. Younger fighters can't process descriptions as fast as speech.</p>
+                <p class="ps-line sol"><span class="ps-k">Solution</span>Build a simple program that models positioning.</p>
+              </div>
+              <div class="p-tags"><span>SVG</span><span>SingleFile</span><span>VanillaJS</span></div>
+              <span class="p-arrow">→</span>
+            </a>
             </div>
-            <div class="p-tags"><span>MediaPipe</span><span>RealtimeCV</span><span>Canvas</span></div>
-            <span class="pf-cta">Try it live →</span>
-          </a>
-        </div><!-- .projects-layout -->
+          </section>
+        </div><!-- .proj-groups -->
         <!-- NOTE(placeholder): add real repo/demo URLs to the project links when ready. -->
       </div>
     </section>
