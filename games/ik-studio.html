@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IK Studio</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2a323d;
+    --text:#e6edf3; --dim:#8b98a5; --accent:#ffce54; --accent2:#4aa3ff;
+    --good:#4cc38a; --warn:#f0a020; --bad:#f0506e; --path:#b392f0;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font:13px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+  header{height:46px;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .brand{font-weight:700;letter-spacing:.3px;margin-right:10px;white-space:nowrap}
+  .brand span{color:var(--accent)}
+  .spacer{flex:1}
+  button{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:5px 10px;border-radius:7px;cursor:pointer;font:inherit;white-space:nowrap}
+  button:hover{border-color:#3d4958}
+  button.on{background:#2a2410;border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);color:#15120a;border-color:var(--accent);font-weight:600}
+  button:disabled{opacity:.4;cursor:default}
+  button kbd{font:10px ui-monospace,Consolas,monospace;color:var(--dim);margin-left:4px}
+  button.on kbd{color:var(--accent)}
+  .modes{display:flex;gap:4px}
+  main{display:grid;grid-template-columns:1fr 430px;height:calc(100vh - 46px)}
+  #stage{position:relative;overflow:hidden;min-width:0;background:#0b0e13}
+  #cv{position:absolute;left:0;top:0;display:block;touch-action:none}
+  #hud{position:absolute;left:10px;bottom:8px;color:var(--dim);font:12px ui-monospace,Consolas,monospace;pointer-events:none;background:rgba(14,17,22,.8);padding:3px 8px;border-radius:6px;white-space:pre}
+  #modeHint{position:absolute;left:10px;top:10px;color:var(--dim);font:12px ui-sans-serif,system-ui;background:rgba(14,17,22,.8);padding:4px 9px;border-radius:6px;pointer-events:none;max-width:60%}
+  #badge{position:absolute;right:12px;top:10px;font:600 13px ui-monospace,Consolas,monospace;padding:5px 10px;border-radius:8px;background:rgba(14,17,22,.85);border:1px solid var(--line);pointer-events:none;display:none}
+  aside{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+  .atabs{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line)}
+  .atabs button{flex:1}
+  .tab{display:none;overflow-y:auto;padding:2px 14px 40px;flex:1;min-height:0}
+  .tab.on{display:block}
+  h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin:16px 0 6px;display:flex;align-items:center;gap:6px}
+  .pill{font:600 10px ui-monospace,Consolas,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:0 6px;color:var(--text);letter-spacing:0}
+  .row{display:flex;align-items:center;gap:6px;margin:5px 0}
+  .row>label{color:var(--dim);min-width:112px;flex-shrink:0}
+  input[type=number],input[type=text],select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font:inherit;width:100%;min-width:0}
+  input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+  input[type=checkbox]{accent-color:var(--accent)}
+  .chk{display:flex;align-items:center;gap:6px;color:var(--text);cursor:pointer;margin:3px 0}
+  .hint{color:var(--dim);font-size:12px}
+  .btns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .btns button{font-size:12px;padding:4px 8px}
+  .list .item{display:flex;align-items:center;gap:5px;padding:3px 4px;border-radius:6px;border:1px solid transparent}
+  .list .item.sel{background:#2a2410;border-color:#5a4a1a}
+  .list .item .ix{font:600 11px ui-monospace,Consolas,monospace;width:26px;flex-shrink:0;display:flex;align-items:center;gap:4px}
+  .list .item .lb{color:var(--dim);font-size:11px}
+  .list .item input{padding:2px 4px}
+  .list .item button{padding:1px 7px;font-size:11px}
+  .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  .empty{color:var(--dim);font-size:12px;padding:4px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin:8px 0}
+  .big{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .ok{color:var(--good)} .bad{color:var(--bad)} .warnc{color:var(--warn)}
+  /* report */
+  #report h4{font-size:13px;margin:18px 0 6px;padding-bottom:3px;border-bottom:1px solid var(--line);color:var(--accent)}
+  #report h5{font-size:12px;margin:12px 0 4px;color:var(--text)}
+  #report p{margin:5px 0;color:#cfd8e3}
+  #report pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;font:11px/1.55 ui-monospace,Consolas,monospace;overflow-x:auto;margin:6px 0;color:#cfd8e3}
+  #report .tw{overflow-x:auto;margin:6px 0;border:1px solid var(--line);border-radius:8px;max-height:360px;overflow-y:auto}
+  #report table{border-collapse:collapse;font:11px ui-monospace,Consolas,monospace;width:100%}
+  #report th{position:sticky;top:0;background:var(--panel2);color:var(--dim);text-align:right;padding:3px 6px;font-weight:600;white-space:nowrap}
+  #report td{text-align:right;padding:2px 6px;border-top:1px solid #1f2630;white-space:nowrap;font-variant-numeric:tabular-nums}
+  #report tr.hl td{background:#2a2410;color:var(--accent)}
+  #report .cap{color:var(--dim);font-size:11px;margin:-2px 0 8px}
+  #report .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:12px}
+  #report .kv>span:nth-child(odd){color:var(--dim)}
+  #report .kv>span:nth-child(even){font-family:ui-monospace,Consolas,monospace}
+  .call{border-left:3px solid var(--accent2);background:var(--panel2);padding:6px 10px;border-radius:0 8px 8px 0;margin:8px 0}
+  .call.ok{border-color:var(--good)} .call.warn{border-color:var(--warn)} .call.bad{border-color:var(--bad)}
+  .call{color:var(--text)!important}
+  #runsList a{color:var(--accent2);text-decoration:none}
+  #runsList a:hover{text-decoration:underline}
+  #runsList .item{justify-content:space-between}
+  @media (max-width:1250px){ header{gap:5px;padding:0 8px} header button{padding:5px 7px} button kbd{display:none} .brand{margin-right:4px} }
+  @media (max-width:980px){ main{grid-template-columns:1fr 360px} #btnFit{display:none} }
+  button.rec{background:#2a1016;border-color:var(--bad);color:#ff8fa3}
+  button.rec::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:6px;animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+  .fold{display:flex;align-items:center;gap:6px;margin:12px 0 4px;font:600 12px ui-monospace,Consolas,monospace}
+  .fold .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  button.danger:hover{border-color:var(--bad);color:var(--bad)}
+  button.armed{background:#2a1016;border-color:var(--bad);color:var(--bad)}
+  .tag{font:600 10px ui-monospace,Consolas,monospace;border-radius:8px;padding:0 6px;border:1px solid var(--line);color:var(--dim)}
+  .tag.ok{border-color:#1f5b3f;color:var(--good)}
+  .cands{margin-top:8px;display:grid;gap:4px}
+  .cand{display:flex;align-items:center;gap:6px;font-size:12px}
+  .cand b{font-weight:600;white-space:nowrap}
+  .cand .hint{flex:1;font-family:ui-monospace,Consolas,monospace;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cand button{padding:1px 7px;font-size:11px}
+  .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#2a2410;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9;max-width:80vw}
+  .toast.show{opacity:1}
+  .toast.bad{background:#2a1016;border-color:var(--bad);color:var(--bad)}
+  /* static hosting has no server.py: hide the save-to-disk controls */
+  body.hosted .local-only,body:not(.hosted) .hosted-only{display:none!important}
+  sub{font-size:75%}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">IK <span>Studio</span></div>
+  <div class="modes" id="modes">
+    <button data-mode="select" title="Drag target / waypoints / obstacles; drag the tip for live IK">Select<kbd>V</kbd></button>
+    <button data-mode="target" title="Click to set a target and run">Target<kbd>T</kbd></button>
+    <button data-mode="path" title="Click to add waypoints the tip must cross">Path<kbd>P</kbd></button>
+    <button data-mode="circle" title="Drag to place a circular obstacle">Obstacle ○<kbd>O</kbd></button>
+    <button data-mode="box" title="Drag to place a box obstacle">Obstacle □<kbd>B</kbd></button>
+    <button data-mode="live" title="Tip follows the cursor (no report)">Live<kbd>L</kbd></button>
+  </div>
+  <div class="spacer"></div>
+  <button id="btnSession" class="local-only" title="Recording session: while on, every run's PDF is saved into its own session folder. Off = nothing is saved unless you click Save.">Session</button>
+  <button id="btnRun" class="primary" title="Run target (or path, in Path mode)  [Space]">▶ Run</button>
+  <button id="btnStop" title="Stop animation  [Esc]">■ Stop</button>
+  <button id="btnHome" title="Return to home pose  [H]">Home pose</button>
+  <button id="btnFit" title="Fit view  [F]">Fit</button>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="modeHint"></div>
+    <div id="badge"></div>
+    <div id="hud"></div>
+  </div>
+  <aside>
+    <div class="atabs">
+      <button data-tab="build" class="on">Build</button>
+      <button data-tab="work">Work</button>
+      <button data-tab="runs">Runs (PDF)</button>
+    </div>
+
+    <section class="tab on" id="tab-build">
+      <h3>Linkages <span class="pill" id="linkCount"></span></h3>
+      <div class="row"><label>Preset</label>
+        <select id="presetSel">
+          <option value="">— choose —</option>
+          <option value="arm2">2-link planar arm</option>
+          <option value="leg3">3-link leg (hip / knee / ankle)</option>
+          <option value="arm4">4-link arm</option>
+          <option value="tent6">6-link tentacle</option>
+          <option value="scene-rock">Scene: leg stepping over a rock</option>
+          <option value="scene-pillar">Scene: arm reaching past a pillar</option>
+          <option value="scene-path">Scene: 3-link tracing a path</option>
+        </select>
+      </div>
+      <div id="linkList" class="list"></div>
+      <div class="btns">
+        <button id="addLink">+ Add link</button>
+        <button id="setHome" title="Current pose becomes the home pose">Set pose as home</button>
+      </div>
+      <p class="hint">Up to 6 links. θ is <b>relative</b>: θ<sub>1</sub> from +x, θ<sub>i</sub> from link i−1. The tip of the last link is always the touch point. Base is fixed at (0, 0).</p>
+
+      <h3>Target</h3>
+      <div class="row">
+        <input id="tx" type="number" step="1" placeholder="x" />
+        <input id="ty" type="number" step="1" placeholder="y" />
+        <button id="goBtn" class="primary">Go</button>
+      </div>
+
+      <h3>Solver</h3>
+      <div class="row"><label>Method</label>
+        <select id="optMethod">
+          <option value="auto">Auto (analytic n≤2, Jacobian n≥3)</option>
+          <option value="analytic">Analytic / closed form (n≤3)</option>
+          <option value="dls">Jacobian — damped least squares</option>
+          <option value="ccd">CCD — cyclic coordinate descent</option>
+        </select>
+      </div>
+      <div class="row"><label title="Damping λ (length units). Larger = smoother near singularities, slower convergence">Damping λ</label><input id="optLambda" type="number" step="0.5" min="0" /></div>
+      <div class="row"><label title="Max tip correction per iteration">Step / iter</label><input id="optStep" type="number" step="1" min="0.5" /></div>
+      <div class="row"><label title="Max joint change per iteration (deg)">Max Δθ / iter (°)</label><input id="optMaxDth" type="number" step="1" min="0.5" /></div>
+      <div class="row"><label>Tolerance</label><input id="optTol" type="number" step="0.05" min="0.001" /></div>
+      <div class="row"><label>Max iterations</label><input id="optMaxIter" type="number" step="10" min="10" /></div>
+      <div class="row"><label title="Which candidate end pose the leg actually moves to. All three winners are highlighted either way.">End pose</label>
+        <select id="optPick">
+          <option value="solver">Solver's own result</option>
+          <option value="effort">Least servo effort (min ΣΔθ²)</option>
+          <option value="shortest">Shortest tip travel</option>
+          <option value="smooth">Smoothest motion</option>
+        </select>
+      </div>
+      <div class="row"><label title="Which of the two 2-link solutions to prefer">Knee branch (n=2)</label>
+        <select id="optBranch">
+          <option value="nearest">Nearest to current pose</option>
+          <option value="+">+ (knee CCW, θ2 &gt; 0)</option>
+          <option value="-">− (knee CW, θ2 &lt; 0)</option>
+        </select>
+      </div>
+      <div class="row"><label title="Half-width of each link capsule; obstacles must stay farther than this from the link centerline">Link half-width</label><input id="optThick" type="number" step="1" min="0" /></div>
+      <label class="chk"><input id="optAvoid" type="checkbox" /> Avoid obstacles (null-space repulsion + RRT fallback)</label>
+
+      <h3>Path <span class="pill" id="wpCount"></span></h3>
+      <div id="wpList" class="list"></div>
+      <div class="row"><label title="How the tip travels between waypoints">Tip path shape</label>
+        <select id="optPathShape">
+          <option value="smooth">Smooth — arc / spline from the current tip</option>
+          <option value="straight">Straight segments (sharp corners)</option>
+          <option value="free">Free — point-to-point, any path</option>
+        </select>
+      </div>
+      <div class="btns">
+        <button id="runPath" class="primary">▶ Run path</button>
+        <button id="revPath">Reverse</button>
+        <button id="clrPath">Clear</button>
+      </div>
+      <p class="hint">Path mode: click to drop waypoints. <b>Smooth</b> starts at the current tip and runs a circular arc through 2 waypoints (e.g. lift → touchdown for a trot) or a spline through more, eased in and out. <b>Straight</b> approaches W1 freely, then draws sharp segments.</p>
+
+      <h3>Obstacles <span class="pill" id="obCount"></span></h3>
+      <div id="obList" class="list"></div>
+      <div class="btns">
+        <button id="addGround">+ Ground</button>
+        <button id="clrObs">Clear</button>
+      </div>
+
+      <h3>Display</h3>
+      <label class="chk"><input id="optAngles" type="checkbox" /> Joint angle arcs</label>
+      <label class="chk"><input id="optWS" type="checkbox" /> Reachable workspace</label>
+      <label class="chk"><input id="optGhosts" type="checkbox" /> Solution-set ghosts (∞ case)</label>
+      <label class="chk"><input id="optTrace" type="checkbox" /> Tip trace + start ghost</label>
+      <label class="chk"><input id="optCands" type="checkbox" /> Highlight best candidates (effort / shortest / smoothest)</label>
+      <div class="row"><label>Playback (frames/s)</label><input id="optFps" type="range" min="5" max="240" step="5" /><span id="fpsV" class="hint" style="min-width:30px;text-align:right"></span></div>
+
+      <h3>Reports</h3>
+      <p class="hint hosted-only">Every run builds a PDF of the worked math. Click <b>Save this run</b> on the Work tab to download it.</p>
+      <p class="hint local-only">Nothing is saved by default. Turn on <b>Session</b> (header) to save every run's PDF into <code>runs/session-…/</code> until you turn it off, or click <b>Save this run</b> on the Work tab to keep just that one (<code>runs/saved/</code>). Manage and delete saved PDFs on the Runs tab.</p>
+    </section>
+
+    <section class="tab" id="tab-work">
+      <div class="card" id="workHead"><span class="hint">No run yet — set a target (Target mode, click the canvas) or press Run.</span></div>
+      <div id="scrubWrap" style="display:none">
+        <div class="row"><label style="min-width:auto">Frame</label><input id="scrub" type="range" min="0" max="0" value="0" /><span id="scrubV" class="hint" style="min-width:74px;text-align:right"></span></div>
+      </div>
+      <div class="btns" id="workBtns" style="display:none">
+        <button id="saveRun" class="primary">Save this run</button>
+        <button id="dlPdf" class="local-only">Download PDF</button>
+        <button id="openPdf" class="local-only">Open saved PDF</button>
+      </div>
+      <div id="report"></div>
+    </section>
+
+    <section class="tab" id="tab-runs">
+      <h3>This page's runs <span class="pill" id="pageRunCount">0</span></h3>
+      <p class="hint">Kept in memory until you reload. Save any of them to keep the PDF.</p>
+      <div id="pageRuns" class="list"></div>
+      <h3 class="local-only">Saved PDFs on disk <span class="pill" id="diskCount">0</span> <span class="spacer"></span><button id="refreshRuns" style="padding:1px 8px;font-size:11px">Refresh</button></h3>
+      <p class="hint local-only" id="runsDir"></p>
+      <div id="runsList" class="local-only"></div>
+    </section>
+  </aside>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   IK Studio — 2D planar serial-chain inverse kinematics, with worked math
+   ===================================================================== */
+const D2R = Math.PI / 180, R2D = 180 / Math.PI, MAXL = 6;
+const LINK_COLORS = ['#4aa3ff', '#39c5cf', '#4cc38a', '#ffce54', '#f0883e', '#b392f0'];
+const $ = s => document.querySelector(s);
+const wrap = a => { a = (a + Math.PI) % (2 * Math.PI); if (a < 0) a += 2 * Math.PI; return a - Math.PI; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const sum = a => a.reduce((s, v) => s + v, 0);
+const hyp = Math.hypot;
+
+// ---------- number formatting ----------
+function f(v, d = 3) { if (!isFinite(v)) return String(v); const t = 0.5 * Math.pow(10, -d); return (Math.abs(v) < t ? 0 : v).toFixed(d); }
+const fd = (rad, d = 2) => f(rad * R2D, d);
+const vec = (arr, d = 2, k = 1) => '[' + arr.map(v => f(v * k, d)).join(', ') + ']';
+const pt = (p, d = 2) => `(${f(p.x, d)}, ${f(p.y, d)})`;
+function matLines(name, M, d = 3) {
+  const cells = M.map(r => r.map(v => f(v, d)));
+  const w = Math.max(...cells.flat().map(s => s.length));
+  const pre = name + ' = ', blank = ' '.repeat(pre.length);
+  return cells.map((r, i) => (i === 0 ? pre : blank) + '[ ' + r.map(s => s.padStart(w)).join('  ') + ' ]');
+}
+
+// ---------- state ----------
+const S = {
+  L: [110, 100, 45], th: [-110 * D2R, 40 * D2R, 70 * D2R], home: null,
+  base: { x: 0, y: 0 },
+  obs: [], wps: [], target: null,
+  mode: 'target',
+  opt: { method: 'auto', lambda: 6, step: 8, maxDth: 6, tol: 0.1, maxIter: 400, branch: 'nearest', thick: 6, avoid: true,
+         straight: true, angles: true, ws: true, ghosts: true, trace: true, fps: 60, pick: 'solver', cands: true, pathShape: 'smooth' },
+  view: { s: 1.5, ox: 0, oy: 0 },
+  anim: null, last: null, sel: null, hover: null, runCount: 0, live: false, session: null, history: [],
+};
+S.home = S.th.slice();
+
+// Served by server.py on localhost; anywhere else (static hosting) there is no API, so PDFs download instead.
+const HOSTED = !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+if (HOSTED) document.body.classList.add('hosted');
+
+const STORE = 'ik-studio-v1';
+function save() {
+  try { localStorage.setItem(STORE, JSON.stringify({ L: S.L, th: S.th, home: S.home, obs: S.obs, wps: S.wps, target: S.target, opt: S.opt, runCount: S.runCount })); } catch (e) {}
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (!d) return;
+    if (Array.isArray(d.L) && d.L.length && d.L.length <= MAXL && Array.isArray(d.th) && d.th.length === d.L.length) { S.L = d.L; S.th = d.th; S.home = d.home && d.home.length === d.L.length ? d.home : d.th.slice(); }
+    if (Array.isArray(d.obs)) S.obs = d.obs;
+    if (Array.isArray(d.wps)) S.wps = d.wps;
+    if (d.target) S.target = d.target;
+    if (d.opt) Object.assign(S.opt, d.opt);
+    if (d.runCount) S.runCount = d.runCount;
+  } catch (e) {}
+}
+
+/* ======================= kinematics ======================= */
+function fkL(th, L, bx = 0, by = 0) {
+  const P = [{ x: bx, y: by }], phi = []; let a = 0, x = bx, y = by;
+  for (let i = 0; i < L.length; i++) { a += th[i]; phi.push(a); x += L[i] * Math.cos(a); y += L[i] * Math.sin(a); P.push({ x, y }); }
+  return { P, phi, tip: P[L.length] };
+}
+const fk = th => fkL(th, S.L, S.base.x, S.base.y);
+// 2×n Jacobian of tip position: column i = z × (tip − joint_i) = [−(yt−yi), xt−xi]
+function jacobian(P) {
+  const n = P.length - 1, t = P[n], J = [[], []];
+  for (let i = 0; i < n; i++) { J[0][i] = -(t.y - P[i].y); J[1][i] = t.x - P[i].x; }
+  return J;
+}
+function reachInfo(L) {
+  const Sm = sum(L), Lm = Math.max(...L);
+  return { S: Sm, Lmax: Lm, Rmin: Math.max(0, 2 * Lm - Sm) };
+}
+
+// closed-form 2-link IK (base at origin): both knee branches
+function ik2(x, y, L1, L2) {
+  const r2 = x * x + y * y;
+  const c2raw = (r2 - L1 * L1 - L2 * L2) / (2 * L1 * L2);
+  const reach = Math.abs(c2raw) <= 1 + 1e-9;
+  const c2 = clamp(c2raw, -1, 1), s2 = Math.sqrt(Math.max(0, 1 - c2 * c2));
+  const alpha = Math.atan2(y, x);
+  const sols = [+1, -1].map(sg => {
+    const t2 = Math.atan2(sg * s2, c2), k1 = L1 + L2 * c2, k2 = L2 * sg * s2, beta = Math.atan2(k2, k1);
+    return { sign: sg > 0 ? '+' : '−', t1: wrap(alpha - beta), t2, k1, k2, beta };
+  });
+  return { r2, c2raw, c2, s2, reach, alpha, sols };
+}
+
+/* ======================= geometry / collision ======================= */
+function segPt(a, b, p) {
+  const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+  const u = l2 ? clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / l2, 0, 1) : 0;
+  return { x: a.x + u * dx, y: a.y + u * dy };
+}
+function clipSegBox(a, b, x0, y0, x1, y1) {
+  let t0 = 0, t1 = 1; const dx = b.x - a.x, dy = b.y - a.y;
+  const p = [-dx, dx, -dy, dy], q = [a.x - x0, x1 - a.x, a.y - y0, y1 - a.y];
+  for (let k = 0; k < 4; k++) {
+    if (p[k] === 0) { if (q[k] < 0) return null; }
+    else { const r = q[k] / p[k]; if (p[k] < 0) { if (r > t1) return null; if (r > t0) t0 = r; } else { if (r < t0) return null; if (r < t1) t1 = r; } }
+  }
+  return [{ x: a.x + t0 * dx, y: a.y + t0 * dy }, { x: a.x + t1 * dx, y: a.y + t1 * dy }];
+}
+// signed distance from segment ab to obstacle surface; q = closest point on the segment, n = unit push direction
+function distSegObs(a, b, o) {
+  if (o.type === 'circle') {
+    const q = segPt(a, b, o), vx = q.x - o.x, vy = q.y - o.y, m = hyp(vx, vy);
+    return { d: m - o.r, q, n: m > 1e-9 ? { x: vx / m, y: vy / m } : { x: 0, y: 1 } };
+  }
+  const x0 = o.x - o.w / 2, x1 = o.x + o.w / 2, y0 = o.y - o.h / 2, y1 = o.y + o.h / 2;
+  const c = clipSegBox(a, b, x0, y0, x1, y1);
+  if (c) {
+    const q = { x: (c[0].x + c[1].x) / 2, y: (c[0].y + c[1].y) / 2 };
+    const faces = [[q.x - x0, -1, 0], [x1 - q.x, 1, 0], [q.y - y0, 0, -1], [y1 - q.y, 0, 1]].sort((u, v) => u[0] - v[0]);
+    return { d: -faces[0][0], q, n: { x: faces[0][1], y: faces[0][2] } };
+  }
+  let best = { d: Infinity };
+  for (const p of [a, b]) {
+    const cp = { x: clamp(p.x, x0, x1), y: clamp(p.y, y0, y1) }, d = hyp(p.x - cp.x, p.y - cp.y);
+    if (d < best.d) best = { d, q: p, c: cp };
+  }
+  for (const cp of [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x0, y: y1 }, { x: x1, y: y1 }]) {
+    const q = segPt(a, b, cp), d = hyp(q.x - cp.x, q.y - cp.y);
+    if (d < best.d) best = { d, q, c: cp };
+  }
+  return { d: best.d, q: best.q, n: best.d > 1e-9 ? { x: (best.q.x - best.c.x) / best.d, y: (best.q.y - best.c.y) / best.d } : { x: 0, y: 1 } };
+}
+// clearance of a whole pose: min over links & obstacles of (surface distance − half-width). < 0 → touching
+function clearance(th) {
+  if (!S.obs.length) return { d: Infinity };
+  const { P } = fk(th); let best = { d: Infinity };
+  for (let i = 0; i < P.length - 1; i++) for (let j = 0; j < S.obs.length; j++) {
+    const r = distSegObs(P[i], P[i + 1], S.obs[j]), d = r.d - S.opt.thick;
+    if (d < best.d) best = { d, link: i, obs: j };
+  }
+  return best;
+}
+const collides = th => clearance(th).d < 0;
+function pointClear(p) {
+  let best = { d: Infinity };
+  S.obs.forEach((o, j) => { const d = distSegObs(p, p, o).d - S.opt.thick; if (d < best.d) best = { d, obs: j }; });
+  return best;
+}
+function jdist(a, b) { let s = 0; for (let i = 0; i < a.length; i++) { const d = wrap(b[i] - a[i]); s += d * d; } return Math.sqrt(s); }
+function jres() { return Math.min(0.02, 2 / Math.max(1, sum(S.L))); }
+// first collision along the joint-space straight line a→b (null if free)
+function edgeHit(a, b) {
+  const d = jdist(a, b), m = Math.max(1, Math.ceil(d / jres()));
+  for (let k = 1; k <= m; k++) { const q = a.map((v, i) => v + wrap(b[i] - v) * k / m); if (collides(q)) return q; }
+  return null;
+}
+function trajCollision(frames) {
+  if (!S.obs.length) return null;
+  if (collides(frames[0])) return { frame: 0, ...clearance(frames[0]) };
+  for (let k = 1; k < frames.length; k++) {
+    const q = edgeHit(frames[k - 1], frames[k]);
+    if (q) return { frame: k, ...clearance(q) };
+  }
+  return null;
+}
+function minClearanceAlong(frames) {
+  let m = Infinity; for (const q of frames) m = Math.min(m, clearance(q).d); return m;
+}
+
+/* ======================= solvers ======================= */
+function solverOpts() { const o = S.opt; return { lambda: o.lambda, step: o.step, maxDth: o.maxDth * D2R, tol: o.tol, maxIter: o.maxIter, avoid: o.avoid }; }
+
+// obstacle cost H = Σ ½(ρ − d)² for d < ρ ; returns z = −k∇H (rad)
+function avoidGrad(th, P) {
+  const n = th.length, z = new Array(n).fill(0), rho = S.opt.thick + 25;
+  for (let i = 0; i < n; i++) for (const o of S.obs) {
+    const r = distSegObs(P[i], P[i + 1], o);
+    if (r.d >= rho) continue;
+    const mag = rho - r.d;
+    for (let k = 0; k <= i; k++) z[k] += mag * (r.n.x * -(r.q.y - P[k].y) + r.n.y * (r.q.x - P[k].x));
+  }
+  const kGain = 4e-5; for (let k = 0; k < n; k++) z[k] *= kGain;
+  const m = Math.max(...z.map(Math.abs)), cap = 0.08; if (m > cap) for (let k = 0; k < n; k++) z[k] *= cap / m;
+  return z;
+}
+
+// one damped-least-squares step: Δθ = Jᵀ (J Jᵀ + λ² I)⁻¹ e  (+ null-space obstacle term)
+function dlsStep(th, target, o, L = S.L, base = S.base, useAvoid = true) {
+  const n = th.length, F = fkL(th, L, base.x, base.y), P = F.P, tip = F.tip;
+  const e0 = { x: target.x - tip.x, y: target.y - tip.y }, en = hyp(e0.x, e0.y);
+  const sc = en > o.step ? o.step / en : 1, e = { x: e0.x * sc, y: e0.y * sc };
+  const J = jacobian(P), l2 = o.lambda * o.lambda;
+  let a = l2, b = 0, d = l2;
+  for (let i = 0; i < n; i++) { a += J[0][i] * J[0][i]; b += J[0][i] * J[1][i]; d += J[1][i] * J[1][i]; }
+  const det = a * d - b * b, Ai = [[d / det, -b / det], [-b / det, a / det]];
+  const w = { x: Ai[0][0] * e.x + Ai[0][1] * e.y, y: Ai[1][0] * e.x + Ai[1][1] * e.y };
+  const dth1 = th.map((_, i) => J[0][i] * w.x + J[1][i] * w.y);
+  let z = null, dthN = new Array(n).fill(0);
+  if (useAvoid && o.avoid && S.obs.length) {
+    z = avoidGrad(th, P);
+    const Jz = { x: sum(z.map((v, i) => J[0][i] * v)), y: sum(z.map((v, i) => J[1][i] * v)) };
+    const v = { x: Ai[0][0] * Jz.x + Ai[0][1] * Jz.y, y: Ai[1][0] * Jz.x + Ai[1][1] * Jz.y };
+    dthN = z.map((zi, i) => zi - (J[0][i] * v.x + J[1][i] * v.y));
+  }
+  let dth = dth1.map((v, i) => v + dthN[i]);
+  const m = Math.max(...dth.map(Math.abs)), cl = m > o.maxDth ? o.maxDth / m : 1;
+  if (cl < 1) dth = dth.map(v => v * cl);
+  return { P, tip, e0, en, sc, e, J, A: [[a, b], [b, d]], det, Ai, w, dth1, z, dthN, cl, dth };
+}
+
+function runDLS(start, target, o, L = S.L, base = S.base, useAvoid = true, keepSteps = true) {
+  let th = start.slice(); const frames = [th.slice()], iters = [], hist = []; let status = 'max-iter', last = null, kicks = 0;
+  for (let k = 1; k <= o.maxIter; k++) {
+    const st = dlsStep(th, target, o, L, base, useAvoid);
+    if (st.en < o.tol) { status = 'converged'; last = st; break; }
+    const before = th.slice();
+    // singular pose (e.g. arm dead straight, target along the arm): J has no radial column, Δθ ≈ 0 → nudge out
+    if (Math.max(...st.dth.map(Math.abs)) < 1e-6 && kicks < 3) {
+      kicks++; st.dth = th.map((_, i) => (i % 2 ? -1 : 1) * 3 * D2R); st.kick = true;
+    }
+    th = th.map((v, i) => v + st.dth[i]);
+    frames.push(th.slice());
+    iters.push({ k, th: before, tip: st.tip, en: st.en, dth: st.dth, kick: !!st.kick, st: keepSteps ? st : null });
+    hist.push(st.en);
+    // stalled: < 0.2 % (or 10 % of tol) improvement over the last 20 iterations → closest reachable point
+    if (hist.length > 20 && hist[hist.length - 21] - st.en < Math.max(o.tol * 0.1, 0.002 * st.en)) { status = 'stalled'; break; }
+  }
+  const F = fkL(th, L, base.x, base.y);
+  return { frames, iters, status, th, kicks, err: hyp(target.x - F.tip.x, target.y - F.tip.y), lastStep: last };
+}
+
+function runCCD(start, target, o) {
+  let th = start.slice(); const n = th.length, frames = [th.slice()], steps = [];
+  let status = 'max-iter', best = Infinity, stall = 0; const maxSweeps = Math.max(1, Math.ceil(o.maxIter / n));
+  const errOf = t => { const tp = fk(t).tip; return hyp(target.x - tp.x, target.y - tp.y); };
+  if (errOf(th) < o.tol) status = 'converged';
+  else for (let sw = 1; sw <= maxSweeps; sw++) {
+    for (let i = n - 1; i >= 0; i--) {
+      const { P, tip } = fk(th);
+      const a = { x: tip.x - P[i].x, y: tip.y - P[i].y }, b = { x: target.x - P[i].x, y: target.y - P[i].y };
+      const cross = a.x * b.y - a.y * b.x, dot = a.x * b.x + a.y * b.y;
+      const raw = Math.atan2(cross, dot), dq = clamp(raw, -o.maxDth, o.maxDth);
+      th[i] += dq; frames.push(th.slice());
+      steps.push({ sw, i, a, b, cross, dot, raw, dq, pj: P[i], en: errOf(th) });
+    }
+    const en = errOf(th);
+    if (en < o.tol) { status = 'converged'; break; }
+    if (en < best - 1e-4) { best = en; stall = 0; } else if (++stall > 30) { status = 'stalled'; break; }
+  }
+  return { frames, steps, status, th, err: errOf(th) };
+}
+
+// minimum-jerk time scaling: s(0)=0, s(1)=1, zero velocity and acceleration at both ends
+const minJerk = t => t * t * t * (10 + t * (-15 + 6 * t));
+function interpFrames(a, b, maxStepRad = 1.5 * D2R) {
+  // peak speed of the min-jerk profile is 1.875× the average, so use proportionally more frames
+  const d = a.map((v, i) => wrap(b[i] - v)), m = Math.max(12, Math.ceil(1.875 * Math.max(...d.map(Math.abs)) / maxStepRad));
+  const out = []; for (let k = 0; k <= m; k++) { const s = minJerk(k / m); out.push(a.map((v, i) => v + d[i] * s)); }
+  return out;
+}
+
+/* ---------- reachability / number of solutions ---------- */
+function classify(tgt) {
+  const n = S.L.length, x = tgt.x - S.base.x, y = tgt.y - S.base.y, r = hyp(x, y), R = reachInfo(S.L), tol = Math.max(S.opt.tol, 1e-6);
+  const c = { n, r, ...R, x, y, count: 0, label: '', why: [] };
+  const eqCount = 2;
+  if (n === 1) {
+    if (Math.abs(r - S.L[0]) <= tol) { c.count = 1; c.label = '1 — unique'; c.why.push(`1 unknown, ${eqCount} equations: reachable only on the circle r = L1, and r ≈ L1 here.`); }
+    else { c.count = 0; c.label = '0 — unreachable (off the circle)'; c.why.push(`1 unknown, ${eqCount} equations (over-determined): the tip can only reach the circle r = L1 = ${f(S.L[0], 2)}, but r = ${f(r, 3)}.`); }
+    return c;
+  }
+  if (r > R.S + tol) { c.count = 0; c.label = '0 — unreachable (outside)'; c.why.push(`r = ${f(r, 3)} > ΣL = ${f(R.S, 3)}: the target is beyond full extension.`); return c; }
+  if (r < R.Rmin - tol) { c.count = 0; c.label = '0 — unreachable (inner hole)'; c.why.push(`r = ${f(r, 3)} < Rmin = ${f(R.Rmin, 3)}: the longest link (${f(R.Lmax, 1)}) cannot fold back far enough.`); return c; }
+  const atOuter = Math.abs(r - R.S) <= tol, atInner = R.Rmin > tol && Math.abs(r - R.Rmin) <= tol;
+  if (atOuter) { c.count = 1; c.label = '1 — unique (full extension)'; c.why.push(`r ≈ ΣL: every link must point straight at the target — one pose, and it is singular (J loses rank).`); return c; }
+  if (atInner) { c.count = 1; c.label = '1 — unique (fully folded)'; c.why.push(`r ≈ Rmin = 2·Lmax − ΣL: the longest link points at the target and all others fold straight back — one pose (singular).`); return c; }
+  if (n === 2) {
+    if (r <= tol && Math.abs(S.L[0] - S.L[1]) <= tol) { c.count = Infinity; c.dim = 1; c.label = '∞ — degenerate (target on base)'; c.why.push(`L1 = L2 and the target sits on the base: θ2 = 180° folds the tip onto the base for ANY θ1.`); return c; }
+    c.count = 2; c.label = '2 — finite (knee +/−)';
+    c.why.push(`2 unknowns (θ1, θ2), ${eqCount} equations: strictly inside the annulus the law of cosines gives cos θ2 in (−1, 1), so θ2 = ±acos(·) — two mirror-image "knee" solutions.`);
+    return c;
+  }
+  c.count = Infinity; c.dim = n - 2; c.label = `∞ — infinite (${n - 2}-D family)`;
+  c.why.push(`${n} unknowns, only ${eqCount} position equations → ${n} − 2 = ${n - 2} free parameter(s). Strictly inside the annulus the solution set is a ${n - 2}-dimensional "self-motion" manifold: the arm can move along it without the tip moving.`);
+  return c;
+}
+
+/* ---------- the solution set (infinite case) ---------- */
+function familySet(tgt, seed) {
+  const n = S.L.length, L = S.L, x = tgt.x - S.base.x, y = tgt.y - S.base.y;
+  const out = { n, samples: [], intervals: [], param: 'φ', stepDeg: n === 3 ? 1 : 5, dim: n - 2, how: '' };
+  if (n === 2) {
+    out.param = 'θ1'; out.stepDeg = 5; out.dim = 1;
+    out.how = 'Degenerate 2-link case: θ2 = 180° and θ1 is free.';
+    for (let a = 0; a < 360; a += 5) out.samples.push({ p: a, br: '', th: [wrap(a * D2R), Math.PI] });
+    out.intervals = [[0, 360]];
+  } else {
+    const Ln = L[n - 1], sub = L.slice(0, n - 1), R = reachInfo(sub), valid = [];
+    let s = seed.slice(0, n - 1);
+    for (let a = 0; a < 360; a += out.stepDeg) {
+      const ph = a * D2R, wx = x - Ln * Math.cos(ph), wy = y - Ln * Math.sin(ph), rw = hyp(wx, wy);
+      const ok = rw <= R.S + 1e-9 && rw >= R.Rmin - 1e-9; valid.push(ok);
+      if (!ok) continue;
+      if (n === 3) {
+        const k = ik2(wx, wy, L[0], L[1]);
+        for (const b of k.sols) out.samples.push({ p: a, br: b.sign, th: [b.t1, b.t2, wrap(ph - b.t1 - b.t2)], w: { x: wx, y: wy } });
+      } else {
+        const r = runDLS(s, { x: wx, y: wy }, { lambda: 1, step: 25, maxDth: 12 * D2R, tol: S.opt.tol * 0.5, maxIter: 300 }, sub, { x: 0, y: 0 }, false, false);
+        if (r.err < S.opt.tol) { s = r.th.slice(); const th = r.th.map(wrap); th.push(wrap(ph - sum(r.th))); out.samples.push({ p: a, br: '', th, w: { x: wx, y: wy } }); }
+      }
+    }
+    out.how = n === 3
+      ? 'Sweep the tip approach angle φ = θ1+θ2+θ3 (absolute angle of link 3). For each φ the wrist is W = p* − L3·(cos φ, sin φ); links 1–2 then solve W in closed form (two knee branches), and θ3 = φ − θ1 − θ2.'
+      : `Sweep φ (absolute angle of the last link) in ${out.stepDeg}° steps. For each φ the wrist W = p* − L${n}·(cos φ, sin φ) is solved by the first ${n - 1} links with DLS (continuation from the previous φ), then θ${n} = φ − Σθ. Each φ-slice is itself a ${n - 3}-D family; one representative is listed.`;
+    // contiguous valid φ intervals
+    const m = valid.length; let startIdx = valid.findIndex(v => !v);
+    if (startIdx < 0) out.intervals = [[0, 360]];
+    else for (let k = 1; k <= m; k++) {
+      const i = (startIdx + k) % m;
+      if (valid[i] && !valid[(i - 1 + m) % m]) out.intervals.push([i * out.stepDeg, null]);
+      if (!valid[i] && valid[(i - 1 + m) % m]) out.intervals[out.intervals.length - 1][1] = ((i - 1 + m) % m) * out.stepDeg;
+    }
+  }
+  for (const smp of out.samples) smp.free = !collides(smp.th);
+  return out;
+}
+function pickEven(arr, k) { if (arr.length <= k) return arr.slice(); const out = []; for (let i = 0; i < k; i++) out.push(arr[Math.floor(i * arr.length / k)]); return out; }
+
+/* ---------- RRT-Connect in joint space (fallback when a direct move would touch an obstacle) ---------- */
+function rrtConnect(qs, qg, maxIt = 5000) {
+  const n = qs.length, eps = 0.12;
+  const steer = (a, b) => { const d = jdist(a, b); if (d <= eps) return b.slice(); const t = eps / d; return a.map((v, i) => wrap(v + wrap(b[i] - v) * t)); };
+  const nearest = (T, q) => { let bi = 0, bd = Infinity; for (let i = 0; i < T.length; i++) { const d = jdist(T[i].q, q); if (d < bd) { bd = d; bi = i; } } return bi; };
+  const extend = (T, q) => { const i = nearest(T, q), qn = steer(T[i].q, q); if (edgeHit(T[i].q, qn)) return -1; T.push({ q: qn, p: i }); return T.length - 1; };
+  const connect = (T, q) => { for (;;) { const i = nearest(T, q), qn = steer(T[i].q, q); if (edgeHit(T[i].q, qn)) return -1; T.push({ q: qn, p: i }); if (jdist(qn, q) < 1e-9) return T.length - 1; } };
+  const trace = (T, i) => { const out = []; while (i >= 0) { out.push(T[i].q); i = T[i].p; } return out.reverse(); };
+  const A = [{ q: qs.map(wrap), p: -1 }], B = [{ q: qg.map(wrap), p: -1 }];
+  let Ta = A, Tb = B;
+  for (let it = 1; it <= maxIt; it++) {
+    const qr = Array.from({ length: n }, () => (Math.random() * 2 - 1) * Math.PI);
+    const ia = extend(Ta, qr);
+    if (ia >= 0) {
+      const ib = connect(Tb, Ta[ia].q);
+      if (ib >= 0) {
+        const [iA, iB] = Ta === A ? [ia, ib] : [ib, ia];
+        const path = trace(A, iA).concat(trace(B, iB).reverse().slice(1));
+        return { path, iters: it, nodes: A.length + B.length };
+      }
+    }
+    [Ta, Tb] = [Tb, Ta];
+  }
+  return { path: null, iters: maxIt, nodes: A.length + B.length };
+}
+function shortcut(path, tries = 120) {
+  const p = path.slice();
+  for (let t = 0; t < tries && p.length > 2; t++) {
+    const i = Math.floor(Math.random() * (p.length - 2)), j = i + 2 + Math.floor(Math.random() * (p.length - i - 2));
+    if (j < p.length && !edgeHit(p[i], p[j])) p.splice(i + 1, j - i - 1);
+  }
+  return p;
+}
+function densify(start, nodes, maxStepRad = 1.5 * D2R) {
+  let cur = start.slice(); const out = [cur.slice()];
+  for (const nd of nodes.slice(1)) {
+    const d = cur.map((v, i) => wrap(nd[i] - v)), m = Math.max(1, Math.ceil(Math.max(...d.map(Math.abs)) / maxStepRad));
+    for (let k = 1; k <= m; k++) out.push(cur.map((v, i) => v + d[i] * k / m));
+    cur = out[out.length - 1].slice();
+  }
+  return out;
+}
+function planAround(start, goals) {
+  for (const g of goals.slice(0, 5)) if (!edgeHit(start, g)) return { ok: true, how: 'direct joint-space straight line', nodes: [start, g], goal: g, rrtNodes: 0, iters: 0 };
+  for (const g of goals.slice(0, 3)) {
+    const r = rrtConnect(start, g);
+    if (r.path) { const sc = shortcut(r.path); return { ok: true, how: 'RRT-Connect (joint space) + shortcut smoothing', nodes: sc, raw: r.path.length, goal: g, rrtNodes: r.nodes, iters: r.iters }; }
+  }
+  return { ok: false };
+}
+
+/* ======================= report builder ======================= */
+function newReport(kind, title) {
+  const r = { kind, title, id: ++S.runCount, when: new Date(), blocks: [], fig: null, head: {} , hn: 0 };
+  save(); return r;
+}
+function RB(r) {
+  return {
+    h: t => r.blocks.push({ t: 'h', text: `${++r.hn}. ${t}` }),
+    h2: t => r.blocks.push({ t: 'h2', text: t }),
+    p: t => r.blocks.push({ t: 'p', text: t }),
+    eq: lines => r.blocks.push({ t: 'eq', lines }),
+    tbl: (head, rows, cap, hl) => r.blocks.push({ t: 'table', head, rows, cap, hl }),
+    kv: pairs => r.blocks.push({ t: 'kv', pairs }),
+    call: (tone, text) => r.blocks.push({ t: 'call', tone, text }),
+    fig: () => r.blocks.push({ t: 'fig' }),
+  };
+}
+const thHead = (pre = 'θ', unit = '°') => S.L.map((_, i) => `${pre}${i + 1}${unit}`);
+
+function poseTable(b, th, cap) {
+  const { P, phi } = fk(th);
+  b.tbl(['joint', 'L', 'θ rel °', 'φ abs °', 'joint x', 'joint y'],
+    S.L.map((L, i) => [String(i + 1), f(L, 1), fd(wrap(th[i])), fd(wrap(phi[i])), f(P[i].x, 2), f(P[i].y, 2)])
+      .concat([['tip', '', '', '', f(P[S.L.length].x, 2), f(P[S.L.length].y, 2)]]), cap);
+}
+
+function writeModel(b, start) {
+  const n = S.L.length;
+  b.h('Model & forward kinematics');
+  b.p(`Planar serial chain of ${n} revolute joint${n > 1 ? 's' : ''}, base fixed at (0, 0). Joint angles are relative: θ1 is measured from the +x axis and θi from the direction of link i−1 (CCW positive). The absolute direction of link i is φi = θ1 + … + θi. The touch point is the tip of link ${n}.`);
+  b.eq(['x_tip = Σ Li·cos(φi)      y_tip = Σ Li·sin(φi)      φi = Σ(k≤i) θk',
+        `L = ${vec(S.L, 2)}     ΣL = ${f(sum(S.L), 2)}`]);
+  poseTable(b, start, 'Start pose');
+}
+
+function writeClassification(b, c) {
+  b.h('Reachability & number of solutions');
+  b.eq([
+    `r = √(x² + y²) = √(${f(c.x, 3)}² + ${f(c.y, 3)}²) = ${f(c.r, 4)}`,
+    `Rmax = ΣL = ${f(c.S, 4)}`,
+    `Rmin = max(0, 2·Lmax − ΣL) = max(0, 2·${f(c.Lmax, 2)} − ${f(c.S, 2)}) = ${f(c.Rmin, 4)}`,
+    `Reachable workspace: annulus Rmin ≤ r ≤ Rmax  →  ${f(c.Rmin, 2)} ≤ ${f(c.r, 2)} ≤ ${f(c.S, 2)} ? ${c.r >= c.Rmin - S.opt.tol && c.r <= c.S + S.opt.tol ? 'YES' : 'NO'}`,
+  ]);
+  for (const w of c.why) b.p(w);
+  b.call(c.count === 0 ? 'bad' : c.count === Infinity ? 'warn' : 'ok', `Solutions: ${c.label}`);
+}
+
+/* ---------- worked math per method ---------- */
+function workedDLS(b, it, o, target) {
+  const st = it.st, n = S.L.length;
+  const lines = [
+    `θ = ${vec(it.th, 3, R2D)}°   (rad ${vec(it.th, 4)})`,
+    'joints: ' + st.P.slice(0, n).map((p, i) => `P${i}=${pt(p)}`).join('  '),
+    `f(θ) = tip = ${pt(st.tip, 3)}`,
+    `e = p* − f(θ) = ${pt(target, 3)} − ${pt(st.tip, 3)} = ${pt(st.e0, 3)}     |e| = ${f(st.en, 4)}`,
+    st.sc < 1 ? `|e| > step s = ${f(o.step, 2)}  →  e' = e·s/|e| = e·${f(st.sc, 4)} = ${pt(st.e, 4)}` : `|e| ≤ step s  →  e' = e`,
+    'Jacobian: column i = [ −(y_tip − y_i) , x_tip − x_i ]ᵀ',
+    ...matLines('J', st.J, 3),
+    `A = J·Jᵀ + λ²·I     (λ = ${f(o.lambda, 3)},  λ² = ${f(o.lambda * o.lambda, 3)})`,
+    ...matLines('A', st.A, 3),
+    `det A = a·d − b² = ${f(st.A[0][0], 3)}·${f(st.A[1][1], 3)} − (${f(st.A[0][1], 3)})² = ${f(st.det, 3)}`,
+    ...matLines('A⁻¹', st.Ai.map(r => r.map(v => v * 1e6)), 5).map((l, i) => i === 0 ? l + '  ×10⁻⁶' : l),
+    `w = A⁻¹·e' = (${f(st.w.x, 8)}, ${f(st.w.y, 8)})`,
+    'Δθi = J1i·w1 + J2i·w2',
+    ...st.dth1.map((v, i) => `  Δθ${i + 1} = (${f(st.J[0][i], 3)})(${f(st.w.x, 8)}) + (${f(st.J[1][i], 3)})(${f(st.w.y, 8)}) = ${f(v, 6)} rad = ${fd(v, 4)}°`),
+  ];
+  if (st.z) {
+    lines.push('Obstacle term (projected into the null space so it cannot move the tip):',
+      `  z = −k·∇H = ${vec(st.z, 5)} rad,   N·z = z − J⁺(J·z) = ${vec(st.dthN, 5)} rad`);
+  }
+  if (st.cl < 1) lines.push(`max|Δθ| exceeded ${f(o.maxDth * R2D, 2)}° → all Δθ scaled by ${f(st.cl, 4)}`);
+  lines.push(`Δθ applied = ${vec(st.dth, 4, R2D)}°`, `θ ← θ + Δθ = ${vec(it.th.map((v, i) => v + st.dth[i]), 3, R2D)}°`);
+  b.eq(lines);
+}
+
+function writeDLS(b, sol, o, target, detail) {
+  const n = S.L.length;
+  b.p('Newton-style iteration on the tip error. Linearise the forward kinematics, f(θ + Δθ) ≈ f(θ) + J·Δθ, and pick the Δθ that best closes the error while penalising large joint moves (damped least squares / Levenberg–Marquardt):');
+  b.eq(['e = p* − f(θ)',
+        'Δθ = argmin |J·Δθ − e|² + λ²|Δθ|²  =  Jᵀ (J·Jᵀ + λ²·I)⁻¹ e',
+        `J·Jᵀ is only 2×2, so the inverse is closed form:  [a b; b d]⁻¹ = 1/(ad − b²)·[d −b; −b a]`,
+        `Per iteration the error is clamped to s = ${f(o.step, 2)} (so the leg walks toward the target) and |Δθi| ≤ ${f(o.maxDth * R2D, 2)}°.`,
+        `Stop when |e| < tol = ${f(o.tol, 3)}.`]);
+  if (n > 2) b.p('With redundancy (n > 2) DLS returns the minimum-norm Δθ at each step, so of the infinitely many answers it lands on the one reached by the smallest joint motions from the start pose.');
+  if (!sol.iters.length) { b.call('ok', `Already within tolerance at the start pose (|e| < ${f(o.tol, 3)}) — no iterations needed.`); return; }
+  if (sol.kicks) b.call('warn', `Singular pose hit ${sol.kicks}× (Δθ ≈ 0 because J·Jᵀ lost rank, e.g. the chain was dead straight with the error along it). The joints were nudged ±3° to escape — those iterations are marked "kick" below.`);
+  if (sol.status === 'stalled') b.p('Stopped: |e| improved by less than 0.2 % over 20 iterations — this is the closest point the chain can reach from here.');
+  if (detail === 'full') {
+    b.h2('Worked iteration 1'); workedDLS(b, sol.iters[0], o, target);
+    if (sol.iters.length > 1) { b.h2(`Worked iteration ${sol.iters.length} (last)`); workedDLS(b, sol.iters[sol.iters.length - 1], o, target); }
+    b.h2('Every iteration');
+    b.tbl(['k', '|e|', 'tip x', 'tip y', ...thHead()],
+      sol.iters.map(it => [it.k + (it.kick ? ' kick' : ''), f(it.en, 3), f(it.tip.x, 2), f(it.tip.y, 2), ...it.th.map(v => fd(v, 2))]), 'Joint angles θ at the start of each iteration');
+    b.tbl(['k', ...thHead('Δθ')], sol.iters.map(it => [String(it.k), ...it.dth.map(v => fd(v, 3))]), 'Δθ applied at each iteration (deg)');
+  } else {
+    b.tbl(['k', '|e|', ...thHead('Δθ')], sol.iters.map(it => [String(it.k), f(it.en, 3), ...it.dth.map(v => fd(v, 3))]), 'Iterations (Δθ in deg)');
+  }
+}
+
+function writeCCD(b, sol, o, detail) {
+  b.p('Cyclic Coordinate Descent: sweep the joints from the tip back to the base. For joint i, rotate so the vector joint→tip lines up with joint→target:');
+  b.eq(['a = tip − Pi        b = p* − Pi',
+        'Δθi = atan2(a × b, a · b)      (a × b = ax·by − ay·bx,  a · b = ax·bx + ay·by)',
+        `|Δθi| clamped to ${f(o.maxDth * R2D, 2)}° per update; repeat sweeps until |e| < ${f(o.tol, 3)}.`]);
+  if (!sol.steps.length) { b.call('ok', 'Already within tolerance at the start pose.'); return; }
+  if (detail === 'full') {
+    b.h2('Worked sweep 1');
+    b.eq(sol.steps.filter(s => s.sw === 1).flatMap(s => [
+      `joint ${s.i + 1}: P${s.i} = ${pt(s.pj)}   a = ${pt(s.a)}   b = ${pt(s.b)}`,
+      `   a×b = ${f(s.cross, 3)}   a·b = ${f(s.dot, 3)}   atan2 = ${fd(s.raw, 4)}°${s.raw !== s.dq ? `  → clamped ${fd(s.dq, 4)}°` : ''}   |e| after = ${f(s.en, 4)}`]));
+  }
+  b.tbl(['sweep', 'joint', 'Δθ °', '|e| after'], sol.steps.map(s => [String(s.sw), String(s.i + 1), fd(s.dq, 3), f(s.en, 3)]), 'Every joint update');
+}
+
+function writeAnalytic2(b, tgt, start, k, choice, costs, L1, L2, label = '') {
+  const x = tgt.x, y = tgt.y;
+  b.eq([
+    `${label}Law of cosines on the triangle (base, knee, ${label ? 'wrist' : 'tip'}):`,
+    `r² = x² + y² = ${f(x, 3)}² + ${f(y, 3)}² = ${f(k.r2, 4)}`,
+    `cos θ2 = (r² − L1² − L2²) / (2·L1·L2) = (${f(k.r2, 3)} − ${f(L1 * L1, 3)} − ${f(L2 * L2, 3)}) / ${f(2 * L1 * L2, 3)} = ${f(k.c2raw, 6)}`,
+    k.reach ? `|cos θ2| ≤ 1 → reachable.   sin θ2 = ±√(1 − cos²θ2) = ±${f(k.s2, 6)}` : `|cos θ2| > 1 → NOT reachable; clamp to ${f(k.c2, 0)} for the closest pose.`,
+    `θ2 = atan2(±sin θ2, cos θ2) = ±${fd(Math.abs(k.sols[0].t2), 4)}°`,
+    'θ1 = atan2(y, x) − atan2(k2, k1),   k1 = L1 + L2·cos θ2,   k2 = L2·sin θ2',
+    `atan2(y, x) = ${fd(k.alpha, 4)}°`,
+    ...k.sols.map(s => `branch ${s.sign}: k1 = ${f(s.k1, 4)}, k2 = ${f(s.k2, 4)}, atan2(k2,k1) = ${fd(s.beta, 4)}° → θ1 = ${fd(s.t1, 4)}°, θ2 = ${fd(s.t2, 4)}°`),
+  ]);
+}
+
+/* ---------- main single-target solve (used by target runs and path legs) ---------- */
+function solveToTarget(start, tgt, b, detail = 'full', pickOverride = null) {
+  const n = S.L.length, o = solverOpts();
+  const res = { start: start.slice(), target: tgt, frames: [start.slice()], method: '', status: '', cls: null, fam: null, plan: null, hit: null, ghosts: [], iterations: 0 };
+
+  if (S.obs.length) {
+    const pc = pointClear(tgt);
+    if (pc.d < 0) {
+      res.cls = classify(tgt); res.status = 'blocked';
+      b.call('bad', `Target ${pt(tgt)} is inside obstacle #${pc.obs + 1} or within the link half-width (${f(S.opt.thick, 1)}) of it — the tip would have to touch it. No motion.`);
+      res.err = hyp(tgt.x - fk(start).tip.x, tgt.y - fk(start).tip.y); res.final = start.slice(); return res;
+    }
+    if (collides(start)) b.call('warn', 'The start pose already touches an obstacle; obstacle-aware planning cannot start from a colliding pose.');
+  }
+
+  res.cls = classify(tgt);
+  if (detail === 'full') writeClassification(b, res.cls);
+  else b.p(`Solutions: ${res.cls.label}  (r = ${f(res.cls.r, 3)}, annulus ${f(res.cls.Rmin, 2)}–${f(res.cls.S, 2)})`);
+
+  let m = S.opt.method; if (m === 'auto') m = n <= 2 ? 'analytic' : 'dls';
+  if (m === 'analytic' && n > 3) { b.call('warn', `No closed form is used for n = ${n} (> 3) — falling back to Jacobian DLS.`); m = 'dls'; }
+  if (m === 'analytic' && n === 3 && res.cls.count === 0) { b.call('warn', 'Target unreachable — the closed form has no answer; using Jacobian DLS to find the closest reachable pose.'); m = 'dls'; }
+  res.method = m;
+  const MN = { analytic: 'Analytic (closed form)', dls: 'Jacobian — damped least squares', ccd: 'Cyclic coordinate descent' };
+  if (detail === 'full') b.h(`Solution — ${MN[m]}`); else b.h2(`Solve — ${MN[m]}`);
+
+  const bx = tgt.x - S.base.x, by = tgt.y - S.base.y;
+  if (m === 'analytic') {
+    let goal;
+    if (n === 1) {
+      const t1 = Math.atan2(by, bx);
+      b.eq([`One joint: the tip can only point at the target.`, `θ1 = atan2(y, x) = atan2(${f(by, 3)}, ${f(bx, 3)}) = ${fd(t1, 4)}°`,
+            `tip distance is fixed at L1 = ${f(S.L[0], 3)}; residual = |r − L1| = ${f(Math.abs(res.cls.r - S.L[0]), 4)}`]);
+      goal = [t1];
+    } else if (n === 2) {
+      const k = ik2(bx, by, S.L[0], S.L[1]);
+      writeAnalytic2(b, { x: bx, y: by }, start, k, null, null, S.L[0], S.L[1]);
+      const cands = k.sols.map(s => { const th = [s.t1, s.t2]; const d = th.map((v, i) => wrap(v - start[i])); return { s, th, d, cost: sum(d.map(Math.abs)), free: !collides(th) }; });
+      let pool = cands.filter(c => c.free); if (!pool.length) pool = cands;
+      if (S.opt.branch !== 'nearest') { const pref = pool.filter(c => (S.opt.branch === '+') === (c.s.sign === '+')); if (pref.length) pool = pref; }
+      const best = pool.slice().sort((a, c) => a.cost - c.cost)[0];
+      if (res.cls.count === Infinity) b.p('Degenerate case — see the solution-set section; the table shows the representative the formula returns.');
+      b.tbl(['branch', 'θ1 °', 'θ2 °', 'Δθ1 °', 'Δθ2 °', 'Σ|Δθ| °', 'clear of obstacles', 'chosen'],
+        cands.map(c => [c.s.sign, fd(c.th[0]), fd(c.th[1]), fd(c.d[0]), fd(c.d[1]), fd(c.cost), c.free ? 'yes' : 'NO', c === best ? '◀' : '']),
+        `Choice rule: ${S.opt.branch === 'nearest' ? 'collision-free first, then smallest total joint motion Σ|Δθ| from the current pose' : `prefer branch ${S.opt.branch}`}. Δθ = wrap(θ* − θstart) into (−180°, 180°].`,
+        cands.indexOf(best));
+      goal = best.th;
+    } else { // n === 3 closed form over the tip-angle family
+      const fam = familySet(tgt, start); res.fam = fam;
+      b.p('A 3-link chain has one free parameter. Fix the tip approach angle φ = θ1 + θ2 + θ3; the wrist (joint 3) is then known and links 1–2 are a closed-form 2-link problem:');
+      b.eq(['W = p* − L3·(cos φ, sin φ)', '(θ1, θ2) = 2-link IK of W with (L1, L2)', 'θ3 = φ − θ1 − θ2']);
+      const cands = fam.samples.map(s => ({ ...s, cost: sum(s.th.map((v, i) => Math.abs(wrap(v - start[i])))) }));
+      let pool = cands.filter(c => c.free); if (!pool.length) pool = cands;
+      const best = pool.sort((a, c) => a.cost - c.cost)[0];
+      b.p(`All φ from 0° to 359° (1° steps, both knee branches) were solved — ${cands.length} valid solutions. Chosen: φ = ${best.p}°, branch ${best.br}, the collision-free one with the smallest total joint motion (Σ|Δθ| = ${fd(best.cost, 2)}°).`);
+      const k = ik2(best.w.x, best.w.y, S.L[0], S.L[1]);
+      b.eq([`φ = ${best.p}°:  W = ${pt({ x: bx, y: by }, 3)} − ${f(S.L[2], 2)}·(${f(Math.cos(best.p * D2R), 4)}, ${f(Math.sin(best.p * D2R), 4)}) = ${pt(best.w, 3)}`]);
+      writeAnalytic2(b, best.w, start, k, null, null, S.L[0], S.L[1], 'Wrist — ');
+      b.eq([`θ3 = φ − θ1 − θ2 = ${best.p}° − (${fd(best.th[0], 3)}°) − (${fd(best.th[1], 3)}°) = ${fd(best.th[2], 3)}°  (wrapped)`]);
+      goal = best.th;
+    }
+    res.frames = interpFrames(start, goal);
+    b.p('Motion: every joint moves at once from the start pose to the solution on a minimum-jerk profile s(τ) = 10τ³ − 15τ⁴ + 6τ⁵ (each joint takes the shorter way round; smooth start and stop).');
+    res.status = 'closed form';
+  } else if (m === 'dls') {
+    const sol = runDLS(start, tgt, o); res.frames = sol.frames; res.status = sol.status; res.iterations = sol.iters.length;
+    writeDLS(b, sol, o, tgt, detail);
+  } else {
+    const sol = runCCD(start, tgt, o); res.frames = sol.frames; res.status = sol.status; res.iterations = sol.steps.length;
+    writeCCD(b, sol, o, detail);
+  }
+
+  // solution set (infinite case)
+  if (res.cls.count === Infinity) {
+    const fam = res.fam || familySet(tgt, start); res.fam = fam;
+    const freeS = fam.samples.filter(s => s.free); res.ghosts = pickEven(freeS.length ? freeS : fam.samples, 36).map(s => s.th);
+    if (detail === 'full') writeFamily(b, fam, res.cls);
+  }
+
+  // candidate end poses scored on servo effort / tip travel / smoothness
+  if (res.status !== 'blocked') {
+    res.cands = buildCandidates(start, tgt, res);
+    const pick = pickOverride || S.opt.pick;
+    if (res.cands && pick && pick !== 'solver') {
+      res.picked = pick;
+      res.frames = interpFrames(start, res.cands.best[pick].th);
+      res.status = `${CAND_NAME[pick].toLowerCase()} candidate`;
+    }
+    if (detail === 'full' && res.cands) writeCandidates(b, res.cands, res.picked);
+  }
+
+  // obstacles
+  if (S.obs.length) {
+    const hit = trajCollision(res.frames); res.hit = hit;
+    if (hit && S.opt.avoid && !collides(start)) {
+      let goals = [];
+      if (res.picked) goals = res.cands.list.filter(c => c.endClear).sort((a, c) => a[CAND_METRIC[res.picked]] - c[CAND_METRIC[res.picked]]).map(c => c.th);
+      else if (res.fam) goals = res.fam.samples.filter(s => s.free).map(s => s.th);
+      else if (n === 2) goals = ik2(bx, by, S.L[0], S.L[1]).sols.map(s => [s.t1, s.t2]).filter(q => !collides(q));
+      else if (n === 1) goals = [[Math.atan2(by, bx)]].filter(q => !collides(q));
+      const endQ = res.frames[res.frames.length - 1];
+      const endTip = fk(endQ).tip;
+      if (!collides(endQ) && hyp(endTip.x - tgt.x, endTip.y - tgt.y) < Math.max(o.tol * 2, 0.5) && !goals.length) goals = [endQ];
+      res.seedGoals = 0;
+      if (n >= 4) { // a φ-sweep keeps one pose per φ; also search the (n−2)-D set from random seeds with obstacle-aware DLS
+        const oo = { ...o, step: 30, maxDth: 10 * D2R, maxIter: 300 };
+        for (let s = 0; s < 40; s++) {
+          const seed = s === 0 ? start : start.map(() => (Math.random() * 2 - 1) * Math.PI);
+          const r = runDLS(seed, tgt, oo, S.L, S.base, true, false);
+          if (r.err < o.tol && !collides(r.th)) { goals.push(r.th.map(wrap)); res.seedGoals++; }
+        }
+      }
+      goals = goals.filter(g => { const tp = fk(g).tip; return hyp(tp.x - tgt.x, tp.y - tgt.y) < Math.max(o.tol * 2, 0.5); });
+      if (!res.picked) goals.sort((a, c) => jdist(start, a) - jdist(start, c));
+      res.plan = goals.length ? planAround(start, goals) : { ok: false, noGoal: true };
+      res.planGoals = goals.length;
+      if (res.plan.ok) res.frames = densify(start, res.plan.nodes);
+    }
+    writeObstacles(b, res, detail);
+  }
+
+  res.final = res.frames[res.frames.length - 1].slice();
+  const tp = fk(res.final).tip; res.err = hyp(tgt.x - tp.x, tgt.y - tp.y);
+  res.touch = S.obs.length ? trajCollision(res.frames) : null;
+  return res;
+}
+
+function writeFamily(b, fam, cls) {
+  b.h('The solution set (infinitely many answers)');
+  b.p(`Dimension of the solution set = n − 2 = ${cls.dim}. ${fam.how}`);
+  if (fam.intervals.length) b.p(`Valid ${fam.param} range${fam.intervals.length > 1 ? 's' : ''} (where the rest of the chain can still reach): ` +
+    fam.intervals.map(([a, c]) => (a === 0 && c === 360) ? 'all angles' : `${a}° → ${c}°`).join(',  ') + '.');
+  const shown = pickEven(fam.samples, 10);
+  b.tbl([fam.param + ' °', 'branch', ...thHead(), 'clear'], shown.map(s => [String(s.p), s.br || '·', ...s.th.map(v => fd(v, 2)), s.free ? 'yes' : 'NO']),
+    `${fam.samples.length} solutions sampled; ${fam.samples.filter(s => s.free).length} are clear of obstacles. A few are listed — every row puts the tip exactly on the target.`);
+  if (S.opt.ghosts) b.p('Faint ghost poses on the canvas show members of this family.');
+}
+
+function writeObstacles(b, res, detail) {
+  if (detail === 'full') b.h('Obstacles'); else b.h2('Obstacles');
+  if (detail === 'full') b.tbl(['#', 'type', 'x', 'y', 'size'], S.obs.map((o, i) => [String(i + 1), o.type, f(o.x, 1), f(o.y, 1), o.type === 'circle' ? `r ${f(o.r, 1)}` : `${f(o.w, 1)}×${f(o.h, 1)}`]));
+  b.p(`Collision rule: every link is a capsule of half-width ${f(S.opt.thick, 1)}; a pose touches an obstacle when any link centerline comes within that half-width of the obstacle surface. Motions are checked between frames at ≤ ${f(jres() * R2D, 2)}° joint resolution.`);
+  if (S.opt.avoid && S.obs.length && res.method === 'dls') b.p('During DLS a repulsion gradient z = −k∇H, H = Σ ½(ρ − d)² for links within ρ = half-width + 25 of an obstacle, is projected into the Jacobian null space (N = I − J⁺J) so it bends the chain away without moving the tip.');
+  if (!res.hit) { b.call('ok', `Direct motion stays clear — minimum clearance ${f(minClearanceAlong(res.frames), 2)}.`); return; }
+  b.call('warn', `Direct ${res.method.toUpperCase()} motion would touch obstacle #${res.hit.obs + 1} with link ${res.hit.link + 1} at frame ${res.hit.frame}.`);
+  if (!S.opt.avoid) { b.p('Obstacle avoidance is off, so the colliding motion is kept.'); return; }
+  const P = res.plan;
+  if (!P) { b.p('Start pose collides — cannot plan.'); return; }
+  if (P.ok) {
+    b.p(`Re-planned: picked the collision-free goal ${res.picked ? `best by ${CAND_NAME[res.picked].toLowerCase()}` : 'nearest (in joint space) to the start'} from ${res.planGoals} candidate solution(s)${res.seedGoals ? ` (${res.seedGoals} of them found by obstacle-aware DLS from random seeds)` : ''}, then connected start → goal with ${P.how}.`);
+    b.eq([`goal θ = ${vec(P.goal, 3, R2D)}°`,
+          P.rrtNodes ? `RRT-Connect: ${P.iters} iterations, ${P.rrtNodes} tree nodes, raw path ${P.raw} nodes → ${P.nodes.length} after shortcutting` : 'a straight joint-space line to this goal is already collision-free',
+          `min clearance along the new motion = ${f(minClearanceAlong(res.frames), 2)}`]);
+  } else {
+    b.call('bad', P.noGoal ? 'No collision-free solution reaches this target — every solution touches an obstacle.' : 'No collision-free motion found (RRT-Connect gave up). Try moving obstacles or the start pose.');
+  }
+}
+
+function writeResult(b, res) {
+  const n = S.L.length, d = res.start.map((_, i) => res.final[i] - res.start[i]);
+  b.h('Result — Δθ on every joint');
+  b.tbl(['joint', 'θ start °', 'θ final °', 'Δθ °', 'Δθ rad'],
+    S.L.map((_, i) => [String(i + 1), fd(wrap(res.start[i])), fd(wrap(res.final[i])), fd(d[i], 3), f(d[i], 5)]),
+    'Δθ is the rotation the joint actually travelled (θ final shown wrapped into (−180°, 180°]).');
+  const F = fk(res.final), J = jacobian(F.P);
+  let a = 0, bb = 0, dd = 0; for (let i = 0; i < n; i++) { a += J[0][i] ** 2; bb += J[0][i] * J[1][i]; dd += J[1][i] ** 2; }
+  const manip = Math.sqrt(Math.max(0, a * dd - bb * bb));
+  const lines = [
+    `Verification by forward kinematics:  f(θ final) = ${pt(F.tip, 4)}`,
+    `target p* = ${pt(res.target, 4)}     residual |e| = ${f(res.err, 5)}  (tol ${f(S.opt.tol, 3)})`,
+    `status: ${res.status}${res.iterations ? `, ${res.iterations} iteration${res.iterations > 1 ? 's' : ''}` : ''}, ${res.frames.length} animation frames`,
+    `Σ|Δθ| = ${fd(sum(d.map(Math.abs)), 3)}°`,
+    `manipulability w = √det(J·Jᵀ) = ${f(manip, 3)}${manip < 1e-3 * sum(S.L) ** 2 ? '   (≈ 0 → singular pose)' : ''}`,
+  ];
+  if (n === 3) { // null-space direction: cross product of the two Jacobian rows
+    const r1 = J[0], r2 = J[1];
+    const nv = [r1[1] * r2[2] - r1[2] * r2[1], r1[2] * r2[0] - r1[0] * r2[2], r1[0] * r2[1] - r1[1] * r2[0]];
+    const m = hyp(...nv) || 1;
+    lines.push(`self-motion direction (null space of J) = ${vec(nv.map(v => v / m), 4)} — moving the joints along it keeps the tip still`);
+  } else if (n > 3) lines.push(`null space of J has dimension n − rank J = ${n} − 2 = ${n - 2}`);
+  b.eq(lines);
+  const ok = res.err <= S.opt.tol * 1.5 && res.status !== 'blocked';
+  if (res.touch) b.call('bad', `The final motion touches obstacle #${res.touch.obs + 1} (link ${res.touch.link + 1}).`);
+  b.call(ok ? 'ok' : 'bad', ok ? `Reached the target: residual ${f(res.err, 4)} ≤ tolerance.` :
+    res.status === 'blocked' ? 'Target blocked by an obstacle — no motion.' :
+    `Did not reach the target: residual ${f(res.err, 3)}. ${res.cls && res.cls.count === 0 ? 'The target is outside the workspace; this is the closest reachable pose.' : 'Solver stopped early (max iterations / stall) — try more iterations or a different method.'}`);
+}
+
+/* ======================= candidate scoring: effort / travel / smoothness ======================= */
+const CAND_KEYS = ['effort', 'shortest', 'smooth'];
+const CAND_NAME = { effort: 'Least servo effort', shortest: 'Shortest tip travel', smooth: 'Smoothest motion' };
+const CAND_COL = { effort: '#4aa3ff', shortest: '#4cc38a', smooth: '#ff7eb6' };
+const CAND_METRIC = { effort: 'effort', shortest: 'travel', smooth: 'accel' };
+
+// simulate a servo-style move start → goal: every joint on the same minimum-jerk profile
+function evalMove(start, goal, N = 48) {
+  const d = goal.map((v, i) => wrap(v - start[i]));
+  const pts = [];
+  for (let k = 0; k <= N; k++) { const s = minJerk(k / N); pts.push(fk(start.map((v, i) => v + d[i] * s)).tip); }
+  let travel = 0, a2 = 0; const dt = 1 / N;
+  for (let k = 1; k <= N; k++) travel += hyp(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y);
+  for (let k = 1; k < N; k++) {
+    const ax = (pts[k + 1].x - 2 * pts[k].x + pts[k - 1].x) / (dt * dt), ay = (pts[k + 1].y - 2 * pts[k].y + pts[k - 1].y) / (dt * dt);
+    a2 += (ax * ax + ay * ay) * dt;
+  }
+  return { d, effort: sum(d.map(v => v * v)), travel, accel: Math.sqrt(a2), pts };
+}
+// (I − J⁺J)·g — the part of g that moves the joints without moving the tip
+function nullProj(J, g) {
+  let a = 1e-9, b = 0, d = 1e-9;
+  for (let i = 0; i < g.length; i++) { a += J[0][i] ** 2; b += J[0][i] * J[1][i]; d += J[1][i] ** 2; }
+  const det = a * d - b * b, jg = { x: sum(g.map((v, i) => J[0][i] * v)), y: sum(g.map((v, i) => J[1][i] * v)) };
+  const v = { x: (d * jg.x - b * jg.y) / det, y: (-b * jg.x + a * jg.y) / det };
+  return g.map((gi, i) => gi - (J[0][i] * v.x + J[1][i] * v.y));
+}
+// minimise Σ(θ − θstart)² on the solution set: projected gradient descent + DLS re-projection onto f(θ) = p*
+function refineEffort(start, th0, tgt) {
+  let th = th0.slice(), it = 0, nullRes = 0;
+  const o = { lambda: 0.5, step: 10, maxDth: 3 * D2R, tol: S.opt.tol * 0.1, avoid: false };
+  for (; it < 400; it++) {
+    const J = jacobian(fk(th).P), g = th.map((v, i) => wrap(v - start[i])), Ng = nullProj(J, g);
+    nullRes = Math.sqrt(sum(Ng.map(v => v * v)));
+    if (nullRes < 1e-6) break;
+    th = th.map((v, i) => v - 0.3 * Ng[i]);
+    for (let q = 0; q < 4; q++) { const st = dlsStep(th, tgt, o, S.L, S.base, false); if (st.en < o.tol) break; th = th.map((v, i) => v + st.dth[i]); }
+  }
+  return { th: th.map(wrap), iters: it, nullRes };
+}
+
+function buildCandidates(start, tgt, res) {
+  if (!res.cls || res.cls.count === 0) return null;
+  const n = S.L.length, tolR = Math.max(S.opt.tol * 2, 0.5), bx = tgt.x - S.base.x, by = tgt.y - S.base.y;
+  let pool = [];
+  if (res.fam) pool = res.fam.samples.map(s => ({ th: s.th.slice(), label: `${res.fam.param} = ${s.p}°${s.br ? ' (' + s.br + ')' : ''}` }));
+  else if (n === 2) pool = ik2(bx, by, S.L[0], S.L[1]).sols.map(s => ({ th: [s.t1, s.t2], label: `knee ${s.sign}` }));
+  else if (n === 1) pool = [{ th: [Math.atan2(by, bx)], label: 'only solution' }];
+  const endQ = res.frames[res.frames.length - 1], etp = fk(endQ).tip;
+  if (hyp(etp.x - tgt.x, etp.y - tgt.y) < tolR) pool.push({ th: endQ.map(wrap), label: `${res.method.toUpperCase()} result`, solver: true });
+  let refined = null;
+  if (n >= 3 && pool.length) {
+    const eff = th => sum(th.map((v, i) => wrap(v - start[i]) ** 2));
+    const seed = pool.reduce((a, c) => eff(c.th) < eff(a.th) ? c : a);
+    refined = refineEffort(start, seed.th, tgt);
+    pool.push({ th: refined.th, label: 'min ΣΔθ² (refined)', refined: true });
+  }
+  pool = pool.filter(c => { const p = fk(c.th).tip; return hyp(p.x - tgt.x, p.y - tgt.y) < tolR; });
+  if (!pool.length) return null;
+  for (const c of pool) {
+    Object.assign(c, evalMove(start, c.th));
+    c.endClear = !collides(c.th);
+    c.pathClear = S.obs.length ? c.endClear && !edgeHit(start, c.th) : true;
+  }
+  let elig = pool.filter(c => c.pathClear), note = '';
+  if (!elig.length) { elig = pool.filter(c => c.endClear); note = 'No candidate has a collision-free direct move, so winners are chosen among end poses that are clear; the planner routes around obstacles to reach them.'; }
+  if (!elig.length) { elig = pool; note = 'Every candidate end pose touches an obstacle.'; }
+  const best = {};
+  for (const k of CAND_KEYS) best[k] = elig.reduce((a, c) => c[CAND_METRIC[k]] < a[CAND_METRIC[k]] ? c : a);
+  const tip0 = fk(start).tip;
+  return { list: pool, best, note, refined, straight: hyp(tgt.x - tip0.x, tgt.y - tip0.y) };
+}
+
+function writeCandidates(b, C, picked) {
+  b.h('Candidate end poses — servo effort, tip travel, smoothness');
+  b.p(`Every candidate below puts the tip on the target. To compare them fairly, each move is simulated the way servos do it: all joints start and stop together and follow the minimum-jerk profile θ(τ) = θstart + Δθ·s(τ), s(τ) = 10τ³ − 15τ⁴ + 6τ⁵ (τ = t/T, T = 1 s), which has zero velocity and zero acceleration at both ends.`);
+  b.eq([
+    'E  servo effort  = Σ Δθi²                         (rad²,  Δθi = wrap(θi* − θi,start))',
+    'D  tip travel    = ∫ |v_tip| dt ≈ Σ |p(τk+1) − p(τk)|   (48 samples)',
+    `                  straight-line lower bound |p* − p0| = ${f(C.straight, 2)}`,
+    'A  smoothness    = √( ∫ |a_tip|² dt )              (RMS tip acceleration — lower = gentler)',
+    '                  a_tip ≈ (p(k+1) − 2p(k) + p(k−1)) / Δτ²',
+  ]);
+  if (C.refined) b.eq([
+    'Least-effort optimum: minimise E subject to f(θ) = p*.',
+    'Lagrange condition: at the optimum Δθ has no component in the null space of J,  N·Δθ = (I − J⁺J)·Δθ = 0.',
+    'Projected gradient descent from the best sample:  θ ← θ − 0.3·N·Δθ,  then re-project onto f(θ) = p* with DLS.',
+    `${C.refined.iters} iterations,  |N·Δθ| = ${f(C.refined.nullRes, 7)}`,
+  ]);
+  if (C.note) b.call('warn', C.note);
+  const row = (tag, c) => [tag, c.label, ...c.d.map(v => fd(v, 2)), f(c.effort, 4), f(c.travel, 2), f(c.accel, 1), c.pathClear ? 'yes' : c.endClear ? 'end only' : 'NO'];
+  const head = ['', 'candidate', ...thHead('Δθ'), 'E rad²', 'D', 'A', 'clear'];
+  b.h2('The three highlighted winners');
+  b.tbl(head, CAND_KEYS.map(k => row('★ ' + CAND_NAME[k].toLowerCase(), C.best[k])),
+    'Blue = least servo effort, green = shortest tip travel, pink = smoothest — drawn on the canvas with their tip paths.');
+  const top = C.list.slice().sort((a, c) => a.effort - c.effort);
+  const shown = pickEven(top.slice(0, Math.min(top.length, 60)), 8);
+  b.h2(`Other candidates (${C.list.length} scored, sorted by effort)`);
+  b.tbl(head, shown.map(c => row(CAND_KEYS.filter(k => C.best[k] === c).map(k => ({ effort: 'E', shortest: 'D', smooth: 'A' }[k])).join('') || '', c)));
+  b.call('ok', picked ? `Motion uses the ${CAND_NAME[picked].toLowerCase()} candidate (Solver → End pose).`
+    : `Motion uses the solver's own result. The three highlighted alternatives are drawn on the canvas — use "Move via" on the Work tab to run one.`);
+}
+
+/* ---------- smooth paths ---------- */
+function circleThrough(a, b, c) {
+  const d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y));
+  if (Math.abs(d) < 1e-9) return null;
+  const A = a.x * a.x + a.y * a.y, B = b.x * b.x + b.y * b.y, Cc = c.x * c.x + c.y * c.y;
+  const x = (A * (b.y - c.y) + B * (c.y - a.y) + Cc * (a.y - b.y)) / d, y = (A * (c.x - b.x) + B * (a.x - c.x) + Cc * (b.x - a.x)) / d;
+  return { x, y, r: hyp(a.x - x, a.y - y), d };
+}
+// dense polyline through P (exactly hitting every point); wpIdx[j] = sample index of P[j]
+function smoothCurve(P, ds) {
+  const out = { samples: [P[0]], wpIdx: [0], kind: 'line', len: 0 };
+  const push = p => { const q = out.samples[out.samples.length - 1]; out.len += hyp(p.x - q.x, p.y - q.y); out.samples.push(p); };
+  const TAU = 2 * Math.PI, ccw = a => ((a % TAU) + TAU) % TAU;
+  if (P.length === 3) {
+    const c = circleThrough(P[0], P[1], P[2]), chord = hyp(P[2].x - P[0].x, P[2].y - P[0].y);
+    if (c && c.r < 50 * Math.max(chord, 1)) {
+      const ang = P.map(p => Math.atan2(p.y - c.y, p.x - c.x));
+      const s1 = ccw(ang[1] - ang[0]), s2 = ccw(ang[2] - ang[0]);
+      const dir = s1 < s2 ? 1 : -1, sw1 = dir > 0 ? s1 : -(TAU - s1), sw = dir > 0 ? s2 : -(TAU - s2);
+      Object.assign(out, { kind: 'arc', c, r: c.r, d: c.d, a0: ang[0], a1: ang[1], a2: ang[2], sweep: sw });
+      const arc = (from, to) => { const m = Math.max(2, Math.ceil(Math.abs(to - from) * c.r / ds)); for (let k = 1; k <= m; k++) { const a = from + (to - from) * k / m; push({ x: c.x + c.r * Math.cos(a), y: c.y + c.r * Math.sin(a) }); } };
+      arc(ang[0], ang[0] + sw1); out.samples[out.samples.length - 1] = { ...P[1] }; out.wpIdx.push(out.samples.length - 1);
+      arc(ang[0] + sw1, ang[0] + sw); out.samples[out.samples.length - 1] = { ...P[2] }; out.wpIdx.push(out.samples.length - 1);
+      return out;
+    }
+  }
+  if (P.length <= 2 || P.length === 3) { // straight fallback (2 points, or 3 collinear)
+    for (let j = 1; j < P.length; j++) {
+      const a = P[j - 1], b = P[j], m = Math.max(1, Math.ceil(hyp(b.x - a.x, b.y - a.y) / ds));
+      for (let k = 1; k <= m; k++) push({ x: a.x + (b.x - a.x) * k / m, y: a.y + (b.y - a.y) * k / m });
+      out.wpIdx.push(out.samples.length - 1);
+    }
+    return out;
+  }
+  // centripetal Catmull–Rom (α = 0.5), Barry–Goldman evaluation, mirrored end points
+  out.kind = 'spline';
+  const n = P.length, E = [{ x: 2 * P[0].x - P[1].x, y: 2 * P[0].y - P[1].y }, ...P, { x: 2 * P[n - 1].x - P[n - 2].x, y: 2 * P[n - 1].y - P[n - 2].y }];
+  const lerp = (p, q, t0, t1, t) => ({ x: (p.x * (t1 - t) + q.x * (t - t0)) / (t1 - t0), y: (p.y * (t1 - t) + q.y * (t - t0)) / (t1 - t0) });
+  const kn = (u, v) => Math.max(1e-6, Math.sqrt(hyp(v.x - u.x, v.y - u.y)));
+  for (let i = 0; i < n - 1; i++) {
+    const p0 = E[i], p1 = E[i + 1], p2 = E[i + 2], p3 = E[i + 3];
+    const t0 = 0, t1 = t0 + kn(p0, p1), t2 = t1 + kn(p1, p2), t3 = t2 + kn(p2, p3);
+    const m = Math.max(2, Math.ceil(1.3 * hyp(p2.x - p1.x, p2.y - p1.y) / ds));
+    for (let k = 1; k <= m; k++) {
+      const t = t1 + (t2 - t1) * k / m;
+      const A1 = lerp(p0, p1, t0, t1, t), A2 = lerp(p1, p2, t1, t2, t), A3 = lerp(p2, p3, t2, t3, t);
+      const B1 = lerp(A1, A2, t0, t2, t), B2 = lerp(A2, A3, t1, t3, t);
+      push(k === m ? { ...p2 } : lerp(B1, B2, t1, t2, t));
+    }
+    out.wpIdx.push(out.samples.length - 1);
+  }
+  return out;
+}
+// re-time a frame sequence so it eases in and out (minimum jerk) instead of constant speed
+function retimeMinJerk(frames, count) {
+  const F = frames.length - 1; if (F < 1) return frames.slice();
+  const out = [];
+  for (let k = 0; k < count; k++) {
+    const u = minJerk(k / (count - 1)) * F, i = Math.min(F - 1, Math.floor(u)), t = u - i;
+    out.push(frames[i].map((v, j) => v + (frames[i + 1][j] - v) * t));
+  }
+  return out;
+}
+
+function trackSmooth(b, start, o) {
+  const tip0 = fk(start).tip, P = [tip0, ...S.wps], ds = Math.max(1, o.step * 0.5), C = smoothCurve(P, ds);
+  const poly = sum(P.slice(1).map((p, i) => hyp(p.x - P[i].x, p.y - P[i].y)));
+  b.h('Smooth tip path through the waypoints');
+  b.p('The tip path starts at the current tip position (e.g. a foot on the ground) and passes exactly through every waypoint with no corners.');
+  if (C.kind === 'arc') b.eq([
+    'Three points (current tip P0, W1, W2) → the unique circle through them, so W1 is crossed on a circular arc:',
+    'centre u solves |u − P0| = |u − W1| = |u − W2|',
+    `d = 2·[x0(y1 − y2) + x1(y2 − y0) + x2(y0 − y1)] = ${f(C.d, 3)}`,
+    'ux = [|P0|²(y1 − y2) + |W1|²(y2 − y0) + |W2|²(y0 − y1)] / d,   uy = [|P0|²(x2 − x1) + |W1|²(x0 − x2) + |W2|²(x1 − x0)] / d',
+    `u = ${pt(C.c, 3)},   R = |P0 − u| = ${f(C.r, 3)}`,
+    `angles about u: P0 ${fd(C.a0, 2)}°,  W1 ${fd(C.a1, 2)}°,  W2 ${fd(C.a2, 2)}°  →  sweep ${fd(C.sweep, 2)}° ${C.sweep > 0 ? 'CCW' : 'CW'} (the direction that passes W1)`,
+    `p(a) = u + R·(cos a, sin a);   arc length R·|sweep| = ${f(C.len, 3)}   vs sharp polyline ${f(poly, 3)}`,
+  ]);
+  else if (C.kind === 'spline') b.eq([
+    `${P.length} points (current tip + ${S.wps.length} waypoints) → centripetal Catmull–Rom spline (α = 0.5):`,
+    'passes through every waypoint with a continuous tangent and no overshoot loops.',
+    'knots  t(i+1) = t(i) + |P(i+1) − P(i)|^0.5;   end tangents from mirrored points P(−1) = 2P0 − P1, P(n) = 2P(n−1) − P(n−2)',
+    'each span t ∈ [t1, t2] is the Barry–Goldman pyramid:  A = lerp(P),  B = lerp(A),  C(t) = lerp(B)',
+    `curve length ${f(C.len, 3)}   vs sharp polyline ${f(poly, 3)}`,
+  ]);
+  else b.p('The points are (nearly) collinear, so the smooth path is a straight line.');
+  const blockers = [];
+  if (S.obs.length) S.obs.forEach((ob, j) => {
+    for (let k = 1; k < C.samples.length; k++) if (distSegObs(C.samples[k - 1], C.samples[k], ob).d - S.opt.thick < 0) { blockers.push(`the curve crosses obstacle #${j + 1}`); break; }
+  });
+  if (blockers.length) b.call('bad', 'Smooth tip path is impossible: ' + blockers.join('; ') + '. Move a waypoint or use free (point-to-point) mode.');
+  b.p(`Tracking: ${C.samples.length - 1} sub-targets spaced ≈ ${f(ds, 1)} along the curve; at each one up to 12 DLS iterations (60 at waypoints) pull the tip onto it. The whole motion is then re-timed with the minimum-jerk profile s(τ) = 10τ³ − 15τ⁴ + 6τ⁵, so the leg eases off and settles instead of starting and stopping abruptly.`);
+  let cur = start.slice(), legStart = cur.slice(), iters = 0, maxDev = 0, wpN = 0; const frames = [cur.slice()], legs = [];
+  const how = { arc: 'arc track', spline: 'spline track', line: 'line track' }[C.kind];
+  for (let k = 1; k < C.samples.length; k++) {
+    const sub = C.samples[k], atWp = k === C.wpIdx[wpN + 1];
+    for (let q = 0; q < (atWp ? 60 : 12); q++) { const st = dlsStep(cur, sub, o); if (st.en < o.tol) break; cur = cur.map((v, j) => v + st.dth[j]); iters++; }
+    frames.push(cur.slice());
+    const tp = fk(cur).tip; maxDev = Math.max(maxDev, hyp(tp.x - sub.x, tp.y - sub.y));
+    if (atWp) { const w = S.wps[wpN]; legs.push({ i: wpN, how, err: hyp(tp.x - w.x, tp.y - w.y), start: legStart, end: cur.slice(), iters, cls: classify(w), touch: null }); legStart = cur.slice(); wpN++; }
+  }
+  b.eq([`DLS iterations: ${iters}`, `max tracking error along the curve: ${f(maxDev, 3)}`]);
+  return { frames: retimeMinJerk(frames, Math.round(frames.length * 1.25)), legs, blockers, curve: C };
+}
+
+/* ======================= runs ======================= */
+function runTarget(tgt, pick = null) {
+  if (!tgt) { toast('Set a target first (Target mode → click the canvas).', true); return; }
+  stopAnim();
+  const start = S.th.slice(), r = newReport('target', `Target ${pt(tgt)}${pick ? ' via ' + CAND_NAME[pick].toLowerCase() : ''}`), b = RB(r);
+  b.kv(metaPairs(`target p* = ${pt(tgt, 3)}`));
+  b.fig();
+  writeModel(b, start);
+  const res = solveToTarget(start, tgt, b, 'full', pick);
+  writeResult(b, res);
+  poseTable(b, res.final, 'Final pose');
+  const cands = res.cands ? CAND_KEYS.map(k => ({ key: k, th: res.cands.best[k].th, pts: res.cands.best[k].pts })) : [];
+  r.fig = figData(start, res.final, res.frames, res.ghosts, cands);
+  r.candsDraw = cands;
+  r.head = { cls: res.cls, err: res.err, ok: res.err <= S.opt.tol * 1.5 && res.status !== 'blocked', method: res.method, status: res.status, d: res.final.map((v, i) => v - start[i]),
+    target: { ...tgt }, picked: res.picked || null,
+    cands: res.cands ? Object.fromEntries(CAND_KEYS.map(k => { const c = res.cands.best[k]; return [k, { effort: c.effort, travel: c.travel, accel: c.accel, label: c.label }]; })) : null };
+  finishRun(r, res.frames, start, res.ghosts);
+}
+
+function runPath() {
+  if (!S.wps.length) { toast('Add waypoints first (Path mode → click the canvas).', true); return; }
+  stopAnim();
+  const n = S.L.length, o = solverOpts(), start = S.th.slice();
+  const r = newReport('path', `Path through ${S.wps.length} waypoint${S.wps.length > 1 ? 's' : ''}`), b = RB(r);
+  const shape = S.opt.pathShape;
+  b.kv(metaPairs(`waypoints = ${S.wps.length}, tip path: ${{ smooth: 'smooth curve (arc / spline) from the current tip', straight: 'straight segments', free: 'point-to-point (free) between waypoints' }[shape]}`));
+  writeModel(b, start);
+
+  b.h('Path feasibility');
+  b.tbl(['wp', 'x', 'y', 'r', 'solutions', 'clearance'], S.wps.map((w, i) => { const c = classify(w), pc = S.obs.length ? pointClear(w) : { d: Infinity };
+    return [String(i + 1), f(w.x, 2), f(w.y, 2), f(c.r, 2), c.label, isFinite(pc.d) ? f(pc.d, 2) : '—']; }), 'Clearance = distance to the nearest obstacle minus link half-width (< 0 → the tip would touch).');
+  const blockers = [];
+  if (shape === 'straight' && S.obs.length) for (let i = 0; i + 1 < S.wps.length; i++) S.obs.forEach((ob, j) => {
+    if (distSegObs(S.wps[i], S.wps[i + 1], ob).d - S.opt.thick < 0) blockers.push(`segment ${i + 1}→${i + 2} crosses obstacle #${j + 1}`);
+  });
+  if (blockers.length) b.call('bad', 'Straight tip path is impossible: ' + blockers.join('; ') + '. Move a waypoint or switch off straight-line mode.');
+
+  let frames = [start.slice()], cur = start.slice(), legs = [], ghosts = [];
+  if (shape === 'smooth') { const T = trackSmooth(b, start, o); frames = T.frames; legs = T.legs; blockers.push(...T.blockers); }
+  else S.wps.forEach((w, i) => {
+    const legStart = cur.slice();
+    if (i === 0 || shape === 'free') {
+      b.h(`Leg ${i + 1}: ${i === 0 ? 'approach' : 'move'} to waypoint ${i + 1} ${pt(w)}`);
+      const res = solveToTarget(cur, w, b, i === 0 ? 'full' : 'compact');
+      frames = frames.concat(res.frames.slice(1)); cur = res.final.slice();
+      if (res.ghosts.length && !ghosts.length) ghosts = res.ghosts;
+      legs.push({ i, how: res.method.toUpperCase() + (res.plan && res.plan.ok ? ' + RRT' : ''), err: res.err, start: legStart, end: cur.slice(), iters: res.iterations, cls: res.cls, touch: res.touch });
+    } else {
+      b.h(`Leg ${i + 1}: straight line waypoint ${i} → ${i + 1}`);
+      const a = S.wps[i - 1], len = hyp(w.x - a.x, w.y - a.y), m = Math.max(1, Math.ceil(len / (o.step * 0.5)));
+      b.p(`Resolved-rate tracking: the segment (length ${f(len, 2)}) is cut into ${m} sub-targets p(s) = W${i} + s·(W${i + 1} − W${i}), s = k/${m}. At each sub-target up to 12 DLS iterations (same formula as above, incl. null-space obstacle term) pull the tip onto the line, so the tip never leaves it by more than the tracking error below.`);
+      let maxDev = 0, iters = 0;
+      for (let k = 1; k <= m; k++) {
+        const s = k / m, sub = { x: a.x + (w.x - a.x) * s, y: a.y + (w.y - a.y) * s };
+        for (let q = 0; q < (k === m ? 60 : 12); q++) {
+          const st = dlsStep(cur, sub, o); if (st.en < o.tol) break;
+          cur = cur.map((v, j) => v + st.dth[j]); iters++;
+        }
+        frames.push(cur.slice());
+        const tp = fk(cur).tip; maxDev = Math.max(maxDev, distSegObs(a, w, { type: 'circle', x: tp.x, y: tp.y, r: 0 }).d);
+      }
+      const tp = fk(cur).tip, err = hyp(tp.x - w.x, tp.y - w.y);
+      const legFrames = frames.slice(frames.length - m - 1);
+      const touch = S.obs.length ? trajCollision(legFrames) : null;
+      b.eq([`sub-targets: ${m}, DLS iterations: ${iters}`, `max tip deviation from the straight line: ${f(maxDev, 3)}`, `arrival error at W${i + 1}: ${f(err, 4)}`,
+            `Δθ over this leg = ${vec(cur.map((v, j) => v - legStart[j]), 3, R2D)}°`]);
+      if (touch) b.call('bad', `Tracking this straight segment makes link ${touch.link + 1} touch obstacle #${touch.obs + 1}. With the tip pinned to the line there is ${n > 2 ? 'not enough null-space freedom here' : 'no redundancy'} to dodge it — try free (point-to-point) mode or move the obstacle.`);
+      legs.push({ i, how: 'line track', err, start: legStart, end: cur.slice(), iters, cls: classify(w), touch });
+    }
+  });
+
+  b.h('Path summary — θ and Δθ at each waypoint');
+  b.tbl(['wp', 'how', 'err', ...thHead()], legs.map(l => [String(l.i + 1), l.how, f(l.err, 3), ...l.end.map(v => fd(wrap(v), 2))]), 'Joint angles when the tip crosses each waypoint');
+  b.tbl(['leg', ...thHead('Δθ')], legs.map(l => [`${l.i ? l.i : 'start'}→${l.i + 1}`, ...l.end.map((v, j) => fd(v - l.start[j], 2))]), 'Δθ travelled on each leg (deg)');
+  const final = frames[frames.length - 1];
+  const res = { start, final, frames, target: S.wps[S.wps.length - 1], err: legs[legs.length - 1].err, status: 'path', method: 'path', iterations: 0, cls: legs[legs.length - 1].cls, touch: S.obs.length ? trajCollision(frames) : null };
+  writeResult(b, res);
+  r.blocks.splice(1, 0, { t: 'fig' });
+  r.fig = figData(start, final, frames, ghosts);
+  const allOk = legs.every(l => l.err <= S.opt.tol * 1.5) && !res.touch && !blockers.length;
+  r.head = { path: true, legs: legs.length, ok: allOk, err: Math.max(...legs.map(l => l.err)), d: final.map((v, i) => v - start[i]), touch: res.touch };
+  finishRun(r, frames, start, ghosts);
+}
+
+function metaPairs(extra) {
+  const o = S.opt;
+  return [['date', new Date().toLocaleString()], ['links', `n = ${S.L.length},  L = ${vec(S.L, 1)}`], ['request', extra],
+    ['solver', `${o.method}  λ=${o.lambda}  step=${o.step}  maxΔθ=${o.maxDth}°  tol=${o.tol}  maxIter=${o.maxIter}`],
+    ['obstacles', `${S.obs.length}  (link half-width ${o.thick}, avoidance ${o.avoid ? 'on' : 'off'})`]];
+}
+function figData(start, final, frames, ghosts, cands = []) {
+  return { cands, L: S.L.slice(), base: { ...S.base }, start: start.slice(), final: final.slice(), obs: JSON.parse(JSON.stringify(S.obs)),
+           target: S.target ? { ...S.target } : null, wps: S.wps.map(w => ({ ...w })), trace: frames.map(q => fk(q).tip), ghosts: (ghosts || []).slice(0, 24), thick: S.opt.thick };
+}
+
+function finishRun(r, frames, start, ghosts) {
+  S.last = { report: r, frames, start, ghosts, trace: frames.map(q => fk(q).tip), L: S.L.slice(), pdfFile: null, pdfBytes: null };
+  try { S.last.pdfBytes = buildPDF(r); } catch (e) { console.error(e); toast('PDF build failed: ' + e.message, true); }
+  S.history.push(S.last); if (S.history.length > 30) S.history.shift();
+  renderReport(r);
+  playFrames(frames);
+  renderWorkBtns(); renderPageRuns();
+  if (S.session && S.last.pdfBytes) savePDF(S.last);
+}
+
+/* ======================= animation ======================= */
+function playFrames(frames) {
+  S.anim = { frames, i: 0, t0: performance.now() };
+  const sc = $('#scrub'); sc.max = frames.length - 1; sc.value = 0; $('#scrubWrap').style.display = '';
+}
+function stopAnim() {
+  if (S.anim) { S.th = S.th.map(wrap); S.anim = null; renderLinks(); save(); }
+}
+function tickAnim(now) {
+  const A = S.anim; if (!A) return;
+  const i = clamp(Math.floor((now - A.t0) / 1000 * S.opt.fps), 0, A.frames.length - 1);
+  if (i !== A.i || i === 0) { A.i = i; S.th = A.frames[i].slice(); $('#scrub').value = i; updScrubLabel(i); dirty = true; }
+  if (i >= A.frames.length - 1) { S.anim = null; S.th = S.th.map(wrap); renderLinks(); save(); }
+}
+function updScrubLabel(i) { const fr = S.last ? S.last.frames.length - 1 : 0; $('#scrubV').textContent = `${i} / ${fr}`; }
+
+/* ======================= canvas ======================= */
+const cv = $('#cv'), ctx = cv.getContext('2d'); let dirty = true, DPR = 1, CW = 0, CH = 0;
+const V = S.view;
+const w2s = p => ({ x: p.x * V.s + V.ox, y: -p.y * V.s + V.oy });
+const s2w = (x, y) => ({ x: (x - V.ox) / V.s, y: -(y - V.oy) / V.s });
+function resize() {
+  const r = $('#stage').getBoundingClientRect(); DPR = window.devicePixelRatio || 1; CW = r.width; CH = r.height;
+  cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR); cv.style.width = CW + 'px'; cv.style.height = CH + 'px'; dirty = true;
+}
+function fit() {
+  const R = sum(S.L); let x0 = -R, x1 = R, y0 = -R, y1 = R;
+  for (const o of S.obs) { const e = o.type === 'circle' ? o.r : Math.max(o.w, o.h) / 2; x0 = Math.min(x0, o.x - e); x1 = Math.max(x1, o.x + e); y0 = Math.min(y0, o.y - e); y1 = Math.max(y1, o.y + e); }
+  for (const w of S.wps) { x0 = Math.min(x0, w.x); x1 = Math.max(x1, w.x); y0 = Math.min(y0, w.y); y1 = Math.max(y1, w.y); }
+  const pad = 1.12; V.s = Math.min(CW / ((x1 - x0) * pad), CH / ((y1 - y0) * pad));
+  V.ox = CW / 2 - (x0 + x1) / 2 * V.s; V.oy = CH / 2 + (y0 + y1) / 2 * V.s; dirty = true;
+}
+
+function drawArm(th, style) {
+  const { P, phi } = fk(th), n = S.L.length;
+  const hitLink = style.main && S.obs.length ? new Set(P.slice(0, -1).map((p, i) => S.obs.some(o => distSegObs(p, P[i + 1], o).d - S.opt.thick < 0) ? i : -1).filter(i => i >= 0)) : new Set();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let i = 0; i < n; i++) {
+    const a = w2s(P[i]), c = w2s(P[i + 1]);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y);
+    if (style.main) {
+      if (isHover('link', i)) { ctx.strokeStyle = 'rgba(255,206,84,.55)'; ctx.lineWidth = Math.max(5, 2 * S.opt.thick * V.s) + 7; ctx.stroke(); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y); }
+      ctx.strokeStyle = hitLink.has(i) ? '#f0506e' : LINK_COLORS[i]; ctx.globalAlpha = 0.9; ctx.lineWidth = Math.max(5, 2 * S.opt.thick * V.s); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(c.x, c.y); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.2; ctx.stroke();
+    } else { ctx.strokeStyle = style.color; ctx.lineWidth = style.w || 2; ctx.setLineDash(style.dash || []); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  if (!style.main) return;
+  for (let i = 0; i < n; i++) {
+    const a = w2s(P[i]);
+    ctx.beginPath(); ctx.arc(a.x, a.y, 5.5, 0, 7); ctx.fillStyle = '#0e1116'; ctx.fill(); ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1.6; ctx.stroke();
+    if (S.opt.angles) {
+      const ref = i ? phi[i - 1] : 0, rr = 26 + (i % 2) * 6;
+      ctx.setLineDash([2, 3]); ctx.strokeStyle = 'rgba(139,152,165,.6)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x + Math.cos(ref) * (rr + 10), a.y - Math.sin(ref) * (rr + 10)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(a.x, a.y, rr, -ref, -phi[i], th[i] > 0); ctx.strokeStyle = LINK_COLORS[i]; ctx.lineWidth = 1.5; ctx.stroke();
+      const mid = ref + wrap(th[i]) / 2;
+      ctx.fillStyle = LINK_COLORS[i]; ctx.font = '11px ui-monospace,Consolas,monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(`θ${i + 1} ${fd(wrap(th[i]), 1)}°`, a.x + Math.cos(mid) * (rr + 20), a.y - Math.sin(mid) * (rr + 20));
+    }
+  }
+  const t = w2s(P[n]);
+  ctx.beginPath(); ctx.arc(t.x, t.y, 6, 0, 7); ctx.fillStyle = '#ffce54'; ctx.fill();
+  ctx.beginPath(); ctx.arc(t.x, t.y, 10, 0, 7); ctx.strokeStyle = 'rgba(255,206,84,.6)'; ctx.lineWidth = 1.2; ctx.stroke();
+}
+
+const isHover = (kind, i) => !!S.hover && S.hover.kind === kind && (i === undefined || S.hover.i === i);
+function drawObstacle(o, sel, hov) {
+  ctx.beginPath();
+  if (o.type === 'circle') { const c = w2s(o); ctx.arc(c.x, c.y, o.r * V.s, 0, 7); }
+  else { const a = w2s({ x: o.x - o.w / 2, y: o.y + o.h / 2 }); ctx.rect(a.x, a.y, o.w * V.s, o.h * V.s); }
+  ctx.fillStyle = 'rgba(240,80,110,.16)'; ctx.fill();
+  ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(240,80,110,.28)'; ctx.lineWidth = 1;
+  for (let k = -CH; k < CW; k += 10) { ctx.beginPath(); ctx.moveTo(k, CH); ctx.lineTo(k + CH, 0); ctx.stroke(); }
+  ctx.restore();
+  if (hov && !sel) ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = sel || hov ? '#ffce54' : '#f0506e'; ctx.lineWidth = sel || hov ? 2 : 1.4; ctx.stroke(); ctx.setLineDash([]);
+}
+
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, CW, CH);
+  // grid
+  const tl = s2w(0, 0), br = s2w(CW, CH);
+  const minor = V.s * 10 >= 7 ? 10 : 50, major = minor === 10 ? 50 : 250;
+  for (const [stepv, col] of [[minor, '#141a22'], [major, '#1d2530']]) {
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = Math.ceil(tl.x / stepv) * stepv; x <= br.x; x += stepv) { const s = w2s({ x, y: 0 }).x; ctx.moveTo(s, 0); ctx.lineTo(s, CH); }
+    for (let y = Math.ceil(br.y / stepv) * stepv; y <= tl.y; y += stepv) { const s = w2s({ x: 0, y }).y; ctx.moveTo(0, s); ctx.lineTo(CW, s); }
+    ctx.stroke();
+  }
+  const o0 = w2s({ x: 0, y: 0 });
+  ctx.strokeStyle = '#2d3846'; ctx.beginPath(); ctx.moveTo(o0.x, 0); ctx.lineTo(o0.x, CH); ctx.moveTo(0, o0.y); ctx.lineTo(CW, o0.y); ctx.stroke();
+  ctx.fillStyle = '#4b5866'; ctx.font = '10px ui-monospace,Consolas,monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  for (let x = Math.ceil(tl.x / major) * major; x <= br.x; x += major) if (x) ctx.fillText(x, w2s({ x, y: 0 }).x + 2, o0.y + 2);
+  for (let y = Math.ceil(br.y / major) * major; y <= tl.y; y += major) if (y) ctx.fillText(y, o0.x + 3, w2s({ x: 0, y }).y + 2);
+
+  // workspace annulus
+  if (S.opt.ws) {
+    const R = reachInfo(S.L), b = w2s(S.base);
+    ctx.beginPath(); ctx.arc(b.x, b.y, R.S * V.s, 0, 7); if (R.Rmin > 0) ctx.arc(b.x, b.y, R.Rmin * V.s, 0, 7, true);
+    ctx.fillStyle = 'rgba(74,163,255,.045)'; ctx.fill('evenodd');
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(74,163,255,.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(b.x, b.y, R.S * V.s, 0, 7); ctx.stroke();
+    if (R.Rmin > 0) { ctx.beginPath(); ctx.arc(b.x, b.y, R.Rmin * V.s, 0, 7); ctx.stroke(); }
+    ctx.setLineDash([]);
+  }
+  S.obs.forEach((o, i) => drawObstacle(o, S.sel && S.sel.kind === 'obs' && S.sel.i === i, isHover('obs', i)));
+  if (drag && drag.kind === 'new-obs') drawObstacle(drag.o, true);
+
+  // ghosts & trace
+  if (S.last) {
+    if (S.opt.ghosts && S.last.ghosts.length) for (const g of S.last.ghosts) drawArm(g, { color: 'rgba(179,146,240,.16)', w: 2 });
+    if (S.opt.trace) {
+      drawArm(S.last.start, { color: 'rgba(139,152,165,.45)', w: 2, dash: [6, 5] });
+      ctx.beginPath(); S.last.trace.forEach((p, i) => { const s = w2s(p); i ? ctx.lineTo(s.x, s.y) : ctx.moveTo(s.x, s.y); });
+      ctx.strokeStyle = 'rgba(240,136,62,.85)'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    if (S.opt.cands && S.last.report.candsDraw) drawCands(S.last.report.candsDraw);
+  }
+  // waypoints
+  if (S.wps.length) {
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(179,146,240,.7)'; ctx.lineWidth = 1.3; ctx.beginPath();
+    const prev = S.opt.pathShape === 'smooth' ? smoothCurve([fk(S.anim ? S.anim.frames[0] : S.th).tip, ...S.wps], 4 / V.s).samples : S.wps;
+    prev.forEach((w, i) => { const s = w2s(w); i ? ctx.lineTo(s.x, s.y) : ctx.moveTo(s.x, s.y); }); ctx.stroke(); ctx.setLineDash([]);
+    S.wps.forEach((w, i) => {
+      const s = w2s(w), sel = (S.sel && S.sel.kind === 'wp' && S.sel.i === i) || isHover('wp', i);
+      ctx.beginPath(); ctx.arc(s.x, s.y, 8, 0, 7); ctx.fillStyle = sel ? '#ffce54' : '#b392f0'; ctx.fill();
+      ctx.fillStyle = '#0e1116'; ctx.font = 'bold 10px ui-sans-serif,system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(i + 1, s.x, s.y + 0.5);
+    });
+  }
+  // target
+  if (S.target) {
+    const s = w2s(S.target), sel = (S.sel && S.sel.kind === 'target') || isHover('target');
+    ctx.strokeStyle = sel ? '#ffce54' : '#4cc38a'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.arc(s.x, s.y, 9, 0, 7); ctx.moveTo(s.x - 15, s.y); ctx.lineTo(s.x + 15, s.y); ctx.moveTo(s.x, s.y - 15); ctx.lineTo(s.x, s.y + 15); ctx.stroke();
+  }
+  // base
+  const b = w2s(S.base);
+  ctx.fillStyle = '#2a323d'; ctx.strokeStyle = '#8b98a5'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - 13, b.y + 18); ctx.lineTo(b.x + 13, b.y + 18); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); for (let k = -16; k <= 12; k += 6) { ctx.moveTo(b.x + k, b.y + 24); ctx.lineTo(b.x + k + 5, b.y + 18); } ctx.moveTo(b.x - 17, b.y + 18); ctx.lineTo(b.x + 17, b.y + 18); ctx.stroke();
+
+  drawArm(S.th, { main: true });
+  drawHud();
+}
+
+function drawCands(C) {
+  const groups = new Map();
+  for (const c of C) { const key = c.th.map(v => v.toFixed(3)).join(','); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(c); }
+  for (const cs of groups.values()) {
+    const c = cs[0], col = CAND_COL[c.key];
+    ctx.setLineDash([3, 4]); ctx.beginPath(); c.pts.forEach((p, i) => { const s = w2s(p); i ? ctx.lineTo(s.x, s.y) : ctx.moveTo(s.x, s.y); });
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.8; ctx.lineWidth = 1.4; ctx.stroke(); ctx.setLineDash([]);
+    drawArm(c.th, { color: col, w: 2.5 }); ctx.globalAlpha = 1;
+    const P = fk(c.th).P, j = w2s(P[Math.max(1, P.length - 2)]);
+    ctx.font = '11px ui-sans-serif,system-ui'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    cs.forEach((cc, i) => { ctx.fillStyle = CAND_COL[cc.key]; ctx.fillText('★ ' + CAND_NAME[cc.key].toLowerCase(), j.x + 10, j.y - 8 + i * 13); });
+  }
+}
+function drawHud() {
+  const { tip } = fk(S.th), c = S.obs.length ? clearance(S.th) : null;
+  let s = `tip (${f(tip.x, 1)}, ${f(tip.y, 1)})   θ = [${S.th.map(v => fd(wrap(v), 1)).join(', ')}]°`;
+  if (mouseW) s += `\ncursor (${f(mouseW.x, 1)}, ${f(mouseW.y, 1)})  r=${f(hyp(mouseW.x, mouseW.y), 1)}`;
+  if (c) s += `   clearance ${f(c.d, 1)}${c.d < 0 ? ' TOUCHING' : ''}`;
+  if (S.hover && !drag) s += `\n${entityName(S.hover)} — right-click to delete`;
+  if (S.anim) s += `\n▶ frame ${S.anim.i} / ${S.anim.frames.length - 1}`;
+  $('#hud').textContent = s;
+}
+
+function loop(now) { tickAnim(now); if (dirty) { dirty = false; draw(); } requestAnimationFrame(loop); }
+
+/* ======================= interaction ======================= */
+let drag = null, mouseW = null, spaceDown = false;
+const MODE_HINT = {
+  select: 'Select: drag the target, waypoints or obstacles · drag the <b>tip</b> for live IK · <b>right-click an item to delete it</b> (Ctrl+Z undo) · right-drag pans',
+  target: 'Target: click empty space to set the target and run · click an item to select/drag it · <b>right-click an item to delete it</b> (Ctrl+Z undo)',
+  path: 'Path: click to drop waypoints in order · drag one to move it · right-click one to delete it · then ▶ Run (Space)',
+  circle: 'Obstacle ○: press and drag to size a circle · drag an existing one to move it · right-click to delete',
+  box: 'Obstacle □: press and drag corner to corner · drag an existing one to move it · right-click to delete',
+  live: 'Live: the tip follows your cursor (DLS, no report). Click to freeze a target and run it properly.',
+};
+function setMode(m) {
+  S.mode = m; document.querySelectorAll('#modes button').forEach(bt => bt.classList.toggle('on', bt.dataset.mode === m));
+  $('#modeHint').innerHTML = MODE_HINT[m]; cv.style.cursor = m === 'select' ? 'default' : 'crosshair'; dirty = true;
+}
+// what is under the cursor. opts.links → also links; opts.noTip → skip the tip handle
+function hitTest(w, opts = {}) {
+  const tol = 10 / V.s, { P } = fk(S.th), n = S.L.length;
+  if (!opts.noTip && hyp(P[n].x - w.x, P[n].y - w.y) < tol) return { kind: 'tip' };
+  if (S.target && hyp(S.target.x - w.x, S.target.y - w.y) < tol * 1.3) return { kind: 'target' };
+  for (let i = S.wps.length - 1; i >= 0; i--) if (hyp(S.wps[i].x - w.x, S.wps[i].y - w.y) < tol) return { kind: 'wp', i };
+  for (let i = S.obs.length - 1; i >= 0; i--) if (distSegObs(w, w, S.obs[i]).d < 0) return { kind: 'obs', i };
+  if (opts.links) for (let i = n - 1; i >= 0; i--) {
+    const q = segPt(P[i], P[i + 1], w);
+    if (hyp(q.x - w.x, q.y - w.y) < Math.max(S.opt.thick, 7 / V.s)) return { kind: 'link', i };
+  }
+  return null;
+}
+const DEL_HIT = { noTip: true, links: true };
+const sameHit = (a, b) => !!a && !!b && a.kind === b.kind && a.i === b.i;
+function entityName(h) {
+  return h.kind === 'obs' ? `obstacle ${S.obs[h.i].type === 'circle' ? '○' : '□'}${h.i + 1}` : h.kind === 'wp' ? `waypoint W${h.i + 1}`
+    : h.kind === 'target' ? 'the target' : `link ${h.i + 1}`;
+}
+function liveFollow(w) {
+  const o = { ...solverOpts(), step: 40, maxDth: 15 * D2R };
+  for (let k = 0; k < 25; k++) { const st = dlsStep(S.th, w, o); if (st.en < o.tol) break; S.th = S.th.map((v, i) => v + st.dth[i]); }
+  S.th = S.th.map(wrap); dirty = true;
+}
+
+/* ---------- delete + undo ---------- */
+const undoStack = [];
+function pushUndo(u) { undoStack.push(u); if (undoStack.length > 50) undoStack.shift(); }
+function deleteEntity(h) {
+  if (!h || h.kind === 'tip') return;
+  if (h.kind === 'link' && S.L.length <= 1) { toast('The chain needs at least one link.', true); return; }
+  const name = entityName(h);
+  if (h.kind === 'obs') pushUndo({ kind: 'obs', i: h.i, item: S.obs.splice(h.i, 1)[0] });
+  else if (h.kind === 'wp') pushUndo({ kind: 'wp', i: h.i, item: S.wps.splice(h.i, 1)[0] });
+  else if (h.kind === 'target') { pushUndo({ kind: 'target', item: S.target }); S.target = null; syncTargetInputs(); }
+  else if (h.kind === 'link') {
+    stopAnim();
+    pushUndo({ kind: 'link', i: h.i, L: S.L[h.i], th: S.th[h.i], home: S.home[h.i] });
+    S.L.splice(h.i, 1); S.th.splice(h.i, 1); S.home.splice(h.i, 1); S.last = null; renderLinks();
+  }
+  S.sel = null; S.hover = null; renderLists(); save(); dirty = true;
+  toast(`Deleted ${name} — Ctrl+Z to undo`);
+}
+function clearAll(kind) {
+  const arr = kind === 'obs' ? S.obs : S.wps; if (!arr.length) return;
+  pushUndo({ kind: 'clear-' + kind, items: arr.slice() });
+  if (kind === 'obs') S.obs = []; else S.wps = [];
+  S.sel = null; renderLists(); save(); dirty = true;
+  toast(`Cleared ${kind === 'obs' ? 'obstacles' : 'waypoints'} — Ctrl+Z to undo`);
+}
+function undo() {
+  const u = undoStack.pop(); if (!u) { toast('Nothing to undo.'); return; }
+  if (u.kind === 'obs') S.obs.splice(u.i, 0, u.item);
+  else if (u.kind === 'wp') S.wps.splice(u.i, 0, u.item);
+  else if (u.kind === 'target') { S.target = u.item; syncTargetInputs(); }
+  else if (u.kind === 'link') {
+    if (S.L.length >= MAXL) { undoStack.push(u); toast(`Already at ${MAXL} links — remove one first.`, true); return; }
+    stopAnim(); S.L.splice(u.i, 0, u.L); S.th.splice(u.i, 0, u.th); S.home.splice(u.i, 0, u.home); S.last = null; renderLinks();
+  }
+  else if (u.kind === 'clear-obs') S.obs = u.items;
+  else if (u.kind === 'clear-wps') S.wps = u.items;
+  renderLists(); save(); dirty = true; toast('Undone.');
+}
+
+cv.addEventListener('contextmenu', e => e.preventDefault());
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId);
+  const w = s2w(e.offsetX, e.offsetY);
+  if (e.button === 2) { drag = { kind: 'pan', x: e.offsetX, y: e.offsetY, right: true, moved: 0 }; return; }
+  if (e.button === 1 || spaceDown) { drag = { kind: 'pan', x: e.offsetX, y: e.offsetY }; return; }
+  const m = S.mode;
+  const moveDrag = h => ({ kind: 'move', h, w0: w, orig: h.kind === 'obs' ? { ...S.obs[h.i] } : h.kind === 'wp' ? { ...S.wps[h.i] } : { ...S.target } });
+  if (m === 'select') {
+    const h = hitTest(w); S.sel = h && h.kind !== 'tip' ? h : null; renderLists();
+    if (!h) drag = { kind: 'pan', x: e.offsetX, y: e.offsetY };
+    else if (h.kind === 'tip') { stopAnim(); drag = { kind: 'tip' }; }
+    else drag = moveDrag(h);
+    dirty = true; return;
+  }
+  // in every other mode, clicking an existing item selects it (and lets you drag it) instead of creating something new
+  const h = hitTest(w, { noTip: true });
+  if (h) { S.sel = h; drag = moveDrag(h); renderLists(); dirty = true; return; }
+  if (m === 'target' || m === 'live') {
+    S.target = { x: +w.x.toFixed(2), y: +w.y.toFixed(2) }; S.sel = null; syncTargetInputs(); runTarget(S.target);
+  } else if (m === 'path') {
+    S.wps.push({ x: +w.x.toFixed(2), y: +w.y.toFixed(2) }); S.sel = { kind: 'wp', i: S.wps.length - 1 };
+    renderLists(); save();
+  } else if (m === 'circle') drag = { kind: 'new-obs', w0: w, o: { type: 'circle', x: w.x, y: w.y, r: 1 } };
+  else if (m === 'box') drag = { kind: 'new-obs', w0: w, o: { type: 'box', x: w.x, y: w.y, w: 1, h: 1 } };
+  dirty = true;
+});
+cv.addEventListener('pointermove', e => {
+  mouseW = s2w(e.offsetX, e.offsetY); dirty = true;
+  if (!drag) {
+    const h = hitTest(mouseW, DEL_HIT);
+    if (!sameHit(h, S.hover)) S.hover = h;
+    cv.style.cursor = S.hover ? 'pointer' : S.mode === 'select' ? 'default' : 'crosshair';
+    if (S.mode === 'live' && !S.anim) liveFollow(mouseW);
+    return;
+  }
+  const w = mouseW;
+  if (drag.kind === 'pan') { drag.moved = (drag.moved || 0) + Math.abs(e.offsetX - drag.x) + Math.abs(e.offsetY - drag.y); V.ox += e.offsetX - drag.x; V.oy += e.offsetY - drag.y; drag.x = e.offsetX; drag.y = e.offsetY; }
+  else if (drag.kind === 'tip') liveFollow(w);
+  else if (drag.kind === 'move') {
+    const dx = w.x - drag.w0.x, dy = w.y - drag.w0.y, h = drag.h;
+    const tgt = h.kind === 'obs' ? S.obs[h.i] : h.kind === 'wp' ? S.wps[h.i] : S.target;
+    tgt.x = +(drag.orig.x + dx).toFixed(2); tgt.y = +(drag.orig.y + dy).toFixed(2);
+    if (h.kind === 'target') syncTargetInputs();
+  } else if (drag.kind === 'new-obs') {
+    const o = drag.o, a = drag.w0;
+    if (o.type === 'circle') o.r = Math.max(1, hyp(w.x - a.x, w.y - a.y));
+    else { o.x = (a.x + w.x) / 2; o.y = (a.y + w.y) / 2; o.w = Math.max(1, Math.abs(w.x - a.x)); o.h = Math.max(1, Math.abs(w.y - a.y)); }
+  }
+});
+cv.addEventListener('pointerup', e => {
+  // right-click without dragging = delete whatever is under the cursor
+  if (drag && drag.right && drag.moved < 5) { drag = null; deleteEntity(hitTest(s2w(e.offsetX, e.offsetY), DEL_HIT)); return; }
+  if (drag && drag.kind === 'new-obs') {
+    const o = drag.o;
+    if (o.type === 'circle' && o.r < 4) o.r = 20;
+    if (o.type === 'box' && (o.w < 4 || o.h < 4)) { o.w = 40; o.h = 40; }
+    for (const k of ['x', 'y', 'r', 'w', 'h']) if (k in o) o[k] = +o[k].toFixed(1);
+    S.obs.push(o); S.sel = { kind: 'obs', i: S.obs.length - 1 };
+  }
+  if (drag && drag.kind === 'tip') renderLinks();
+  if (drag && !drag.right) { renderLists(); save(); }
+  drag = null; dirty = true;
+});
+cv.addEventListener('pointerleave', () => { mouseW = null; S.hover = null; dirty = true; });
+cv.addEventListener('wheel', e => {
+  e.preventDefault(); const k = Math.exp(-e.deltaY * 0.0012), w = s2w(e.offsetX, e.offsetY);
+  V.s = clamp(V.s * k, 0.05, 40); V.ox = e.offsetX - w.x * V.s; V.oy = e.offsetY + w.y * V.s; dirty = true;
+}, { passive: false });
+
+window.addEventListener('keydown', e => {
+  if (e.target.matches && e.target.matches('input, select, textarea')) return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); undo(); return; }
+  const map = { v: 'select', t: 'target', p: 'path', o: 'circle', b: 'box', l: 'live' };
+  if (map[k] && !e.ctrlKey && !e.metaKey) { setMode(map[k]); return; }
+  if (k === ' ') { e.preventDefault(); if (!e.repeat) runPrimary(); return; }
+  if (k === 'escape') { stopAnim(); S.sel = null; renderLists(); dirty = true; return; }
+  if (k === 'f') { fit(); return; }
+  if (k === 'h') { goHome(); return; }
+  if ((k === 'delete' || k === 'backspace') && S.sel) deleteEntity(S.sel);
+});
+function runPrimary() { if (S.mode === 'path' || (!S.target && S.wps.length)) runPath(); else runTarget(S.target); }
+function goHome() { stopAnim(); S.th = S.home.slice(); renderLinks(); save(); dirty = true; }
+
+/* ======================= side panel ======================= */
+function renderLinks() {
+  const n = S.L.length; $('#linkCount').textContent = `${n} / ${MAXL}`;
+  $('#addLink').disabled = n >= MAXL;
+  $('#linkList').innerHTML = S.L.map((L, i) => `
+    <div class="item"><span class="ix"><span class="sw" style="background:${LINK_COLORS[i]}"></span>${i + 1}</span>
+      <span class="lb">L</span><input type="number" min="1" step="1" value="${+L.toFixed(2)}" data-l="${i}">
+      <span class="lb">θ°</span><input type="number" step="1" value="${+(wrap(S.th[i]) * R2D).toFixed(2)}" data-t="${i}">
+      <button data-rm="${i}" ${n <= 1 ? 'disabled' : ''} title="Remove link">×</button></div>`).join('');
+}
+function renderLists() {
+  $('#wpCount').textContent = S.wps.length; $('#obCount').textContent = S.obs.length;
+  $('#wpList').innerHTML = S.wps.length ? S.wps.map((w, i) => `
+    <div class="item ${S.sel && S.sel.kind === 'wp' && S.sel.i === i ? 'sel' : ''}"><span class="ix">W${i + 1}</span>
+      <span class="lb">x</span><input type="number" step="1" value="${w.x}" data-wx="${i}"><span class="lb">y</span><input type="number" step="1" value="${w.y}" data-wy="${i}">
+      <button data-wrm="${i}">×</button></div>`).join('') : '<div class="empty">No waypoints — Path mode, click the canvas.</div>';
+  $('#obList').innerHTML = S.obs.length ? S.obs.map((o, i) => `
+    <div class="item ${S.sel && S.sel.kind === 'obs' && S.sel.i === i ? 'sel' : ''}"><span class="ix">${o.type === 'circle' ? '○' : '□'}${i + 1}</span>
+      <span class="lb">x</span><input type="number" step="1" value="${o.x}" data-ox="${i}"><span class="lb">y</span><input type="number" step="1" value="${o.y}" data-oy="${i}">
+      ${o.type === 'circle' ? `<span class="lb">r</span><input type="number" min="1" step="1" value="${o.r}" data-or="${i}">`
+        : `<span class="lb">w</span><input type="number" min="1" step="1" value="${o.w}" data-ow="${i}"><span class="lb">h</span><input type="number" min="1" step="1" value="${o.h}" data-oh="${i}">`}
+      <button data-orm="${i}">×</button></div>`).join('') : '<div class="empty">No obstacles — use Obstacle ○ / □ modes.</div>';
+}
+function syncTargetInputs() { $('#tx').value = S.target ? S.target.x : ''; $('#ty').value = S.target ? S.target.y : ''; }
+
+$('#linkList').addEventListener('change', e => {
+  const t = e.target; stopAnim();
+  if (t.dataset.l != null) S.L[+t.dataset.l] = Math.max(1, +t.value || 1);
+  if (t.dataset.t != null) S.th[+t.dataset.t] = (+t.value || 0) * D2R;
+  save(); dirty = true;
+});
+$('#linkList').addEventListener('click', e => {
+  const i = e.target.dataset.rm; if (i != null) deleteEntity({ kind: 'link', i: +i });
+});
+$('#addLink').onclick = () => {
+  if (S.L.length >= MAXL) return; stopAnim();
+  S.L.push(Math.max(20, Math.round(S.L[S.L.length - 1] * 0.8))); S.th.push(0); S.home.push(0); S.last = null; renderLinks(); save(); dirty = true;
+};
+$('#setHome').onclick = () => { S.home = S.th.slice(); save(); toast('Home pose saved.'); };
+$('#wpList').addEventListener('change', e => {
+  const d = e.target.dataset;
+  if (d.wx != null) S.wps[+d.wx].x = +e.target.value; if (d.wy != null) S.wps[+d.wy].y = +e.target.value; save(); dirty = true;
+});
+$('#wpList').addEventListener('click', e => { const i = e.target.dataset.wrm; if (i != null) deleteEntity({ kind: 'wp', i: +i }); });
+$('#obList').addEventListener('change', e => {
+  const d = e.target.dataset, v = +e.target.value;
+  for (const [k, prop] of [['ox', 'x'], ['oy', 'y'], ['or', 'r'], ['ow', 'w'], ['oh', 'h']]) if (d[k] != null) S.obs[+d[k]][prop] = prop === 'x' || prop === 'y' ? v : Math.max(1, v);
+  save(); dirty = true;
+});
+$('#obList').addEventListener('click', e => { const i = e.target.dataset.orm; if (i != null) deleteEntity({ kind: 'obs', i: +i }); });
+$('#goBtn').onclick = () => { const x = parseFloat($('#tx').value), y = parseFloat($('#ty').value); if (!isFinite(x) || !isFinite(y)) return toast('Enter numeric x and y.', true); S.target = { x, y }; runTarget(S.target); };
+$('#runPath').onclick = runPath;
+$('#revPath').onclick = () => { S.wps.reverse(); renderLists(); save(); dirty = true; };
+$('#clrPath').onclick = () => clearAll('wps');
+$('#clrObs').onclick = () => clearAll('obs');
+$('#addGround').onclick = () => {
+  const R = sum(S.L), { P } = fk(S.th), low = Math.min(...P.map(p => p.y));
+  const y = Math.min(low - S.opt.thick - 8, -R * 0.75);
+  S.obs.push({ type: 'box', x: 0, y: +(y - 10).toFixed(1), w: +(R * 3).toFixed(1), h: 20 }); renderLists(); save(); dirty = true;
+};
+$('#btnRun').onclick = runPrimary;
+$('#btnStop').onclick = stopAnim;
+$('#btnHome').onclick = goHome;
+$('#btnFit').onclick = fit;
+document.querySelectorAll('#modes button').forEach(bt => bt.onclick = () => setMode(bt.dataset.mode));
+document.querySelectorAll('.atabs button').forEach(bt => bt.onclick = () => showTab(bt.dataset.tab));
+function showTab(t) {
+  document.querySelectorAll('.atabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  document.querySelectorAll('.tab').forEach(s => s.classList.toggle('on', s.id === 'tab-' + t));
+  if (t === 'runs') refreshRuns();
+}
+$('#scrub').addEventListener('input', e => {
+  if (!S.last) return; S.anim = null; const i = +e.target.value; S.th = S.last.frames[i].slice(); updScrubLabel(i); renderLinks(); dirty = true;
+});
+
+// options binding
+const OPTS = [['optMethod', 'method', 'sel'], ['optLambda', 'lambda'], ['optStep', 'step'], ['optMaxDth', 'maxDth'], ['optTol', 'tol'], ['optMaxIter', 'maxIter'],
+  ['optBranch', 'branch', 'sel'], ['optThick', 'thick'], ['optAvoid', 'avoid', 'chk'], ['optPathShape', 'pathShape', 'sel'], ['optPick', 'pick', 'sel'], ['optCands', 'cands', 'chk'], ['optAngles', 'angles', 'chk'],
+  ['optWS', 'ws', 'chk'], ['optGhosts', 'ghosts', 'chk'], ['optTrace', 'trace', 'chk'], ['optFps', 'fps']];
+function bindOpts() {
+  for (const [id, key, kind] of OPTS) {
+    const el = document.getElementById(id);
+    if (kind === 'chk') el.checked = !!S.opt[key]; else el.value = S.opt[key];
+    el.addEventListener(kind === 'chk' || kind === 'sel' ? 'change' : 'input', () => {
+      if (kind === 'chk') S.opt[key] = el.checked; else if (kind === 'sel') S.opt[key] = el.value;
+      else { const v = parseFloat(el.value); if (isFinite(v)) S.opt[key] = Math.max(0, v); }
+      if (key === 'fps') $('#fpsV').textContent = S.opt.fps;
+      save(); dirty = true;
+    });
+  }
+  $('#fpsV').textContent = S.opt.fps;
+}
+
+// presets
+const PRESETS = {
+  arm2: { L: [120, 90], th: [30, 45] },
+  leg3: { L: [110, 100, 45], th: [-110, 40, 70] },
+  arm4: { L: [90, 80, 70, 50], th: [20, 30, 30, 30] },
+  tent6: { L: [60, 55, 50, 45, 40, 35], th: [80, -15, -15, -15, -15, -15] },
+  'scene-rock': { L: [110, 100, 45], th: [-110, 40, 70], obs: [{ type: 'box', x: 0, y: -245, w: 700, h: 30 }, { type: 'circle', x: 78, y: -206, r: 24 }], target: { x: 140, y: -195 }, wps: [] },
+  'scene-pillar': { L: [100, 90, 70, 50], th: [60, -20, -30, -20], obs: [{ type: 'box', x: 120, y: 30, w: 40, h: 150 }], target: { x: 170, y: -60 }, wps: [] },
+  'scene-path': { L: [110, 100, 45], th: [-80, 40, 60], obs: [{ type: 'circle', x: -40, y: -120, r: 26 }],
+    target: null, wps: [{ x: 60, y: -170 }, { x: 150, y: -120 }, { x: 150, y: -40 }, { x: 60, y: 60 }, { x: -60, y: 100 }] },
+};
+$('#presetSel').onchange = e => {
+  const p = PRESETS[e.target.value]; e.target.value = ''; if (!p) return;
+  stopAnim(); S.L = p.L.slice(); S.th = p.th.map(v => v * D2R); S.home = S.th.slice(); S.last = null;
+  if (p.obs) { S.obs = JSON.parse(JSON.stringify(p.obs)); S.wps = p.wps.map(w => ({ ...w })); S.target = p.target ? { ...p.target } : null; }
+  S.sel = null; renderLinks(); renderLists(); syncTargetInputs(); fit(); save();
+  if (p.wps && p.wps.length) setMode('path'); else if (p.obs) setMode('target');
+};
+
+/* ---------- report → HTML ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pretty = s => esc(s).replace(/([θφψΔ]|\bL|\bP|\bW|\bJ)(\d{1,2})\b/g, '$1<sub>$2</sub>').replace(/\bR(min|max)\b/g, 'R<sub>$1</sub>');
+function renderReport(r) {
+  const H = r.head, head = $('#workHead');
+  let cls = '';
+  if (H.cls) cls = `<div class="big ${H.cls.count === 0 ? 'bad' : H.cls.count === Infinity ? 'warnc' : 'ok'}">${esc(H.cls.label)}</div>`;
+  else if (H.path) cls = `<div class="big">${H.legs} waypoint${H.legs > 1 ? 's' : ''}</div>`;
+  head.innerHTML = `<div class="hint">Run #${r.id} · ${esc(r.title)} · ${r.when.toLocaleTimeString()}</div>${cls}
+    <div class="${H.ok ? 'ok' : 'bad'}" style="margin-top:4px">${H.ok ? '✓ reached' : '✗ not reached / touching'} · residual ${f(H.err, 4)}${H.method ? ' · ' + esc(H.method.toUpperCase()) : ''}</div>
+    <div class="hint" style="margin-top:4px;font-family:ui-monospace,Consolas,monospace">Δθ = [${H.d.map(v => fd(v, 2)).join(', ')}]°</div>
+    ${H.cands ? `<div class="cands">${CAND_KEYS.map(k => { const c = H.cands[k]; return `<div class="cand"><span class="sw" style="background:${CAND_COL[k]}"></span><b>${CAND_NAME[k]}</b>
+      <span class="hint" title="${esc(c.label)}">E ${f(c.effort, 3)} · D ${f(c.travel, 1)} · A ${f(c.accel, 0)}</span>
+      ${H.picked === k ? '<span class="tag ok">used</span>' : `<button data-pick="${k}">Move via</button>`}</div>`; }).join('')}</div>` : ''}`;
+  $('#report').innerHTML = r.blocks.map(bl => {
+    switch (bl.t) {
+      case 'h': return `<h4>${pretty(bl.text)}</h4>`;
+      case 'h2': return `<h5>${pretty(bl.text)}</h5>`;
+      case 'p': return `<p>${pretty(bl.text)}</p>`;
+      case 'eq': return `<pre>${bl.lines.map(pretty).join('\n')}</pre>`;
+      case 'kv': return `<div class="kv">${bl.pairs.map(([k, v]) => `<span>${esc(k)}</span><span>${pretty(v)}</span>`).join('')}</div>`;
+      case 'call': return `<div class="call ${bl.tone}">${pretty(bl.text)}</div>`;
+      case 'fig': return '';
+      case 'table': return `<div class="tw"><table><thead><tr>${bl.head.map(h => `<th>${pretty(h)}</th>`).join('')}</tr></thead><tbody>${
+        bl.rows.map((row, i) => `<tr class="${bl.hl === i ? 'hl' : ''}">${row.map(c => `<td>${pretty(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${bl.cap ? `<div class="cap">${pretty(bl.cap)}</div>` : ''}`;
+    }
+    return '';
+  }).join('');
+  showTab('work');
+}
+
+/* ======================= PDF (hand-rolled, no dependencies) ======================= */
+const PDFW = (() => {
+  // Helvetica advance widths for chars 32..126 (Adobe AFM, 1/1000 em)
+  const HW = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+    1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+    333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+  const HBW = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,
+    975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,
+    333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+  const WIN = { '€': 0x80, '…': 0x85, '•': 0x95, '–': 0x96, '—': 0x97, '‘': 0x91, '’': 0x92, '“': 0x93, '”': 0x94, '™': 0x99 };
+  const SYM = { 'α': 0x61, 'β': 0x62, 'γ': 0x67, 'δ': 0x64, 'Δ': 0x44, 'ε': 0x65, 'θ': 0x71, 'Θ': 0x51, 'λ': 0x6C, 'μ': 0x6D, 'π': 0x70, 'ρ': 0x72,
+    'φ': 0x66, 'Φ': 0x46, 'ψ': 0x79, 'ω': 0x77, 'σ': 0x73, 'Σ': 0x53, '∑': 0xE5, '∞': 0xA5, '≈': 0xBB, '≠': 0xB9, '≤': 0xA3, '≥': 0xB3,
+    '→': 0xAE, '←': 0xAC, '√': 0xD6, '∂': 0xB6, '∇': 0xD1, '∈': 0xCE, '◀': 0xAC, '○': 0xC4, '□': 0xF0 };
+  const SYMW = { 'θ': 521, 'φ': 521, 'λ': 549, 'Δ': 612, 'ψ': 686, '∞': 713, '≈': 549, '→': 987, '←': 987, '≤': 549, '≥': 549, '√': 549, 'Σ': 592, '∇': 713, 'π': 549, 'ρ': 549 };
+  const FONTS = { H: 'F1', HB: 'F2', C: 'F3', CB: 'F4', S: 'F5' };
+  function norm(s) {
+    return String(s).replace(/ᵀ/g, '^T').replace(/⁻¹/g, '^-1').replace(/⁻⁶/g, '^-6').replace(/⁺/g, '+').replace(/−/g, '-').replace(/[₀-₉]/g, c => String(c.charCodeAt(0) - 0x2080))
+      .replace(/‖/g, '||').replace(/★/g, '*').replace(/✓/g, 'OK').replace(/✗/g, 'X').replace(/▶/g, '>').replace(/■/g, '#').replace(/·(?=\d)/g, '·');
+  }
+  function runs(s, font) {
+    const out = [];
+    for (const ch of norm(s)) {
+      const cp = ch.codePointAt(0); let code, fnt = font;
+      if (cp >= 32 && cp <= 126) code = cp;
+      else if (WIN[ch] != null) code = WIN[ch];
+      else if (cp >= 0xA0 && cp <= 0xFF) code = cp;
+      else if (SYM[ch] != null) { code = SYM[ch]; fnt = 'S'; }
+      else code = 63;
+      const last = out[out.length - 1];
+      if (last && last.f === fnt) { last.codes.push(code); last.chars.push(ch); } else out.push({ f: fnt, codes: [code], chars: [ch] });
+    }
+    return out;
+  }
+  const mono = f => f === 'C' || f === 'CB';
+  function runW(r, size, base) {
+    let w = 0;
+    for (let k = 0; k < r.codes.length; k++) {
+      const c = r.codes[k];
+      if (r.f === 'S') w += mono(base) ? 600 : (SYMW[r.chars[k]] || 600);
+      else if (mono(r.f)) w += 600;
+      else w += c >= 32 && c <= 126 ? (r.f === 'HB' ? HBW : HW)[c - 32] : (c === 0x85 || c === 0x97) ? 1000 : c === 0x95 ? 350 : 556;
+    }
+    return w * size / 1000;
+  }
+  const width = (s, font, size) => runs(s, font).reduce((a, r) => a + runW(r, size, font), 0);
+  const escCodes = codes => codes.map(c => c === 40 ? '\\(' : c === 41 ? '\\)' : c === 92 ? '\\\\' : (c < 32 || c > 126) ? '\\' + c.toString(8).padStart(3, '0') : String.fromCharCode(c)).join('');
+  const n2 = v => (+v).toFixed(2).replace(/\.?0+$/, '') || '0';
+  const rgb = hex => { const h = hex.replace('#', ''); return [0, 2, 4].map(i => (parseInt(h.substr(i, 2), 16) / 255).toFixed(3)).join(' '); };
+
+  class Doc {
+    constructor() { this.W = 612; this.H = 792; this.M = 50; this.pages = []; this.add(); }
+    add() { this.c = []; this.pages.push(this.c); this.y = this.M; }
+    need(h) { if (this.y + h > this.H - this.M - 16) { this.add(); return true; } return false; }
+    op(s) { this.c.push(s); }
+    text(x, y, s, font = 'H', size = 10, color = '#1b2330') {
+      let cx = x; this.op(`${rgb(color)} rg`);
+      for (const r of runs(s, font)) {
+        this.op(`BT /${FONTS[r.f]} ${n2(size)} Tf ${n2(cx)} ${n2(this.H - y)} Td (${escCodes(r.codes)}) Tj ET`);
+        cx += runW(r, size, font);
+      }
+      return cx - x;
+    }
+    line(x1, y1, x2, y2, o = {}) { this.op(`q ${rgb(o.color || '#1b2330')} RG ${n2(o.w || 1)} w 1 J 1 j ${o.dash ? `[${o.dash.join(' ')}] 0 d` : ''} ${n2(x1)} ${n2(this.H - y1)} m ${n2(x2)} ${n2(this.H - y2)} l S Q`); }
+    poly(pts, o = {}) {
+      if (pts.length < 2) return;
+      this.op(`q ${rgb(o.color || '#1b2330')} RG ${n2(o.w || 1)} w 1 J 1 j ${o.dash ? `[${o.dash.join(' ')}] 0 d` : ''} ` + pts.map((p, i) => `${n2(p.x)} ${n2(this.H - p.y)} ${i ? 'l' : 'm'}`).join(' ') + ' S Q');
+    }
+    rect(x, y, w, h, o = {}) {
+      const paint = o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S';
+      this.op(`q ${o.fill ? rgb(o.fill) + ' rg' : ''} ${o.stroke ? rgb(o.stroke) + ' RG' : ''} ${n2(o.w || 0.8)} w ${n2(x)} ${n2(this.H - y - h)} ${n2(w)} ${n2(h)} re ${paint} Q`);
+    }
+    circle(cx, cy, r, o = {}) {
+      const k = 0.5523 * r, Y = this.H - cy, paint = o.fill && o.stroke ? 'B' : o.fill ? 'f' : 'S';
+      this.op(`q ${o.fill ? rgb(o.fill) + ' rg' : ''} ${o.stroke ? rgb(o.stroke) + ' RG' : ''} ${n2(o.w || 0.8)} w ${o.dash ? `[${o.dash.join(' ')}] 0 d` : ''} ` +
+        `${n2(cx + r)} ${n2(Y)} m ${n2(cx + r)} ${n2(Y + k)} ${n2(cx + k)} ${n2(Y + r)} ${n2(cx)} ${n2(Y + r)} c ` +
+        `${n2(cx - k)} ${n2(Y + r)} ${n2(cx - r)} ${n2(Y + k)} ${n2(cx - r)} ${n2(Y)} c ${n2(cx - r)} ${n2(Y - k)} ${n2(cx - k)} ${n2(Y - r)} ${n2(cx)} ${n2(Y - r)} c ` +
+        `${n2(cx + k)} ${n2(Y - r)} ${n2(cx + r)} ${n2(Y - k)} ${n2(cx + r)} ${n2(Y)} c ${paint} Q`);
+    }
+    clip(x, y, w, h) { this.op(`q ${n2(x)} ${n2(this.H - y - h)} ${n2(w)} ${n2(h)} re W n`); }
+    unclip() { this.op('Q'); }
+    bytes(title) {
+      const objs = [];
+      const add = s => { objs.push(s); return objs.length; };
+      const cat = add(null), pages = add(null);
+      const fontIds = [['Helvetica', true], ['Helvetica-Bold', true], ['Courier', true], ['Courier-Bold', true], ['Symbol', false]]
+        .map(([nm, win]) => add(`<< /Type /Font /Subtype /Type1 /BaseFont /${nm}${win ? ' /Encoding /WinAnsiEncoding' : ''} >>`));
+      const fontRes = '<< ' + fontIds.map((id, i) => `/F${i + 1} ${id} 0 R`).join(' ') + ' >>';
+      const kids = [];
+      for (const pg of this.pages) {
+        const content = pg.join('\n');
+        const cid = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+        kids.push(add(`<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font ${fontRes} >> /Contents ${cid} 0 R >>`));
+      }
+      objs[cat - 1] = `<< /Type /Catalog /Pages ${pages} 0 R >>`;
+      objs[pages - 1] = `<< /Type /Pages /Kids [${kids.map(k => k + ' 0 R').join(' ')}] /Count ${kids.length} >>`;
+      const d = new Date(), ds = `D:${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}${String(d.getSeconds()).padStart(2, '0')}`;
+      const info = add(`<< /Title (${escCodes(runs(title, 'H').flatMap(r => r.f === 'S' ? [63] : r.codes))}) /Producer (IK Studio) /CreationDate (${ds}) >>`);
+      let out = '%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'; const offs = [];
+      objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+      const xref = out.length;
+      out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('');
+      out += `trailer\n<< /Size ${objs.length + 1} /Root ${cat} 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+      const u8 = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) u8[i] = out.charCodeAt(i) & 0xFF;
+      return u8;
+    }
+  }
+  return { Doc, width, norm };
+})();
+
+function wrapText(s, font, size, maxW) {
+  const words = String(s).split(/\s+/), lines = []; let cur = '';
+  for (const w of words) {
+    const t = cur ? cur + ' ' + w : w;
+    if (PDFW.width(t, font, size) > maxW && cur) { lines.push(cur); cur = w; } else cur = t;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function buildPDF(r) {
+  const doc = new PDFW.Doc(), X = doc.M, CWD = doc.W - 2 * doc.M, INK = '#1b2330', DIM = '#5b6773', ACC = '#b8860b';
+  // title
+  doc.rect(0, 0, doc.W, 6, { fill: '#ffce54' });
+  doc.text(X, doc.y + 18, `IK Studio — Run #${r.id}`, 'HB', 20, INK); doc.y += 30;
+  doc.text(X, doc.y + 12, `${r.title}   ·   ${r.when.toLocaleString()}`, 'H', 10.5, DIM); doc.y += 20;
+  const H = r.head;
+  const summary = [H.cls ? `Solutions: ${H.cls.label}` : `${H.legs} waypoints`, `${H.ok ? 'Reached' : 'NOT reached / touching'} — residual ${f(H.err, 4)}`, `Δθ = [${H.d.map(v => fd(v, 2)).join(', ')}]°`];
+  doc.rect(X, doc.y, CWD, 16 * summary.length + 10, { fill: '#f6f3e6', stroke: '#e0d6a8' });
+  summary.forEach((s, i) => doc.text(X + 10, doc.y + 18 + i * 16, s, i ? 'C' : 'HB', i ? 9.5 : 11, INK));
+  doc.y += 16 * summary.length + 22;
+
+  for (const bl of r.blocks) {
+    if (bl.t === 'h') {
+      doc.need(60); doc.y += 8; doc.text(X, doc.y + 12, bl.text, 'HB', 13, INK); doc.y += 17;
+      doc.line(X, doc.y, X + CWD, doc.y, { color: '#d9c27a', w: 0.8 }); doc.y += 8;
+    } else if (bl.t === 'h2') {
+      doc.need(40); doc.y += 4; doc.text(X, doc.y + 10, bl.text, 'HB', 10.5, '#3b4654'); doc.y += 16;
+    } else if (bl.t === 'p') {
+      for (const ln of wrapText(bl.text, 'H', 9.5, CWD)) { doc.need(13); doc.text(X, doc.y + 9.5, ln, 'H', 9.5, INK); doc.y += 13; }
+      doc.y += 4;
+    } else if (bl.t === 'call') {
+      const tone = { ok: '#2e9e67', warn: '#c98200', bad: '#d0344f' }[bl.tone] || '#3a7bd5';
+      const lines = wrapText(bl.text, 'HB', 9.5, CWD - 18), h = lines.length * 13 + 8;
+      doc.need(h + 6); doc.rect(X, doc.y, CWD, h, { fill: '#f5f6f8' }); doc.rect(X, doc.y, 3, h, { fill: tone });
+      lines.forEach((ln, i) => doc.text(X + 12, doc.y + 13 + i * 13, ln, 'HB', 9.5, tone)); doc.y += h + 8;
+    } else if (bl.t === 'kv') {
+      for (const [k, v] of bl.pairs) {
+        const lines = wrapText(v, 'C', 8.5, CWD - 80); doc.need(lines.length * 12 + 2);
+        doc.text(X, doc.y + 9, k, 'H', 9, DIM); lines.forEach((ln, i) => doc.text(X + 80, doc.y + 9 + i * 12, ln, 'C', 8.5, INK)); doc.y += lines.length * 12 + 1;
+      }
+      doc.y += 6;
+    } else if (bl.t === 'eq') {
+      const size = 8.3, cw = size * 0.6, maxc = Math.floor((CWD - 16) / cw);
+      const lines = bl.lines.flatMap(l => {
+        let rest = [...PDFW.norm(l)]; const out = []; let lim = maxc;
+        while (rest.length > lim) { let cut = rest.lastIndexOf(' ', lim); if (cut < lim * 0.5) cut = lim; out.push((out.length ? '    ' : '') + rest.slice(0, cut).join('')); rest = rest.slice(cut).join('').trimStart().split(''); lim = maxc - 4; }
+        out.push((out.length ? '    ' : '') + rest.join('')); return out; });
+      let i = 0;
+      while (i < lines.length) {
+        doc.need(24); const room = Math.max(1, Math.floor((doc.H - doc.M - 16 - doc.y - 10) / 11.5)), chunk = lines.slice(i, i + room);
+        const h = chunk.length * 11.5 + 9; doc.rect(X, doc.y, CWD, h, { fill: '#f4f6f9', stroke: '#e1e6ec' });
+        chunk.forEach((ln, k) => doc.text(X + 8, doc.y + 12 + k * 11.5, ln, 'C', size, INK)); doc.y += h + 6; i += chunk.length;
+        if (i < lines.length) doc.add();
+      }
+    } else if (bl.t === 'table') {
+      let size = 8; const pad = 8;
+      const cells = [bl.head, ...bl.rows].map(r => r.map(c => PDFW.norm(c)));
+      const colW = s => bl.head.map((_, j) => Math.max(...cells.map(r => PDFW.width(r[j] || '', 'C', s))) + pad);
+      let ws = colW(size); while (sum(ws) > CWD && size > 5.5) { size -= 0.25; ws = colW(size); }
+      const rh = size + 5, tw = Math.min(CWD, sum(ws));
+      const header = () => { doc.rect(X, doc.y, tw, rh + 2, { fill: '#e9edf2' }); let cx = X; bl.head.forEach((h, j) => { const w = PDFW.width(h, 'CB', size); doc.text(cx + ws[j] - pad / 2 - w, doc.y + rh - 1.5, h, 'CB', size, '#3b4654'); cx += ws[j]; }); doc.y += rh + 2; };
+      doc.need(rh * 3); header();
+      bl.rows.forEach((row, i) => {
+        if (doc.need(rh)) header();
+        if (bl.hl === i) doc.rect(X, doc.y, tw, rh, { fill: '#fff3c4' }); else if (i % 2) doc.rect(X, doc.y, tw, rh, { fill: '#f7f8fa' });
+        let cx = X; row.forEach((c, j) => { const w = PDFW.width(c, 'C', size); doc.text(cx + ws[j] - pad / 2 - w, doc.y + rh - 2, c, 'C', size, INK); cx += ws[j]; }); doc.y += rh;
+      });
+      doc.line(X, doc.y, X + tw, doc.y, { color: '#cfd6de', w: 0.6 }); doc.y += 4;
+      if (bl.cap) for (const ln of wrapText(bl.cap, 'H', 8, CWD)) { doc.need(11); doc.text(X, doc.y + 8, ln, 'H', 8, DIM); doc.y += 11; }
+      doc.y += 6;
+    } else if (bl.t === 'fig' && r.fig) drawFigPDF(doc, r.fig, X, CWD);
+  }
+  // footers
+  const N = doc.pages.length;
+  doc.pages.forEach((pg, i) => { doc.c = pg; doc.text(X, doc.H - 24, `IK Studio · run #${r.id} · ${r.title}`, 'H', 7.5, '#8a96a3'); const s = `page ${i + 1} / ${N}`; doc.text(doc.W - X - PDFW.width(s, 'H', 7.5), doc.H - 24, s, 'H', 7.5, '#8a96a3'); });
+  return doc.bytes(`IK Studio run ${r.id} - ${r.title}`);
+}
+
+function drawFigPDF(doc, F, X, CWD) {
+  const fkF = th => fkL(th, F.L, F.base.x, F.base.y);
+  const pts = [...fkF(F.start).P, ...fkF(F.final).P, ...F.trace, ...F.wps, ...(F.cands || []).flatMap(c => [...c.pts, ...fkF(c.th).P])];
+  if (F.target) pts.push(F.target);
+  let x0 = Math.min(...pts.map(p => p.x)), x1 = Math.max(...pts.map(p => p.x)), y0 = Math.min(...pts.map(p => p.y)), y1 = Math.max(...pts.map(p => p.y));
+  for (const o of F.obs) { const e = o.type === 'circle' ? o.r : Math.max(o.w, o.h) / 2; x0 = Math.min(x0, o.x - Math.min(e, 60)); x1 = Math.max(x1, o.x + Math.min(e, 60)); y0 = Math.min(y0, o.y - Math.min(e, 60)); y1 = Math.max(y1, o.y + Math.min(e, 60)); }
+  const pad = 0.1 * Math.max(x1 - x0, y1 - y0, 50); x0 -= pad; x1 += pad; y0 -= pad; y1 += pad;
+  const BH = 330, s = Math.min(CWD / (x1 - x0), BH / (y1 - y0)), bw = (x1 - x0) * s, bh = (y1 - y0) * s;
+  doc.need(bh + 40); const ox = X + (CWD - bw) / 2, oy = doc.y;
+  const P = p => ({ x: ox + (p.x - x0) * s, y: oy + (y1 - p.y) * s });
+  doc.rect(ox, oy, bw, bh, { fill: '#fbfcfd', stroke: '#d5dbe2' });
+  doc.clip(ox, oy, bw, bh);
+  const g = [10, 25, 50, 100, 250, 500].find(v => v * s >= 28) || 1000;
+  for (let x = Math.ceil(x0 / g) * g; x <= x1; x += g) doc.line(P({ x, y: y0 }).x, oy, P({ x, y: y0 }).x, oy + bh, { color: x === 0 ? '#b9c2cc' : '#e9edf1', w: 0.5 });
+  for (let y = Math.ceil(y0 / g) * g; y <= y1; y += g) doc.line(ox, P({ x: x0, y }).y, ox + bw, P({ x: x0, y }).y, { color: y === 0 ? '#b9c2cc' : '#e9edf1', w: 0.5 });
+  for (const o of F.obs) {
+    if (o.type === 'circle') { const c = P(o); doc.circle(c.x, c.y, o.r * s, { fill: '#fbe3e8', stroke: '#d0344f', w: 0.9 }); }
+    else { const a = P({ x: o.x - o.w / 2, y: o.y + o.h / 2 }); doc.rect(a.x, a.y, o.w * s, o.h * s, { fill: '#fbe3e8', stroke: '#d0344f', w: 0.9 }); }
+  }
+  for (const gq of F.ghosts) doc.poly(fkF(gq).P.map(P), { color: '#d9ccf5', w: 0.8 });
+  for (const c of F.cands || []) { doc.poly(c.pts.map(P), { color: CAND_COL[c.key], w: 0.8, dash: [2, 2] }); doc.poly(fkF(c.th).P.map(P), { color: CAND_COL[c.key], w: 1.6 }); }
+  doc.poly(fkF(F.start).P.map(P), { color: '#9aa5b1', w: 1.4, dash: [4, 3] });
+  doc.poly(F.trace.map(P), { color: '#f0883e', w: 1 });
+  if (F.wps.length) { doc.poly(F.wps.map(P), { color: '#b392f0', w: 0.8, dash: [3, 3] }); F.wps.forEach((w, i) => { const c = P(w); doc.circle(c.x, c.y, 5.5, { fill: '#b392f0' }); doc.text(c.x - 2.4, c.y + 3, String(i + 1), 'HB', 7, '#ffffff'); }); }
+  const fin = fkF(F.final).P.map(P);
+  const LC = ['#2f7fd8', '#1f9fa8', '#2e9e67', '#c99a1c', '#d86a22', '#8a63d2'];
+  for (let i = 0; i + 1 < fin.length; i++) doc.line(fin[i].x, fin[i].y, fin[i + 1].x, fin[i + 1].y, { color: LC[i], w: Math.max(2.5, Math.min(9, 2 * F.thick * s)) });
+  fin.forEach((p, i) => doc.circle(p.x, p.y, i === fin.length - 1 ? 3.2 : 2.6, { fill: i === fin.length - 1 ? '#ffce54' : '#ffffff', stroke: '#1b2330', w: 0.8 }));
+  const fphi = fkF(F.final).phi;
+  fin.slice(0, -1).forEach((p, i) => doc.text(p.x + 5, p.y - 5, `θ${i + 1}=${fd(wrap(F.final[i]), 1)}°`, 'H', 7, LC[i]));
+  if (F.target) { const t = P(F.target); doc.circle(t.x, t.y, 5, { stroke: '#2e9e67', w: 1.1 }); doc.line(t.x - 8, t.y, t.x + 8, t.y, { color: '#2e9e67', w: 1 }); doc.line(t.x, t.y - 8, t.x, t.y + 8, { color: '#2e9e67', w: 1 }); }
+  const b = P(F.base); doc.rect(b.x - 6, b.y, 12, 5, { fill: '#5b6773' });
+  doc.unclip();
+  doc.y += bh + 6;
+  for (const ln of wrapText(`grid ${g} units · dashed gray = start pose · colored = final pose · orange = tip trace · green ⊕ = target · purple = waypoints · pale purple = other solutions · red = obstacles${(F.cands || []).length ? ' · blue / green / pink = least effort / shortest / smoothest candidates' : ''}`.replace('⊕', 'o'), 'H', 7, CWD)) { doc.text(X, doc.y + 8, ln, 'H', 7, '#5b6773'); doc.y += 9; }
+  doc.y += 9;
+}
+
+function pdfName(r) {
+  const d = r.when, p = v => String(v).padStart(2, '0');
+  return `ik-run-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}-${String(r.id).padStart(3, '0')}-${r.kind}.pdf`;
+}
+
+/* ---------- recording session: while on, every run is saved into runs/session-…/ ---------- */
+function toggleSession() {
+  if (S.session) {
+    const n = S.session.saved; S.session = null;
+    toast(`Session stopped — ${n} run${n === 1 ? '' : 's'} saved. Runs are no longer saved automatically.`);
+  } else {
+    const d = new Date(), p = v => String(v).padStart(2, '0');
+    S.session = { folder: `session-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`, saved: 0 };
+    toast(`Recording → runs/${S.session.folder}/ — every run is saved until you stop.`);
+  }
+  renderSessionBtn();
+}
+function renderSessionBtn() {
+  const b = $('#btnSession');
+  b.classList.toggle('rec', !!S.session);
+  b.textContent = S.session ? `Rec · ${S.session.saved}` : 'Session'; b.title = S.session ? `Recording to runs/${S.session.folder}/ — ${S.session.saved} saved. Click to stop.` : 'Start a recording session: every run is saved until you stop.';
+}
+$('#btnSession').onclick = toggleSession;
+
+async function savePDF(run, { manual = false } = {}) {
+  if (!run || !run.pdfBytes) return;
+  if (run.pdfFile) { if (manual) toast(`Already saved → ${run.pdfFile}`); return; }
+  if (HOSTED) { if (manual) { downloadPDF(run); toast('PDF downloaded.'); } return; }
+  const folder = S.session ? S.session.folder : 'saved';
+  try {
+    const res = await fetch(`/api/save-pdf?folder=${encodeURIComponent(folder)}&name=${encodeURIComponent(pdfName(run.report))}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: run.pdfBytes });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const j = await res.json(); run.pdfFile = j.file; run.pdfFolder = j.folder; run.pdfName = j.name;
+    if (S.session && folder === S.session.folder) { S.session.saved++; renderSessionBtn(); }
+    toast(`PDF saved → ${j.file}`);
+  } catch (e) {
+    if (manual) { downloadPDF(run); toast('Local server not reachable — PDF downloaded instead.'); }
+    else toast('Could not save PDF (is server.py running?)', true);
+  }
+  renderWorkBtns(); renderPageRuns(); if ($('#tab-runs').classList.contains('on')) refreshRuns();
+}
+function downloadPDF(run) {
+  const url = URL.createObjectURL(new Blob([run.pdfBytes], { type: 'application/pdf' }));
+  const a = document.createElement('a'); a.href = url; a.download = pdfName(run.report); document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+function renderWorkBtns() {
+  const run = S.last;
+  $('#workBtns').style.display = run ? '' : 'none'; if (!run) return;
+  $('#saveRun').disabled = !!run.pdfFile || !run.pdfBytes;
+  $('#saveRun').textContent = run.pdfFile ? 'Saved ✓' : 'Save this run';
+  $('#openPdf').disabled = !run.pdfFile;
+}
+$('#saveRun').onclick = () => savePDF(S.last, { manual: true });
+// re-run the last target from the same start pose, moving to one of the highlighted candidates
+$('#workHead').addEventListener('click', e => {
+  const k = e.target.dataset.pick, run = S.last; if (!k || !run || !run.report.head.target) return;
+  if (!(run.L.length === S.L.length && run.L.every((v, i) => v === S.L[i]))) { toast('The chain has changed since this run.', true); return; }
+  stopAnim(); S.th = run.start.slice(); runTarget(run.report.head.target, k);
+});
+$('#dlPdf').onclick = () => { if (S.last && S.last.pdfBytes) downloadPDF(S.last); };
+$('#openPdf').onclick = () => { if (S.last && S.last.pdfFile) window.open(S.last.pdfFile, '_blank'); };
+
+/* ---------- Runs tab: this page's runs (memory) + saved PDFs (disk) ---------- */
+function renderPageRuns() {
+  const H = S.history; $('#pageRunCount').textContent = H.length;
+  $('#pageRuns').innerHTML = H.length ? H.slice().reverse().map(run => {
+    const r = run.report, h = r.head;
+    return `<div class="item"><span class="ix">#${r.id}</span>
+      <span class="grow" title="${esc(r.title)}">${esc(r.title)} <span class="hint">${r.when.toLocaleTimeString()} · ${h.ok ? '✓' : '✗'}</span></span>
+      ${run.pdfFile ? '<span class="tag ok">saved</span>' : ''}
+      <button data-view="${r.id}">View</button>
+      <button data-save="${r.id}" ${run.pdfFile ? 'disabled' : ''}>Save</button></div>`;
+  }).join('') : '<div class="empty">No runs yet on this page.</div>';
+}
+$('#pageRuns').addEventListener('click', e => {
+  const id = +(e.target.dataset.view || e.target.dataset.save); if (!id) return;
+  const run = S.history.find(x => x.report.id === id); if (!run) return;
+  if (e.target.dataset.save) { savePDF(run, { manual: true }); return; }
+  // view: show its write-up; replay on the canvas only if the chain still matches
+  stopAnim();
+  const same = run.L.length === S.L.length && run.L.every((v, i) => v === S.L[i]);
+  if (same) { S.last = run; S.th = run.frames[run.frames.length - 1].map(wrap); renderLinks(); const sc = $('#scrub'); sc.max = run.frames.length - 1; sc.value = sc.max; updScrubLabel(+sc.max); $('#scrubWrap').style.display = ''; }
+  else { S.last = null; $('#scrubWrap').style.display = 'none'; toast('The chain has changed since this run — showing the write-up only.'); }
+  renderReport(run.report); if (!same) { $('#workBtns').style.display = 'none'; }
+  dirty = true;
+});
+
+// two-click confirm for destructive buttons
+function armed(btn) {
+  if (btn.classList.contains('armed')) return true;
+  const txt = btn.textContent; btn.classList.add('armed'); btn.textContent = 'Confirm';
+  setTimeout(() => { btn.classList.remove('armed'); btn.textContent = txt; }, 2500);
+  return false;
+}
+async function deleteSaved(folder, name) {
+  const q = `folder=${encodeURIComponent(folder)}` + (name ? `&name=${encodeURIComponent(name)}` : '');
+  const res = await fetch('/api/runs?' + q, { method: 'DELETE' });
+  if (!res.ok) { toast('Delete failed.', true); return; }
+  const j = await res.json();
+  for (const run of S.history) if (run.pdfFolder === folder && (!name || run.pdfName === name)) { run.pdfFile = null; run.pdfFolder = null; run.pdfName = null; }
+  toast(`Deleted ${j.removed} PDF${j.removed === 1 ? '' : 's'}.`);
+  renderWorkBtns(); renderPageRuns(); refreshRuns();
+}
+async function refreshRuns() {
+  renderPageRuns();
+  if (HOSTED) return;
+  try {
+    const j = await (await fetch('/api/runs')).json();
+    $('#diskCount').textContent = j.files.length;
+    const kb = j.files.reduce((a, fl) => a + fl.size, 0) / 1024;
+    $('#runsDir').textContent = `${j.dir}  ·  ${j.files.length} PDF${j.files.length === 1 ? '' : 's'}, ${kb < 1024 ? kb.toFixed(0) + ' KB' : (kb / 1024).toFixed(1) + ' MB'}`;
+    const groups = new Map(); for (const fl of j.files) { if (!groups.has(fl.folder)) groups.set(fl.folder, []); groups.get(fl.folder).push(fl); }
+    $('#runsList').innerHTML = j.files.length ? [...groups].map(([folder, files]) => `
+      <div class="fold"><span class="nm">📁 ${esc(folder || '(top level)')}</span><span class="hint">${files.length}</span>
+        ${folder ? `<button class="danger" data-delfolder="${esc(folder)}" style="padding:1px 7px;font-size:11px" title="Delete every PDF in this folder">Delete all</button>` : ''}</div>
+      <div class="list">${files.map(fl => `<div class="item">
+        <a class="grow" href="runs/${folder ? encodeURIComponent(folder) + '/' : ''}${encodeURIComponent(fl.name)}" target="_blank" title="${esc(fl.name)}">${esc(fl.name.replace(/^ik-run-/, '').replace(/\.pdf$/, ''))}</a>
+        <span class="hint">${(fl.size / 1024).toFixed(0)} KB</span>
+        <button class="danger" data-delfile="${esc(fl.name)}" data-folder="${esc(folder)}" title="Delete this PDF">🗑</button></div>`).join('')}</div>`).join('')
+      : '<div class="empty">Nothing saved on disk.</div>';
+  } catch (e) { $('#runsDir').textContent = 'Saved-PDF list needs the local server (python server.py 4194).'; }
+}
+$('#runsList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (!armed(b)) return;
+  if (b.dataset.delfolder) deleteSaved(b.dataset.delfolder);
+  else if (b.dataset.delfile) deleteSaved(b.dataset.folder, b.dataset.delfile);
+});
+$('#refreshRuns').onclick = refreshRuns;
+
+let toastT = 0;
+function toast(msg, bad) { const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (bad ? ' bad' : ''); clearTimeout(toastT); toastT = setTimeout(() => t.className = 'toast', 2600); }
+
+/* ======================= boot ======================= */
+load(); bindOpts(); renderLinks(); renderLists(); syncTargetInputs(); renderSessionBtn(); renderPageRuns(); setMode(S.mode === 'live' ? 'target' : S.mode);
+let fitted = false;
+new ResizeObserver(() => { resize(); if (!fitted && CW > 50 && CH > 50) { fitted = true; fit(); } }).observe($('#stage'));
+resize(); if (CW > 50 && CH > 50) { fitted = true; fit(); }
+requestAnimationFrame(loop);
+window.IK = { S, fk, classify, familySet, runTarget, runPath, buildPDF, jacobian, collides };
+</script>
+</body>
+</html>

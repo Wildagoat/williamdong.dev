@@ -67,6 +67,15 @@ const PROJECTS = {
     link: './games/profile-studio.html', linkLabel: 'Open the studio →',
     repo: 'https://github.com/Wildagoat/profile-studio', repoLabel: 'View on GitHub →',
   },
+  'ik-studio': {
+    status: 'Tool · kinematics', title: 'IK Studio',
+    problem: 'Most inverse-kinematics solvers hand back joint angles without showing where they came from, which makes it hard to trust the answer or learn from it.',
+    solution: 'Build a solver that moves the arm to the target and writes out the math behind every joint angle.',
+    desc: 'A browser studio for 2D inverse kinematics on planar arms and legs of up to six links. Click a target and the chain moves there while the studio writes up how it got each joint angle: the forward kinematics, the reachability check, how many solutions exist, and the change in every joint at every iteration. It has three solvers: a closed-form analytic one for up to three links, a damped least-squares Jacobian, and cyclic coordinate descent. When a target has infinitely many solutions, it scores candidate end poses on servo effort, tip travel, and smoothness, and highlights the winner of each. It also respects obstacles. If the direct move would touch one, it plans a joint-space path around it with RRT-Connect. The tip can follow a path of waypoints as a smooth arc or spline, and every run produces a PDF of the worked math from a hand-written PDF writer with no libraries. Self-collision is ignored and the chain is planar, so it is a tool for understanding the math, not a full motion planner.',
+    tags: ['Inverse kinematics', 'Jacobian DLS', 'CCD', 'RRT-Connect', 'PDF reports', 'Single-file'],
+    img: './assets/ikstudio.png',
+    link: './games/ik-studio.html', linkLabel: 'Open the studio →',
+  },
   vex: {
     status: 'World-qualified', title: 'VEX Robotics',
     problem: 'The Push Back game rewards tall bots with confident collision capabilities.',
