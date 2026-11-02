@@ -92,6 +92,21 @@ const PROJECTS = {
     tags: ['SVG', 'Single-file', 'Vanilla JS'],
     img: './assets/fightdiagram.png',
   },
+  'rally-racers': {
+    status: 'Roblox game · beta', title: 'Rally Racers',
+    problem: 'Racing games are solo, but real rally is a two-person sport: the co-driver is the driver\'s eyes.',
+    solution: 'A co-op Roblox rally where the driver can\'t see far ahead and only the co-driver has the map.',
+    desc: 'A two-player co-op rally game on Roblox, built with my friend Benjamin Chan. One player drives through a thick forest with no map; the other rides in the passenger seat with the whole stage on a board in their lap and calls every corner, fork, and rock over voice before the driver gets there. Every stage is generated from a seed, so nothing can be memorized. Under the hood: a custom car model (raycast suspension, tyre grip, drivetrain) tuned to feel flowy rather than sim-hard, a co-driver who can shift and pull the handbrake, spectating, and a post-run replay with trackside camera cuts. Game logic is tested headlessly with Lune before it ever reaches Studio.',
+    tags: ['Roblox', 'Luau', 'Rojo', 'Procedural generation', 'Vehicle physics'],
+    img: './assets/rallyracers.webp',
+  },
+  'high-noon': {
+    status: 'Roblox game · in development', title: 'High Noon',
+    problem: 'Shooters reward whoever spams from the farthest away, and avatar size or animation packs can give an edge.',
+    solution: 'Short-range six-shooters, a long-range lasso, and one standard body for everyone.',
+    desc: 'A Wild West team shootout on Roblox, built with friends Benjamin Chan and Yue Chen. Outlaws vs. Lawmen in timed rounds; most kills wins, and a tie goes to sudden death. Guns fall off fast and cap out at short range, so the lasso is the long-range play: rope someone, reel them in, and a twirl-and-fan-the-hammer finisher takes them out. Everyone can roll through bullets and lassos. Every player is spawned on the same standard body with one shared set of cartoony keyframed animations, so avatar choice gives no advantage. Three compact toy-brick maps on a vote, and bots fill the teams so a match always has players.',
+    tags: ['Roblox', 'Luau', 'Rojo', 'Multiplayer', 'Procedural animation'],
+  },
   'cycloidal-gearbox': {
     status: 'Reducer · 20:1', title: 'Cycloidal Gearbox',
     problem: 'A NEMA 24 stepper makes modest torque at speed, but an actuator wants the opposite — high torque at low speed with minimal backlash.',
